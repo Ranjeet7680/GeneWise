@@ -21,12 +21,14 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
+    Base.metadata.drop_all(bind=test_engine)
     Base.metadata.create_all(bind=test_engine)
     db = TestingSessionLocal()
     seed_database(db)
     db.close()
     yield
     Base.metadata.drop_all(bind=test_engine)
+    test_engine.dispose()
     if os.path.exists("./test_medipredict.db"):
         try:
             os.remove("./test_medipredict.db")

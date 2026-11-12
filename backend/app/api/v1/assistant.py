@@ -70,7 +70,7 @@ def create_conversation(
         conversation_id=conv.id,
         role="assistant",
         content=(
-            "Hello! I am MediPredict AI, your clinical intelligence and medical information assistant. "
+            "Hello! I am GeneWise AI, your clinical intelligence and medical information assistant. "
             "I can explain laboratory measurements, reference guidelines, and research papers.\n\n"
             "How can I assist your health and medical inquiry today?"
         ),

@@ -1,5 +1,5 @@
 """
-MediPredict AI — Multilingual Voice Assistant Engine
+GeneWise — Multilingual Voice Assistant Engine
 Supports real-time voice-to-voice interaction across 13 Indian languages,
 code-mixed speech (Hinglish, Tanglish, Benglish), medical tool execution,
 and clinical safety governance.
@@ -21,7 +21,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Devanagari",
         "default_voice": "hi-IN-MadhurNeural",
         "emergency_phrase": "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर संपर्क करें।",
-        "greeting": "नमस्ते! मैं आपका मेडीप्रेडिक्ट एआई स्वास्थ्य सहायक हूँ। मैं आपकी क्या मदद कर सकता हूँ?",
+        "greeting": "नमस्ते! मैं आपका GeneWise AI स्वास्थ्य सहायक हूँ। मैं आपकी क्या मदद कर सकता हूँ?",
     },
     "bn-IN": {
         "code": "bn-IN",
@@ -30,7 +30,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Bengali",
         "default_voice": "bn-IN-BashkarNeural",
         "emergency_phrase": "এটি একটি জরুরি অবস্থা হতে পারে। অনুগ্রহ করে অবিলম্বে ১১২ বা ১০৮ নম্বরে কল করুন।",
-        "greeting": "নমস্কার! আমি আপনার মেডিপ্রেডিক্ট এআই স্বাস্থ্য সহকারী। আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
+        "greeting": "নমস্কার! আমি আপনার GeneWise AI স্বাস্থ্য সহকারী। আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
     },
     "ta-IN": {
         "code": "ta-IN",
@@ -39,7 +39,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Tamil",
         "default_voice": "ta-IN-PallaviNeural",
         "emergency_phrase": "இது அவசர நிலையாக இருக்கலாம். தயவுசெய்து உடனடியாக 112 அல்லது 108 ஐ அழைக்கவும்.",
-        "greeting": "வணக்கம்! நான் உங்கள் மெடிபிரடிக்ட் AI சுகாதார உதவியாளர். நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?",
+        "greeting": "வணக்கம்! நான் உங்கள் GeneWise AI சுகாதார உதவியாளர். நான் உங்களுக்கு எவ்வாறு உதவ முடியும்?",
     },
     "te-IN": {
         "code": "te-IN",
@@ -48,7 +48,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Telugu",
         "default_voice": "te-IN-MohanNeural",
         "emergency_phrase": "ఇది అత్యవసర పరిస్థితి కావచ్చు. దయచేసి వెంటనే 112 లేదా 108 కు కాల్ చేయండి.",
-        "greeting": "నమస్కారం! నేను మీ మెడిప్రెడిక్ట్ AI ఆరోగ్య సహాయకుడిని. నేను మీకు ఎలా సహాయం చేయగలను?",
+        "greeting": "నమస్కారం! నేను మీ GeneWise AI ఆరోగ్య సహాయకుడిని. నేను మీకు ఎలా సహాయం చేయగలను?",
     },
     "kn-IN": {
         "code": "kn-IN",
@@ -57,7 +57,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Kannada",
         "default_voice": "kn-IN-GaganNeural",
         "emergency_phrase": "ಇದು ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಾಗಿರಬಹುದು. ದಯವಿಟ್ಟು ತಕ್ಷಣ 112 ಅಥವಾ 108 ಗೆ ಕರೆ ಮಾಡಿ.",
-        "greeting": "ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ ಮೆಡಿಪ್ರೆಡಿಕ್ಟ್ AI ಆರೋಗ್ಯ ಸಹಾಯಕ. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
+        "greeting": "ನಮಸ್ಕಾರ! ನಾನು ನಿಮ್ಮ GeneWise AI ಆರೋಗ್ಯ ಸಹಾಯಕ. ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
     },
     "ml-IN": {
         "code": "ml-IN",
@@ -66,7 +66,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Malayalam",
         "default_voice": "ml-IN-SobhanaNeural",
         "emergency_phrase": "ഇതൊരു അടിയന്തിര സാഹചര്യമാകാം. ദയവായി ഉടൻ 112 അല്ലെങ്കിൽ 108 ലേക്ക് വിളിക്കുക.",
-        "greeting": "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ മെഡിപ്രെഡിക്റ്റ് AI ആരോഗ്യ സഹായിയാണ്. എനിക്ക് എങ്ങനെ സഹായിക്കാനാകും?",
+        "greeting": "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ GeneWise AI ആരോഗ്യ സഹായിയാണ്. എനിക്ക് എങ്ങനെ സഹായിക്കാനാകും?",
     },
     "mr-IN": {
         "code": "mr-IN",
@@ -75,7 +75,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Devanagari",
         "default_voice": "mr-IN-AarohiNeural",
         "emergency_phrase": "ही आणीबाणीची परिस्थिती असू शकते. कृपया त्वरित 112 किंवा 108 वर संपर्क साधा.",
-        "greeting": "नमस्कार! मी तुमचा मेडीप्रेडिक्ट AI आरोग्य सहाय्यक आहे. मी तुम्हाला कशी मदत करू शकतो?",
+        "greeting": "नमस्कार! मी तुमचा GeneWise AI आरोग्य सहाय्यक आहे. मी तुम्हाला कशी मदत करू शकतो?",
     },
     "gu-IN": {
         "code": "gu-IN",
@@ -84,7 +84,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Gujarati",
         "default_voice": "gu-IN-DhwaniNeural",
         "emergency_phrase": "આ કટોકટી હોઈ શકે છે. કૃપા કરીને તાત્કાલિક 112 અથવા 108 પર કૉલ કરો.",
-        "greeting": "નમસ્તે! હું તમારો મેડીપ્રેડિક્ટ AI હેલ્થ સહાયક છું. હું તમને કેવી રીતે મદદ કરી શકું?",
+        "greeting": "નમસ્તે! હું તમારો GeneWise AI હેલ્થ સહાયક છું. હું તમને કેવી રીતે મદદ કરી શકું?",
     },
     "pa-IN": {
         "code": "pa-IN",
@@ -93,7 +93,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Gurmukhi",
         "default_voice": "pa-IN-OjasNeural",
         "emergency_phrase": "ਇਹ ਇੱਕ ਐਮਰਜੈਂਸੀ ਹੋ ਸਕਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਤੁਰੰਤ 112 ਜਾਂ 108 'ਤੇ ਕਾਲ ਕਰੋ।",
-        "greeting": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ ਮੈਡੀਪ੍ਰੈਡਿਕਟ ਏਆਈ ਸਿਹਤ ਸਹਾਇਕ ਹਾਂ। ਮੈਂ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?",
+        "greeting": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ GeneWise AI ਸਿਹਤ ਸਹਾਇਕ ਹਾਂ। ਮੈਂ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?",
     },
     "od-IN": {
         "code": "od-IN",
@@ -102,7 +102,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Odia",
         "default_voice": "od-IN-MadhurNeural",
         "emergency_phrase": "ଏହା ଏକ ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତି ହୋଇପାରେ। ଦୟାକରି ତୁରନ୍ତ 112 କିମ୍ବା 108 କୁ କଲ୍ କରନ୍ତୁ।",
-        "greeting": "ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କ ମେଡିପ୍ରେଡିକ୍ଟ AI ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ। ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
+        "greeting": "ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କ GeneWise AI ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ। ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
     },
     "as-IN": {
         "code": "as-IN",
@@ -111,7 +111,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Bengali/Assamese",
         "default_voice": "as-IN-BashkarNeural",
         "emergency_phrase": "এইটো এটা জৰুৰীকালীন অৱস্থা হ'ব পাৰে। অনুগ্ৰহ কৰি ততালিকে ১১২ বা ১০৮ নম্বৰত ফোন কৰক।",
-        "greeting": "নমস্কাৰ! মই আপোনাৰ মেডিপ্রেডিক্ট AI স্বাস্থ্য সহায়ক। মই আপোনাক কেনেকৈ সহায় কৰিব পাৰোঁ?",
+        "greeting": "নমস্কাৰ! মই আপোনাৰ GeneWise AI স্বাস্থ্য সহায়ক। মই আপোনাক কেনেকৈ সহায় কৰিব পাৰোঁ?",
     },
     "ur-IN": {
         "code": "ur-IN",
@@ -120,7 +120,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Arabic/Nastaliq",
         "default_voice": "ur-IN-SalmanNeural",
         "emergency_phrase": "یہ ایک ہنگامی صورتحال ہو سکتی ہے۔ براہ کرم فوری طور پر 112 یا 108 پر رابطہ کریں۔",
-        "greeting": "آداب! میں آپ کا میڈی پریڈکٹ AI ہیلتھ اسسٹنٹ ہوں۔ میں آپ کی کیا مدد کر سکتا ہوں؟",
+        "greeting": "آداب! میں آپ کا GeneWise AI ہیلتھ اسسٹنٹ ہوں۔ میں آپ کی کیا مدد کر سکتا ہوں؟",
     },
     "en-IN": {
         "code": "en-IN",
@@ -129,7 +129,7 @@ INDIAN_LANGUAGES: Dict[str, Dict[str, Any]] = {
         "script": "Latin",
         "default_voice": "en-IN-NeerjaNeural",
         "emergency_phrase": "This may be a medical emergency. Please call emergency services (112 / 911 / 108) immediately.",
-        "greeting": "Hello! I am your MediPredict AI health assistant. How can I help you understand your health today?",
+        "greeting": "Hello! I am your GeneWise health assistant. How can I help you understand your health today?",
     },
 }
 
@@ -312,7 +312,7 @@ class MultilingualVoiceService:
             "voice_profile": lang_meta["default_voice"],
             "tools_executed": tools_called,
             "human_review_required": agent_result.get("human_review_required", False),
-            "safety_attestation": "Response reviewed under MediPredict AI clinical safety governance."
+            "safety_attestation": "Response reviewed under GeneWise clinical safety governance."
         }
 
     def _generate_multilingual_speech(
@@ -366,8 +366,8 @@ class MultilingualVoiceService:
 
         # General / Medical RAG fallback
         if language == "hi-IN":
-            native = f"मेडीप्रेडिक्ट एआई ने आपके प्रश्न की समीक्षा की है: {base_summary} कृपया ध्यान रखें कि यह केवल शैक्षणिक मार्गदर्शन है।"
-            roman = f"MediPredict AI ne aapke prashna ki samiksha ki hai: {base_summary[:90]}... Kripya doctor se follow-up karein."
+            native = f"GeneWise AI ने आपके प्रश्न की समीक्षा की है: {base_summary} कृपया ध्यान रखें कि यह केवल शैक्षणिक मार्गदर्शन है।"
+            roman = f"GeneWise AI ne aapke prashna ki samiksha ki hai: {base_summary[:90]}... Kripya doctor se follow-up karein."
             eng = base_summary
             return native, roman, eng
 

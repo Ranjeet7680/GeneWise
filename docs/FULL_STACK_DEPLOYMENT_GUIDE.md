@@ -1,6 +1,6 @@
-# MediPredict AI — Full-Stack Production Deployment Guide
+# GeneWise — Full-Stack Production Deployment Guide
 
-This guide explains how to deploy **MediPredict AI** full-stack with the Next.js frontend on **Vercel** and the FastAPI backend on **Render**, **Railway**, or **Google Cloud Run**, connected to **Supabase / PostgreSQL**.
+This guide explains how to deploy **GeneWise** full-stack with the Next.js frontend on **Vercel** and the FastAPI backend on **Render**, **Railway**, or **Google Cloud Run**, connected to **Supabase / PostgreSQL**.
 
 ---
 
@@ -38,7 +38,7 @@ Go to **Vercel Dashboard** -> **Project Settings** -> **Environment Variables**:
 ### Option A: Render (Recommended & Free Tier Available)
 1. Sign up / Log in to [Render](https://render.com).
 2. Click **New +** -> **Blueprint**.
-3. Connect your GitHub repository (`medipredict-ai`).
+3. Connect your GitHub repository (`Ranjeet7680/GeneWise`).
 4. Render will automatically detect [`render.yaml`](../render.yaml) at the repository root and provision:
    - **`medipredict-backend`**: Python 3.11 Web Service running FastAPI.
    - **`medipredict-postgres`**: Managed PostgreSQL database.
@@ -48,7 +48,7 @@ Go to **Vercel Dashboard** -> **Project Settings** -> **Environment Variables**:
 ### Option B: Railway
 1. Sign up / Log in to [Railway](https://railway.app).
 2. Click **New Project** -> **Deploy from GitHub repo**.
-3. Select `medipredict-ai`.
+3. Select `GeneWise` (`Ranjeet7680/GeneWise`).
 4. Railway will automatically detect [`railway.json`](../railway.json) and [`backend/Dockerfile`](../backend/Dockerfile).
 5. Add a PostgreSQL database service in the Railway canvas.
 6. Set the environment variables:

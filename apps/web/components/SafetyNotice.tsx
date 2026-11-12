@@ -66,7 +66,7 @@ export default function SafetyNotice({
     >
       <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
       <p className="leading-relaxed">
-        <span className="font-semibold text-foreground">Medical Disclaimer:</span> MediPredict AI is
+        <span className="font-semibold text-foreground">Medical Disclaimer:</span> GeneWise is
         an intelligent decision-support and health education platform. Content is grounded in
         peer-reviewed medical evidence and structured laboratory reference intervals. It does not
         substitute for professional clinical diagnosis or consultation with a qualified doctor.

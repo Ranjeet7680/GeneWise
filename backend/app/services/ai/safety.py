@@ -20,7 +20,7 @@ PROMPT_INJECTION_PATTERNS = [
 ]
 
 DISCLAIMER_TEXT = (
-    "\n\n---\n**Clinical & Regulatory Disclaimer:** MediPredict AI is an informational and research platform. "
+    "\n\n---\n**Clinical & Regulatory Disclaimer:** GeneWise is an informational and research platform. "
     "This guidance is grounded in peer-reviewed scientific literature and structured medical reference databases. "
     "It is NOT a clinical diagnosis, treatment plan, or medical substitute. Always consult a qualified, licensed healthcare "
     "professional for diagnosis and treatment decisions."

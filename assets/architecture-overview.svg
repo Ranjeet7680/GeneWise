@@ -60,7 +60,7 @@
     <path d="M 23 33 L 28 33 L 31 22 L 35 44 L 39 27 L 43 35 L 47 33" fill="none" stroke="#4ef3e2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
 
     <!-- Title & Subtitle -->
-    <text x="68" y="32" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="800" letter-spacing="0.5">MEDIPREDICT AI &#8226; ENTERPRISE HEALTHCARE ARCHITECTURE</text>
+    <text x="68" y="32" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="17" font-weight="800" letter-spacing="0.5">GENEWISE &#8226; ENTERPRISE HEALTHCARE ARCHITECTURE</text>
     <text x="68" y="50" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11">End-to-End Clinical Intelligence Mesh, Multilingual Voice, Predictive ML &amp; Zero-Trust Governance</text>
 
     <!-- Certification Badges Right -->

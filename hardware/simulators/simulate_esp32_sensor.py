@@ -4,8 +4,8 @@ ESP32 + MAX30102 Optical PPG / Pulse Oximeter Hardware Telemetry Simulator.
 Simulates an embedded ESP32-WROOM microcontroller running FreeRTOS with an
 I2C-interfaced MAX30102 optical biosensor. Generates realistic photoplethysmography (PPG)
 samples, computes R-ratio from Red (660nm) and Infrared (880nm) channels to estimate SpO2,
-detects systolic peaks for Heart Rate (BPM), and pushes telemetry packets to the MediPredict
-AI Section 10 Unified Ingestion Endpoint.
+detects systolic peaks for Heart Rate (BPM), and pushes telemetry packets to the GeneWise
+Section 10 Unified Ingestion Endpoint.
 """
 
 import datetime
@@ -105,7 +105,7 @@ class ESP32MAX30102Simulator:
         Execute telemetry transmission loop.
         """
         print(f"\n=======================================================")
-        print(f"  MediPredict AI - Hardware Telemetry Simulation")
+        print(f"  GeneWise - Hardware Telemetry Simulation")
         print(f"  Transmitter: ESP32 + MAX30102 Optical PPG Transducer")
         print(f"  Device ID:   {self.device_id}")
         print(f"  Target:      {self.api_base}/ingestion/sensors")

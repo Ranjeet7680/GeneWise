@@ -56,3 +56,9 @@ Thumbs.db
 # Uploads directory
 uploads/*
 !uploads/.gitkeep
+
+.vercel
+.env*
+*.tsbuildinfo
+backend/uploads/*.pdf
+backend/medipredict.db

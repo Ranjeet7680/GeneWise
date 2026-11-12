@@ -3,11 +3,12 @@ import React from "react";
 import type { Metadata } from "next";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "MediPredict AI — Advanced Medical Intelligence Platform",
+  title: "GeneWise · Genomic Health & Clinical Pedigree Literacy",
   description:
-    "Intelligent Healthcare. Earlier Insights. Better Decisions. Evidence-grounded medical RAG, laboratory report intelligence, and clinical research risk models.",
+    "Curated clinical summaries, personalized heredity tracking, and evidence-grounded genetic education grounded in ClinVar and Kaggle open genomics.",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -52,9 +53,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased text-foreground transition-colors duration-200">
+      <body className="min-h-screen bg-background font-sans antialiased text-foreground transition-colors duration-200 pb-16 md:pb-0">
         <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            {children}
+            <MobileBottomNav />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -1,3 +1,13 @@
+export type WorkspaceLogoKey = "pulse" | "dna" | "shield" | "microscope" | "custom";
+
+export interface WorkspaceBrandConfig {
+  name: string;
+  subtitle: string;
+  badge: string;
+  logoKey: WorkspaceLogoKey;
+  logoUrl?: string;
+}
+
 export interface User {
   id: number;
   email: string;
@@ -6,7 +16,23 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   created_at: string;
+  phone?: string;
+  phone_verified?: boolean;
+  specialty?: string;
+  organization?: string;
+  bio?: string;
+  avatar_url?: string;
+  avatar_color?: string;
+  workspace_name?: string;
+  workspace_subtitle?: string;
+  workspace_badge?: string;
+  workspace_logo_key?: WorkspaceLogoKey;
+  workspace_logo_url?: string;
 }
+
+export type ProfileUpdatePayload = Partial<Omit<User, "id" | "created_at">> & {
+  password?: string;
+};
 
 export interface AuthResponse {
   access_token: string;
@@ -26,6 +52,35 @@ export interface MessageSource {
   abstract?: string;
 }
 
+export interface LstmStepPoint {
+  visitLabel: string;
+  value: number;
+  lowerBound?: number;
+  upperBound?: number;
+  isForecast: boolean;
+}
+
+export interface LstmBiomarkerForecast {
+  biomarkerKey: string;
+  biomarkerLabel: string;
+  unit: string;
+  referenceRange: string;
+  currentValue: number;
+  projected30d: number;
+  projected90d: number;
+  deltaPerMonth: number;
+  trend: "improving" | "stable" | "elevating";
+  confidence: number;
+  gateWeights: {
+    forget: number;
+    input: number;
+    output: number;
+  };
+  attentionPeakVisit: string;
+  sequence: LstmStepPoint[];
+  clinicalSummary: string;
+}
+
 export interface Message {
   id: number;
   conversation_id: number;
@@ -34,6 +89,11 @@ export interface Message {
   sources?: MessageSource[];
   safety_alerts?: string[];
   created_at: string;
+  model_used?: string;
+  confidence_score?: number;
+  reasoning_trace?: string[];
+  follow_up_questions?: string[];
+  lstm_forecast?: LstmBiomarkerForecast;
 }
 
 export interface Conversation {
@@ -150,7 +210,7 @@ export interface MedicalReference {
 
 export interface ResearchBookmark {
   id: number;
-  user_id: number;
+  user_id?: number;
   reference_id: number;
   notes?: string;
   created_at: string;
@@ -263,6 +323,9 @@ export interface AuditLogItem {
   timestamp: string;
   user_email?: string;
   user_name?: string;
+  user_id?: number | null;
+  outcome?: string;
+  checksum?: string;
 }
 
 export interface SearchResultItem {

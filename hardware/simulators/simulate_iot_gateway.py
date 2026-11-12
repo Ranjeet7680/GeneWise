@@ -3,7 +3,7 @@ Edge Computing & IoT Hardware Gateway Simulator.
 
 Simulates a Raspberry Pi 5 / ESP32-S3 Medical Gateway running edge packet verification.
 Transmits ambient clinic telemetry (room temperature, relative humidity, air quality index)
-and bridges peripheral multiplexed sensor packets to the MediPredict AI
+and bridges peripheral multiplexed sensor packets to the GeneWise
 Section 10 IoT Ingestion Endpoint.
 """
 
@@ -71,7 +71,7 @@ class IoTGatewaySimulator:
             headers["Authorization"] = f"Bearer {self.auth_token}"
 
         print(f"\n=======================================================")
-        print(f"  MediPredict AI - Edge IoT Gateway Telemetry")
+        print(f"  GeneWise - Edge IoT Gateway Telemetry")
         print(f"  Gateway ID:  {self.gateway_id}")
         print(f"  Metrics:     Temp={payload['value']}°C | Humidity={payload['secondary_value']}%")
         print(f"  Target:      {self.api_base}/ingestion/iot")

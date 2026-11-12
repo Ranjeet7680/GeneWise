@@ -42,7 +42,7 @@ class AIProviderFactory:
 
         return {
             "clinical_evidence": {
-                "name": "MediPredict Evidence Engine",
+                "name": "GeneWise Evidence Engine",
                 "configured": True,
                 "model": "v1.0 (PubMed/Guideline Grounded)",
                 "description": "Offline deterministic medical intelligence engine grounded in peer-reviewed clinical guidelines and lab ranges.",

@@ -127,19 +127,36 @@ export default function HealthMetricsPage() {
       points.shift();
       points.push(val);
 
-      // Draw trace
+      // Draw glowing ECG trace with clinical phosphor persistence
       ctx.beginPath();
-      ctx.strokeStyle = "#10b981"; // clinical emerald
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#2dd4bf"; // luminous clinical cyan/emerald
+      ctx.lineWidth = 2.2;
       ctx.shadowColor = "#10b981";
-      ctx.shadowBlur = 4;
+      ctx.shadowBlur = 8;
 
       for (let i = 0; i < points.length; i++) {
         if (i === 0) ctx.moveTo(i, points[i]);
         else ctx.lineTo(i, points[i]);
       }
       ctx.stroke();
+
+      // Lead tracing head pulse
+      if (points.length > 0) {
+        const lastIdx = points.length - 1;
+        const lastY = points[lastIdx];
+        ctx.beginPath();
+        ctx.arc(lastIdx, lastY, 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.shadowColor = "#2dd4bf";
+        ctx.shadowBlur = 12;
+        ctx.fill();
+      }
       ctx.shadowBlur = 0;
+
+      // Realistic cardiac rhythm telemetry fluctuation
+      if (step % 120 === 0) {
+        setBpm(Math.floor(71 + Math.sin(step / 60) * 3));
+      }
 
       step++;
       animId = requestAnimationFrame(render);
@@ -211,10 +228,29 @@ export default function HealthMetricsPage() {
   const safeMetrics = Array.isArray(metrics) ? metrics : [];
   const safeSummaries = Array.isArray(summaries) ? summaries : [];
 
+  // Dynamic metric configuration per tab
+  const metricConfig = React.useMemo(() => {
+    switch (activeMetricTab) {
+      case "blood_pressure":
+        return { name: "Blood Pressure", unit: "mmHg", isDual: true, primaryLabel: "Systolic", secondaryLabel: "Diastolic" };
+      case "blood_glucose":
+        return { name: "Blood Glucose", unit: "mg/dL", isDual: false, primaryLabel: "Fasting Glucose", secondaryLabel: "" };
+      case "heart_rate":
+        return { name: "Heart Rate", unit: "bpm", isDual: false, primaryLabel: "Resting Pulse", secondaryLabel: "" };
+      case "hba1c":
+        return { name: "HbA1c Glycated Hemoglobin", unit: "%", isDual: false, primaryLabel: "HbA1c", secondaryLabel: "" };
+      case "weight":
+        return { name: "Body Weight", unit: "kg", isDual: false, primaryLabel: "Weight", secondaryLabel: "" };
+      default:
+        return { name: "Blood Pressure", unit: "mmHg", isDual: true, primaryLabel: "Systolic", secondaryLabel: "Diastolic" };
+    }
+  }, [activeMetricTab]);
+
   // Filtered readings for chart
-  const chartData = safeMetrics.filter(
-    (m) => m && (activeMetricTab === "all" || m.metric_type === activeMetricTab)
-  );
+  const chartData = React.useMemo(() => {
+    const targetType = activeMetricTab === "all" ? "blood_pressure" : activeMetricTab;
+    return safeMetrics.filter((m) => m && m.metric_type === targetType);
+  }, [safeMetrics, activeMetricTab]);
 
   return (
     <div className="min-h-screen flex flex-col bg-surface text-foreground transition-colors duration-200">
@@ -331,12 +367,18 @@ export default function HealthMetricsPage() {
                     sound.playClick();
                     setActiveMetricTab(s.metric_type);
                   }}
-                  className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all ${
+                  className={`p-3.5 rounded-xl border text-xs cursor-pointer transition-all duration-300 smooth-card relative overflow-hidden group ${
                     activeMetricTab === s.metric_type
-                      ? "border-primary bg-white dark:bg-[#162732] shadow-sm ring-1 ring-primary/20 scale-[1.02]"
-                      : "bg-surface-low/50 dark:bg-[#111d24]/50 hover:bg-surface-low dark:hover:bg-[#162732] border-border"
+                      ? "border-primary bg-white dark:bg-[#162732] shadow-md ring-2 ring-primary/30 scale-[1.02]"
+                      : "bg-surface-low/50 dark:bg-[#111d24]/50 hover:bg-surface-low dark:hover:bg-[#162732] border-border hover:border-primary/40"
                   }`}
                 >
+                  {/* Subtle active top gradient bar */}
+                  <div
+                    className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent transition-opacity duration-300 ${
+                      activeMetricTab === s.metric_type ? "opacity-100" : "opacity-0 group-hover:opacity-60"
+                    }`}
+                  />
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-semibold text-muted-foreground capitalize text-[10px]">
                       {s.metric_type.replace("_", " ")}
@@ -401,11 +443,11 @@ export default function HealthMetricsPage() {
             {chartData.length > 0 ? (
               <HealthTrendChart
                 data={chartData}
-                unit={chartData[0]?.unit || ""}
-                metricName={activeMetricTab.replace("_", " ")}
-                isDualValue={activeMetricTab === "blood_pressure"}
-                primaryLabel={activeMetricTab === "blood_pressure" ? "Systolic" : "Reading"}
-                secondaryLabel="Diastolic"
+                unit={metricConfig.unit}
+                metricName={metricConfig.name}
+                isDualValue={metricConfig.isDual}
+                primaryLabel={metricConfig.primaryLabel}
+                secondaryLabel={metricConfig.secondaryLabel}
               />
             ) : (
               <div className="h-64 flex items-center justify-center text-xs text-muted-foreground">

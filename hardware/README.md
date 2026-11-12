@@ -1,4 +1,4 @@
-# MediPredict AI — Hardware & Connected Healthcare Simulators
+# GeneWise — Hardware & Connected Healthcare Simulators
 
 This module provides reference simulators for embedded medical sensors, consumer wearables, and clinical IoT gateways conforming to the **Section 10 Unified Health Data Ingestion Standard**.
 

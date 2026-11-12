@@ -85,7 +85,7 @@ class ClinicalEvidenceProvider(BaseAIProvider):
                 "sources": [],
                 "safety_alerts": safety_alerts,
                 "provider": "clinical_evidence",
-                "model": "MediPredict Evidence Engine v1.0",
+                "model": "GeneWise Evidence Engine v1.0",
             }
 
         # Match evidence topics
@@ -167,7 +167,7 @@ class ClinicalEvidenceProvider(BaseAIProvider):
             "sources": matched_sources,
             "safety_alerts": safety_alerts,
             "provider": "clinical_evidence",
-            "model": "MediPredict Evidence Engine v1.0",
+            "model": "GeneWise Evidence Engine v1.0",
         }
 
     async def interpret_report(

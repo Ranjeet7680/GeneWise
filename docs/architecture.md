@@ -1,7 +1,7 @@
-# MediPredict AI — System Architecture & Design Specification
+# GeneWise — System Architecture & Design Specification
 
 ## 1. High-Level Architecture Overview
-MediPredict AI is built as an enterprise full-stack clinical intelligence and healthcare research platform. The system combines modern reactive frontend presentation with a resilient asynchronous Python backend, machine learning research pipelines, and an evidence-grounded medical RAG subsystem.
+GeneWise is built as an enterprise full-stack clinical intelligence, genomics literacy, and healthcare research platform. The system combines modern reactive frontend presentation with a resilient asynchronous Python backend, machine learning research pipelines, and an evidence-grounded medical RAG subsystem.
 
 ```
                            +---------------------------+
@@ -36,7 +36,7 @@ MediPredict AI is built as an enterprise full-stack clinical intelligence and he
 ### B. Backend Services Layer (`backend/app/`)
 - **FastAPI Core:** Centralized dependency injection (`get_db`, `get_current_user`), unified error handlers for IDOR/validation/safety exceptions.
 - **Database Engine:** SQLAlchemy 2.0 with Alembic versioning. Supports PostgreSQL with pgvector in production and SQLite with WAL mode for local developer environments.
-- **AI Provider Abstraction:** Factory pattern supporting Google Gemini (official Gen AI API), OpenAI, Local endpoints, and the deterministic MediPredict Evidence Engine.
+- **AI Provider Abstraction:** Factory pattern supporting Google Gemini (official Gen AI API), OpenAI, Local endpoints, and the deterministic GeneWise Evidence Engine.
 - **Document Processing Pipeline:** Multi-format parser (PDF, CSV, clinical text) extracting numerical biomarker values, units, reference intervals, abnormal flags, and verification statuses.
 
 ### C. ML Research Module (`ml/`)

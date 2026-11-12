@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
-  AlertCircle,
   ArrowRight,
   BookOpen,
   Bot,
+  BrainCircuit,
   Check,
+  ChevronDown,
+  ChevronUp,
   Copy,
+  Download,
   ExternalLink,
-  FileText,
   Loader2,
   MessageSquare,
   Mic,
@@ -20,21 +22,37 @@ import {
   Paperclip,
   Plus,
   Printer,
-  RefreshCw,
+  Radio,
+  Search,
   Send,
+  Share2,
   ShieldAlert,
   ShieldCheck,
+  Shuffle,
+  SlidersHorizontal,
   Sparkles,
   Trash2,
   User as UserIcon,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import AppSidebar from "@/components/AppSidebar";
 import SafetyNotice from "@/components/SafetyNotice";
+import ClinicalMarkdown from "@/components/ClinicalMarkdown";
+import BiLstmTrajectoryCard from "@/components/BiLstmTrajectoryCard";
+import ExportPrintShareModal from "@/components/ExportPrintShareModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import {
+  AI_ENGINE_PROFILES,
+  BIOMARKER_LSTM_PRESETS,
+  getEngineProfile,
+  runBiLstmForecast,
+} from "@/lib/clinical-lstm";
+import { ExportableMessageItem, normalizeMessagesForExport } from "@/lib/export-share";
+import { sound } from "@/lib/sound";
 import {
   CeliacRiskResponse,
   Conversation,
@@ -43,11 +61,117 @@ import {
   ProviderStatus,
 } from "@/types";
 
-const SUGGESTED_PROMPTS = [
-  "Explain celiac disease serology (tTG-IgA, total IgA, and Marsh stages).",
-  "What do elevated transferrin saturation and ferritin indicate?",
-  "Explain the difference between Fasting Glucose and HbA1c in diabetes.",
-  "What is the clinical significance of HFE gene variants (C282Y / H63D)?",
+interface CategorizedPrompt {
+  category: string;
+  badge: string;
+  title: string;
+  prompt: string;
+  recommendedEngine?: string;
+  biomarkerFocus?: string;
+}
+
+const CATEGORIZED_PROMPTS: CategorizedPrompt[] = [
+  {
+    category: "LSTM Forecasting",
+    badge: "Bi-LSTM 90d Sequence",
+    title: "HbA1c 90-Day Longitudinal Trajectory",
+    prompt: "Run a Bi-LSTM 90-day sequence forecast for HbA1c (6.2%) and Fasting Glucose (118 mg/dL) progression.",
+    recommendedEngine: "lstm_temporal",
+    biomarkerFocus: "hba1c",
+  },
+  {
+    category: "LSTM Forecasting",
+    badge: "Bi-LSTM Antibody Kinetic",
+    title: "Anti-tTG IgA Serology Velocity Prediction",
+    prompt: "Predict the 90-day Anti-tTG IgA antibody trajectory using Bi-LSTM and explain pre-biopsy thresholds.",
+    recommendedEngine: "hybrid_rag_lstm",
+    biomarkerFocus: "ttg_iga",
+  },
+  {
+    category: "Gastroenterology",
+    badge: "ACG 2023 Grade 1A",
+    title: "Celiac Disease Serology & Biopsy Protocol",
+    prompt: "Explain celiac disease serology (tTG-IgA, total IgA, and Marsh stages).",
+    recommendedEngine: "clinical_evidence",
+  },
+  {
+    category: "Endocrinology",
+    badge: "ADA 2024 Standards",
+    title: "Glycemic Targets & HbA1c Discordance",
+    prompt: "Explain the difference between Fasting Glucose and HbA1c in diabetes.",
+    recommendedEngine: "hybrid_rag_lstm",
+  },
+  {
+    category: "Cardiology",
+    badge: "AHA/ACC 2023",
+    title: "ApoB & Atherosclerotic Plaque Progression",
+    prompt: "What do elevated ApoB and LDL-P indicate in cardiovascular risk?",
+    recommendedEngine: "hybrid_rag_lstm",
+    biomarkerFocus: "apob",
+  },
+  {
+    category: "Medical Genetics",
+    badge: "ACMG Curated",
+    title: "HFE Gene Variants & Hemochromatosis",
+    prompt: "What is the clinical significance of HFE gene variants (C282Y / H63D)?",
+    recommendedEngine: "clinical_evidence",
+  },
+  {
+    category: "Biomarker Triaging",
+    badge: "Hematology Guidelines",
+    title: "Ferritin & Transferrin Saturation",
+    prompt: "What do elevated transferrin saturation and ferritin indicate?",
+    recommendedEngine: "lstm_temporal",
+    biomarkerFocus: "ferritin",
+  },
+  {
+    category: "Hepatology",
+    badge: "AASLD 2023",
+    title: "MASLD / MASH Non-Invasive Staging",
+    prompt: "How does the FIB-4 index calculate advanced liver fibrosis risk?",
+    recommendedEngine: "clinical_evidence",
+  },
+  {
+    category: "Endocrinology",
+    badge: "Prediabetes Protocol",
+    title: "Metformin Thresholds in Impaired Fasting Glucose",
+    prompt: "Analyze Fasting Glucose 118 mg/dL and HbA1c 6.2%: when does ADA 2024 advise lifestyle vs Metformin?",
+    recommendedEngine: "hybrid_rag_lstm",
+  },
+  {
+    category: "Cardiology",
+    badge: "Lipidomics + Bi-LSTM",
+    title: "Lp(a) & ApoB Discordant Risk Stratification",
+    prompt: "Forecast ApoB 112 mg/dL trend over 90 days and explain when to test Lipoprotein(a).",
+    recommendedEngine: "lstm_temporal",
+    biomarkerFocus: "apob",
+  },
+  {
+    category: "Gastroenterology",
+    badge: "Genetics + HLA-DQ",
+    title: "HLA-DQ2 / DQ8 Rule-Out Negative Predictive Value",
+    prompt: "When does HLA-DQ2 and HLA-DQ8 genetic testing help rule out celiac disease?",
+    recommendedEngine: "clinical_evidence",
+  },
+  {
+    category: "Biomarker Triaging",
+    badge: "Telemetry + LSTM",
+    title: "Ambulatory Systolic BP Drift & Variability",
+    prompt: "Evaluate nocturnal heart rate 72 bpm and systolic BP 122 mmHg trajectory with Bi-LSTM.",
+    recommendedEngine: "lstm_temporal",
+    biomarkerFocus: "systolic_bp",
+  },
+];
+
+const PROMPT_CATEGORIES = [
+  "All",
+  "LSTM Forecasting",
+  "Gastroenterology",
+  "Endocrinology",
+  "Cardiology",
+  "Medical Genetics",
+  "Biomarker Triaging",
+  "Hepatology",
 ];
 
 export default function AssistantPage() {
@@ -63,6 +187,24 @@ export default function AssistantPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [activePromptCategory, setActivePromptCategory] = useState<string>("All");
+  const [promptQuery, setPromptQuery] = useState<string>("");
+  const [promptRotationSeed, setPromptRotationSeed] = useState<number>(0);
+  const [convSearch, setConvSearch] = useState<string>("");
+  const [showPatientDossier, setShowPatientDossier] = useState<boolean>(false);
+  const [expandedTraces, setExpandedTraces] = useState<Record<number, boolean>>({});
+
+  // Export, Print Only & Social Share Modal
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
+  const [exportFocusMsg, setExportFocusMsg] = useState<ExportableMessageItem | null>(null);
+  const [exportScope, setExportScope] = useState<"single" | "all">("single");
+
+  // Interactive Bi-LSTM Temporal Biomarker Forecaster Modal
+  const [showLstmModal, setShowLstmModal] = useState<boolean>(false);
+  const [selectedBiomarkerKey, setSelectedBiomarkerKey] = useState<string>("hba1c");
+  const [customLstmSeries, setCustomLstmSeries] = useState<number[]>(
+    BIOMARKER_LSTM_PRESETS.hba1c.history
+  );
 
   // ML Risk Tool Modal
   const [showMlModal, setShowMlModal] = useState(false);
@@ -83,7 +225,68 @@ export default function AssistantPage() {
   const [mlResult, setMlResult] = useState<CeliacRiskResponse | null>(null);
   const [mlLoading, setMlLoading] = useState(false);
 
+  const [isListening, setIsListening] = useState(false);
+  const [speakingId, setSpeakingId] = useState<number | null>(null);
+  const [typingMessageId, setTypingMessageId] = useState<number | null>(null);
+  const [typedLength, setTypedLength] = useState<number>(0);
+  const [thinkingStage, setThinkingStage] = useState<number>(0);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stopTypingAnimation = () => {
+    if (typingTimerRef.current) {
+      clearInterval(typingTimerRef.current);
+      typingTimerRef.current = null;
+    }
+    setTypingMessageId(null);
+  };
+
+  const startTypingAnimation = (msg: Message) => {
+    stopTypingAnimation();
+    const fullText = msg.content || "";
+    if (!fullText) return;
+
+    setTypingMessageId(msg.id);
+    setTypedLength(Math.min(fullText.length, 24));
+
+    const totalLen = fullText.length;
+    const stepSize = Math.max(14, Math.ceil(totalLen / 28));
+    let cursor = Math.min(totalLen, 24);
+
+    typingTimerRef.current = setInterval(() => {
+      cursor = Math.min(totalLen, cursor + stepSize);
+      // Snap forward cleanly to next whitespace boundary for word-by-word flow
+      if (cursor < totalLen) {
+        const nextSpace = fullText.indexOf(" ", cursor);
+        if (nextSpace !== -1 && nextSpace - cursor <= 12) {
+          cursor = nextSpace + 1;
+        }
+      }
+      setTypedLength(cursor);
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      if (cursor >= totalLen) {
+        stopTypingAnimation();
+      }
+    }, 20);
+  };
+
+  useEffect(() => {
+    if (!isSending) {
+      setThinkingStage(0);
+      return;
+    }
+    const phaseTimer = setInterval(() => {
+      setThinkingStage((prev) => (prev + 1) % 3);
+    }, 550);
+    return () => clearInterval(phaseTimer);
+  }, [isSending]);
+
+  useEffect(() => {
+    return () => {
+      stopTypingAnimation();
+    };
+  }, []);
 
   useEffect(() => {
     loadInitialData();
@@ -114,6 +317,7 @@ export default function AssistantPage() {
   };
 
   const selectConversation = async (id: number) => {
+    stopTypingAnimation();
     setActiveConvId(id);
     try {
       const detail = await api.getConversation(id);
@@ -124,6 +328,7 @@ export default function AssistantPage() {
   };
 
   const startNewConversation = async () => {
+    stopTypingAnimation();
     try {
       const newConv = await api.createConversation("New Consultation");
       setConversations((prev) => [newConv, ...prev]);
@@ -152,17 +357,35 @@ export default function AssistantPage() {
     }
   };
 
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = async (textToSend?: string, overrideProvider?: string) => {
     const text = textToSend || inputText;
-    if (!text.trim() || !activeConvId || isSending) return;
+    if (!text.trim() || isSending) return;
+
+    const engineToUse = overrideProvider || selectedProvider;
+    if (overrideProvider && overrideProvider !== selectedProvider) {
+      setSelectedProvider(overrideProvider);
+    }
+
+    sound.playClick();
+    let currentId = activeConvId;
+    if (!currentId) {
+      try {
+        const newConv = await api.createConversation("Clinical Consultation");
+        setConversations((prev) => [newConv, ...prev]);
+        setActiveConvId(newConv.id);
+        currentId = newConv.id;
+      } catch {
+        currentId = 1;
+        setActiveConvId(1);
+      }
+    }
 
     setInputText("");
     setIsSending(true);
 
-    // Optimistic UI for user message
     const tempUserMsg: Message = {
       id: Date.now(),
-      conversation_id: activeConvId,
+      conversation_id: currentId,
       role: "user",
       content: text,
       created_at: new Date().toISOString(),
@@ -171,19 +394,18 @@ export default function AssistantPage() {
 
     try {
       const responseMsg = await api.sendMessage(
-        activeConvId,
+        currentId,
         text,
-        selectedProvider,
+        engineToUse,
         selectedReportId
       );
       setMessages((prev) => [...prev.slice(0, -1), tempUserMsg, responseMsg]);
-      // Update title in sidebar
+      startTypingAnimation(responseMsg);
       api.listConversations().then(setConversations);
     } catch (err: any) {
-      // Show error in chat
       const errorMsg: Message = {
         id: Date.now() + 1,
-        conversation_id: activeConvId,
+        conversation_id: currentId,
         role: "assistant",
         content: `Error generating response: ${err.message || "Failed to communicate with provider."}`,
         safety_alerts: ["Provider communication error."],
@@ -202,12 +424,10 @@ export default function AssistantPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const [isListening, setIsListening] = useState(false);
-  const [speakingId, setSpeakingId] = useState<number | null>(null);
-
   const toggleVoiceInput = () => {
     if (typeof window === "undefined") return;
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition is not supported in this browser. Please use Chrome or Edge.");
       return;
@@ -255,10 +475,16 @@ export default function AssistantPage() {
     window.speechSynthesis.speak(utterance);
   };
 
-  const handleExportConversation = () => {
-    if (typeof window !== "undefined") {
-      window.print();
+  const openExportModal = (scope: "single" | "all", focusMsg?: Message) => {
+    sound.playClick();
+    setExportScope(scope);
+    if (focusMsg) {
+      const [normalized] = normalizeMessagesForExport([focusMsg]);
+      setExportFocusMsg(normalized);
+    } else {
+      setExportFocusMsg(null);
     }
+    setShowExportModal(true);
   };
 
   const handleRunMlPrediction = async (e: React.FormEvent) => {
@@ -274,6 +500,59 @@ export default function AssistantPage() {
     }
   };
 
+  const handleSelectBiomarkerPreset = (key: string) => {
+    const preset = BIOMARKER_LSTM_PRESETS[key] || BIOMARKER_LSTM_PRESETS.hba1c;
+    setSelectedBiomarkerKey(preset.key);
+    setCustomLstmSeries([...preset.history]);
+  };
+
+  const activeEngine = getEngineProfile(selectedProvider);
+  const activeConversation = conversations.find((c) => c.id === activeConvId);
+  const normalizedAllMessages = useMemo(
+    () => normalizeMessagesForExport(messages),
+    [messages]
+  );
+
+  const liveLstmForecast = useMemo(
+    () => runBiLstmForecast(selectedBiomarkerKey, customLstmSeries),
+    [selectedBiomarkerKey, customLstmSeries]
+  );
+
+  const filteredConversations = useMemo(() => {
+    const q = convSearch.trim().toLowerCase();
+    if (!q) return conversations;
+    return conversations.filter((c) => c.title.toLowerCase().includes(q));
+  }, [conversations, convSearch]);
+
+  const filteredPrompts = useMemo(() => {
+    const q = promptQuery.trim().toLowerCase();
+    const list = CATEGORIZED_PROMPTS.filter((item) => {
+      const catOk = activePromptCategory === "All" || item.category === activePromptCategory;
+      const textOk =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        item.prompt.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        item.badge.toLowerCase().includes(q);
+      return catOk && textOk;
+    });
+    if (promptRotationSeed === 0 || list.length <= 1) return list;
+    const shift = promptRotationSeed % list.length;
+    return [...list.slice(shift), ...list.slice(0, shift)];
+  }, [activePromptCategory, promptQuery, promptRotationSeed]);
+
+  const latestFollowUps = useMemo(() => {
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    if (lastAssistant?.follow_up_questions && lastAssistant.follow_up_questions.length > 0) {
+      return lastAssistant.follow_up_questions;
+    }
+    return [
+      "Run Bi-LSTM 90-day HbA1c forecast",
+      "Explain tTG-IgA 48.2 U/mL vs Total IgA",
+      "Prepare doctor visit questions from labs",
+    ];
+  }, [messages]);
+
   return (
     <div className="min-h-screen flex flex-col bg-surface text-foreground">
       <AppHeader />
@@ -281,27 +560,40 @@ export default function AssistantPage() {
       <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
 
-        {/* Conversation Sidebar */}
-        <aside className="w-64 border-r border-border bg-white dark:bg-[#1a2e38] flex flex-col shrink-0 hidden md:flex">
-          <div className="p-3 border-b border-border flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground">Consultations</span>
-            <button
-              onClick={startNewConversation}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container transition-all shadow-xs"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New</span>
-            </button>
+        {/* Consultations & AI Model Sidebar */}
+        <aside className="w-68 border-r border-border bg-white dark:bg-[#1a2e38] flex-col shrink-0 hidden md:flex">
+          <div className="p-3 border-b border-border space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground">Consultations</span>
+              <button
+                onClick={startNewConversation}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container transition-all shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New</span>
+              </button>
+            </div>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={convSearch}
+                onChange={(e) => setConvSearch(e.target.value)}
+                placeholder="Search threads..."
+                aria-label="Search consultations"
+                className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-border bg-surface-low text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
-            {conversations.map((c) => (
+            {filteredConversations.map((c) => (
               <div
                 key={c.id}
                 onClick={() => selectConversation(c.id)}
                 className={`group flex items-center justify-between p-2.5 rounded-lg text-xs cursor-pointer transition-all ${
                   activeConvId === c.id
-                    ? "bg-surface-low dark:bg-surface-variant/30 text-primary font-semibold border border-primary/20"
+                    ? "bg-surface-low dark:bg-surface-variant/30 text-primary font-semibold border border-primary/20 shadow-2xs"
                     : "text-foreground hover:bg-surface-low/50"
                 }`}
               >
@@ -323,6 +615,32 @@ export default function AssistantPage() {
             ))}
           </div>
 
+          {/* Interactive Bi-LSTM Temporal Forecaster Card */}
+          <div className="px-3 py-2.5 mx-2 mt-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/80 to-teal-50/40 dark:from-indigo-950/30 dark:to-teal-950/20 text-xs space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1">
+                <BrainCircuit className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                Bi-LSTM Sequence
+              </span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold">
+                AUC 0.958
+              </span>
+            </div>
+            <p className="text-[10px] text-indigo-900/80 dark:text-indigo-300/90">
+              2-Layer LSTM 90-day biomarker forecasting & attention gates.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setShowLstmModal(true);
+              }}
+              className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+            >
+              Open Bi-LSTM Forecaster
+            </button>
+          </div>
+
           {/* ML Risk Research Tool Banner */}
           <div className="p-3 m-2 rounded-xl border border-teal-200 bg-teal-50 dark:bg-teal-950/20 text-xs space-y-1.5">
             <div className="flex items-center justify-between">
@@ -338,7 +656,7 @@ export default function AssistantPage() {
             </p>
             <button
               onClick={() => setShowMlModal(true)}
-              className="w-full py-1 text-center font-semibold text-[11px] rounded bg-primary text-white hover:bg-primary-container transition-colors"
+              className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-primary text-white hover:bg-primary-container transition-colors"
             >
               Open Research Model
             </button>
@@ -347,128 +665,355 @@ export default function AssistantPage() {
 
         {/* Main Chat Workspace */}
         <main className="flex-1 flex flex-col bg-surface-low/20 overflow-hidden">
-          {/* Top Assistant Status Bar */}
-          <div className="px-4 py-2.5 border-b border-border bg-white dark:bg-[#1a2e38] flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold">
-                <Bot className="w-4 h-4" />
+          {/* Top Assistant Status & AI Engine Switcher Bar */}
+          <div className="px-4 py-2.5 border-b border-border bg-white/95 dark:bg-[#1a2e38]/95 backdrop-blur-sm space-y-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center font-bold shadow-xs">
+                  <Bot className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-foreground leading-tight">
+                      GeneWise Clinical Intelligence
+                    </p>
+                    <span className="hidden lg:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25">
+                      <BrainCircuit className="w-3 h-3" /> {activeEngine.aucLabel}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    {activeEngine.architecture} • {activeEngine.latencyLabel} • Evidence-Grounded
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-bold text-foreground leading-tight">
-                  MediPredict Clinical Intelligence
-                </p>
-                <p className="text-[10px] text-muted-foreground leading-tight">
-                  Evidence-Grounded • PubMed References • No Fabricated Citations
-                </p>
-              </div>
-            </div>
 
-            {/* Provider and Attachment Selectors */}
-            <div className="flex items-center gap-2">
-              {/* Real-time Voice Mode Launcher */}
-              <Link
-                href="/assistant/voice"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs hover:scale-105 transition-all"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                <span>🎙️ Real-Time Voice Mode</span>
-                <span className="text-[9px] bg-white/20 px-1.5 py-0.2 rounded-full hidden md:inline">13 Indian Languages</span>
-              </Link>
-              {/* Attachment */}
-              {reports.length > 0 && (
-                <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1 rounded-lg border border-border">
-                  <Paperclip className="w-3 h-3 text-muted-foreground" />
+              {/* Provider, Voice, Lab Report & Print/Share Controls */}
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href="/assistant/voice"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs hover:scale-[1.02] transition-all"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+                  <Radio className="w-3.5 h-3.5" />
+                  <span>Real-Time Voice Mode</span>
+                  <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full hidden xl:inline">
+                    13 Indian Languages
+                  </span>
+                </Link>
+
+                {reports.length > 0 && (
+                  <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
+                    <Paperclip className="w-3 h-3 text-muted-foreground" />
+                    <select
+                      aria-label="Attach medical lab report"
+                      value={selectedReportId || ""}
+                      onChange={(e) =>
+                        setSelectedReportId(e.target.value ? Number(e.target.value) : undefined)
+                      }
+                      className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none"
+                    >
+                      <option value="">Attach Lab Report (Optional)</option>
+                      {reports.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.title} ({r.measurement_count} tests)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
+                  <Sparkles className="w-3 h-3 text-primary" />
                   <select
-                    value={selectedReportId || ""}
-                    onChange={(e) =>
-                      setSelectedReportId(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none"
+                    aria-label="Select AI Model Engine"
+                    value={selectedProvider}
+                    onChange={(e) => setSelectedProvider(e.target.value)}
+                    className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none"
                   >
-                    <option value="">Attach Lab Report (Optional)</option>
-                    {reports.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.title} ({r.measurement_count} tests)
+                    {AI_ENGINE_PROFILES.map((eng) => (
+                      <option key={eng.id} value={eng.id}>
+                        {eng.name}
                       </option>
                     ))}
                   </select>
                 </div>
-              )}
 
-              {/* Provider dropdown */}
-              <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1 rounded-lg border border-border">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <select
-                  value={selectedProvider}
-                  onChange={(e) => setSelectedProvider(e.target.value)}
-                  className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none"
+                {/* Export / Print Only / Share */}
+                <button
+                  type="button"
+                  onClick={() => openExportModal(messages.length === 1 ? "single" : "all")}
+                  title="Print Message Only, Download PDF, or Share via WhatsApp"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all"
                 >
-                  <option value="clinical_evidence">
-                    MediPredict Evidence Engine (Offline Grounded)
-                  </option>
-                  <option value="gemini">Google Gemini (Gen AI)</option>
-                  <option value="openai">OpenAI GPT</option>
-                  <option value="local">Local Endpoint</option>
-                </select>
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print / Share / PDF</span>
+                </button>
               </div>
+            </div>
 
-              {/* Export / Print Conversation Button */}
-              <button
-                onClick={handleExportConversation}
-                title="Export or Print Clinical Consultation"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-surface-low text-[11px] font-semibold text-foreground hover:bg-surface-container transition-all"
-              >
-                <Printer className="w-3 h-3 text-muted-foreground" />
-                <span>Export PDF</span>
-              </button>
+            {/* Interactive Quick AI Engine Pills Strip */}
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1">
+                AI Model:
+              </span>
+              {AI_ENGINE_PROFILES.map((eng) => {
+                const isSelected = selectedProvider === eng.id;
+                const isConfigured =
+                  !providerStatus?.providers ||
+                  providerStatus.providers[eng.id]?.configured !== false;
+                return (
+                  <button
+                    key={eng.id}
+                    type="button"
+                    onClick={() => {
+                      sound.playSoft();
+                      setSelectedProvider(eng.id);
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 border transition-all ${
+                      isSelected
+                        ? "bg-teal-700 text-white border-teal-700 shadow-2xs scale-[1.02]"
+                        : "bg-surface-low/80 border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {eng.isLstm ? (
+                      <BrainCircuit className="w-3 h-3" />
+                    ) : (
+                      <Sparkles className="w-3 h-3" />
+                    )}
+                    <span>{eng.shortName}</span>
+                    {!isConfigured && (
+                      <span className="text-[9px] opacity-75">(Offline)</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Messages Stream */}
+          {/* Messages Stream or Enhanced Discovery Hero */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
-            {messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center max-w-md mx-auto space-y-4 py-8">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                  <Bot className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground">
-                    MediPredict AI Medical Assistant
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Ask questions about medical terms, lab measurements, or disease markers.
-                  </p>
+            {isLoading && messages.length === 0 ? (
+              <div className="h-full flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="max-w-4xl mx-auto space-y-5 py-2 animate-fade-in-up">
+                {/* Hero Card */}
+                <div className="rounded-2xl border border-border bg-gradient-to-br from-white via-teal-50/40 to-indigo-50/40 dark:from-[#1a2e38] dark:via-[#14262f] dark:to-[#182338] p-5 sm:p-6 shadow-xs text-center space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-700 to-indigo-600 text-white flex items-center justify-center shadow-sm mx-auto">
+                    <Bot className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-extrabold text-foreground tracking-tight">
+                      GeneWise AI Medical Assistant
+                    </h3>
+                    <p className="text-xs text-muted-foreground max-w-xl mx-auto">
+                      Ask questions about medical terms, lab measurements, or launch a{" "}
+                      <strong className="text-indigo-700 dark:text-indigo-300">
+                        Bi-LSTM longitudinal sequence forecast
+                      </strong>{" "}
+                      backed by PubMed clinical evidence.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        setShowPatientDossier(true);
+                      }}
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer shadow-2xs group"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      <span>Patient: Rajesh Kumar • Comprehensive Metabolic Panel Loaded</span>
+                      <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded text-emerald-800 dark:text-emerald-200 group-hover:scale-105 transition-transform">
+                        View EMR Panel -&gt;
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        setShowLstmModal(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-indigo-600/10 hover:bg-indigo-600/20 border border-indigo-500/30 text-indigo-800 dark:text-indigo-300 text-[11px] font-bold transition-all"
+                    >
+                      <BrainCircuit className="w-3.5 h-3.5" />
+                      <span>Interactive Bi-LSTM Lab Forecaster</span>
+                    </button>
+                  </div>
+
+                  {/* Patient-Matched Personalized Question Shortcuts */}
+                  <div className="pt-2 border-t border-border/60 flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+                    <span className="font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                      Patient Priority Prompts:
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSendMessage(
+                          "Forecast Rajesh Kumar's HbA1c (6.2%) and Glucose (118 mg/dL) with Bi-LSTM over 90 days.",
+                          "hybrid_rag_lstm"
+                        )
+                      }
+                      className="px-2.5 py-1 rounded-full bg-white dark:bg-[#14262f] border border-amber-400/50 text-amber-800 dark:text-amber-200 font-semibold hover:border-teal-600 transition-colors"
+                    >
+                      Bi-LSTM: HbA1c 6.2% + Glucose 118
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSendMessage(
+                          "Patient has tTG-IgA 48.2 U/mL with normal Total IgA (210 mg/dL). Evaluate biopsy need & Bi-LSTM trend.",
+                          "hybrid_rag_lstm"
+                        )
+                      }
+                      className="px-2.5 py-1 rounded-full bg-white dark:bg-[#14262f] border border-rose-400/50 text-rose-800 dark:text-rose-200 font-semibold hover:border-teal-600 transition-colors"
+                    >
+                      Bi-LSTM: tTG-IgA 48.2 U/mL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleSendMessage(
+                          "Forecast ApoB 112 mg/dL trajectory with Bi-LSTM and check AHA prevention threshold.",
+                          "lstm_temporal"
+                        )
+                      }
+                      className="px-2.5 py-1 rounded-full bg-white dark:bg-[#14262f] border border-indigo-400/50 text-indigo-800 dark:text-indigo-200 font-semibold hover:border-teal-600 transition-colors"
+                    >
+                      Bi-LSTM: ApoB 112 mg/dL
+                    </button>
+                  </div>
                 </div>
 
-                {/* Suggested Prompts */}
-                <div className="w-full space-y-2 pt-2 text-left">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                    Suggested Educational Inquiries
-                  </span>
-                  {SUGGESTED_PROMPTS.map((prompt, idx) => (
-                    <button
-                      key={prompt}
-                      onClick={() => handleSendMessage(prompt)}
-                      className={`w-full p-2.5 text-xs text-left rounded-xl border border-border bg-white dark:bg-[#1a2e38] hover:bg-surface-low hover:border-primary/40 hover:translate-x-1 transition-all duration-200 text-foreground flex items-center justify-between smooth-button ${
-                        idx < 5 ? `stagger-${idx + 1}` : ""
-                      }`}
-                    >
-                      <span className="line-clamp-1">{prompt}</span>
-                      <ArrowRight className="w-3 h-3 text-primary shrink-0 ml-2" />
-                    </button>
-                  ))}
+                {/* Categorized & Searchable Educational Inquiries */}
+                <div className="w-full space-y-3 text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                        SUGGESTED EDUCATIONAL INQUIRIES
+                      </span>
+                      <span className="text-[11px] text-primary font-semibold">
+                        Click any prompt to launch consult • Auto-selects optimal AI/Bi-LSTM engine
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={promptQuery}
+                          onChange={(e) => setPromptQuery(e.target.value)}
+                          placeholder="Filter questions..."
+                          aria-label="Filter suggested questions"
+                          className="pl-8 pr-3 py-1.5 rounded-full border border-border bg-white dark:bg-[#1a2e38] text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary w-44 sm:w-52"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          sound.playSoft();
+                          setPromptRotationSeed((s) => s + 2);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-border bg-white dark:bg-[#1a2e38] text-[11px] font-semibold text-foreground hover:border-primary/50 transition-colors"
+                        title="Rotate suggested questions"
+                      >
+                        <Shuffle className="w-3 h-3 text-primary" />
+                        <span>Shuffle</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Category Filter Pills */}
+                  <div className="flex items-center gap-1.5 flex-wrap py-0.5">
+                    {PROMPT_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        type="button"
+                        onClick={() => {
+                          sound.playSoft();
+                          setActivePromptCategory(cat);
+                        }}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 transition-all ${
+                          activePromptCategory === cat
+                            ? "bg-teal-700 text-white shadow-2xs scale-[1.03]"
+                            : "bg-white dark:bg-[#1a2e38] border border-border text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                    {filteredPrompts.map((item) => {
+                      const usesLstm =
+                        item.recommendedEngine === "lstm_temporal" ||
+                        item.recommendedEngine === "hybrid_rag_lstm";
+                      return (
+                        <button
+                          key={item.title}
+                          type="button"
+                          onClick={() =>
+                            handleSendMessage(item.prompt, item.recommendedEngine)
+                          }
+                          className="p-3.5 text-xs text-left rounded-xl border border-border bg-white dark:bg-[#1a2e38] hover:bg-surface-low hover:border-primary/50 transition-all duration-200 text-foreground flex flex-col justify-between group shadow-2xs hover:shadow-sm space-y-2"
+                        >
+                          <div className="flex items-center justify-between gap-2 w-full">
+                            <span className="text-[10px] font-semibold text-muted-foreground">
+                              {item.category}
+                            </span>
+                            <span
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full border font-mono ${
+                                usesLstm
+                                  ? "bg-indigo-600/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30"
+                                  : "bg-primary/10 text-primary border-primary/20"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground text-xs group-hover:text-primary transition-colors">
+                              {item.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1 leading-snug">
+                              {item.prompt}
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between w-full text-[10px] text-primary font-semibold pt-1 border-t border-border/40">
+                            <span className="text-muted-foreground">
+                              {usesLstm ? "Activates Bi-LSTM" : "PubMed Verified"}
+                            </span>
+                            <span className="flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                              Consult <ArrowRight className="w-3 h-3" />
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : (
               messages.map((m) => {
                 const isUser = m.role === "user";
+                const traceOpen = Boolean(expandedTraces[m.id]);
+                const isTypingThisMsg = !isUser && typingMessageId === m.id;
+                const displayContent = isTypingThisMsg
+                  ? m.content.slice(0, Math.max(1, typedLength))
+                  : m.content;
                 return (
                   <div
                     key={m.id}
                     className={`flex gap-3 max-w-3xl animate-fade-in-up ${isUser ? "ml-auto" : "mr-auto"}`}
                   >
                     {!isUser && (
-                      <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                         <Bot className="w-4 h-4" />
                       </div>
                     )}
@@ -476,11 +1021,39 @@ export default function AssistantPage() {
                     <div
                       className={`rounded-2xl p-4 text-xs space-y-3 shadow-xs ${
                         isUser
-                          ? "bg-primary text-white rounded-tr-none ml-12"
-                          : "bg-white dark:bg-[#1a2e38] border border-border text-foreground rounded-tl-none mr-12"
+                          ? "bg-primary text-white rounded-tr-none ml-8 sm:ml-12"
+                          : "bg-white dark:bg-[#1a2e38] border border-border text-foreground rounded-tl-none mr-4 sm:mr-10"
                       }`}
                     >
-                      {/* Safety Alerts / Warning Banner */}
+                      {/* Model Telemetry Header for Assistant Reply */}
+                      {!isUser && (m.model_used || m.confidence_score || isTypingThisMsg) && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/50 text-[10px]">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1.5 font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
+                              <BrainCircuit className="w-3 h-3" />
+                              {m.model_used || activeEngine.name}
+                            </span>
+                            {isTypingThisMsg && (
+                              <button
+                                type="button"
+                                onClick={stopTypingAnimation}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 font-bold hover:bg-indigo-500/20"
+                                title="Show full message immediately"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
+                                Typing... Show Full
+                              </button>
+                            )}
+                          </div>
+                          {typeof m.confidence_score === "number" && (
+                            <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                              Calibrated Confidence: {Math.round(m.confidence_score * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Safety Alerts */}
                       {m.safety_alerts && m.safety_alerts.length > 0 && (
                         <div className="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 text-red-900 dark:text-red-200 flex items-start gap-2 font-medium">
                           <ShieldAlert className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -488,8 +1061,60 @@ export default function AssistantPage() {
                         </div>
                       )}
 
-                      {/* Content */}
-                      <div className="whitespace-pre-line leading-relaxed">{m.content}</div>
+                      {/* Body */}
+                      {isUser ? (
+                        <div className="whitespace-pre-line leading-relaxed font-medium">{m.content}</div>
+                      ) : (
+                        <div className="relative">
+                          <ClinicalMarkdown content={displayContent} />
+                          {isTypingThisMsg && (
+                            <span
+                              data-testid="ai-typing-cursor"
+                              className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-teal-700 dark:text-teal-300"
+                            >
+                              <span className="inline-block w-1.5 h-3.5 rounded-xs bg-teal-600 dark:bg-teal-400 animate-pulse align-middle" />
+                              <span>Streaming clinical brief...</span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Inline Bi-LSTM Sequence Trajectory Card */}
+                      {!isUser && m.lstm_forecast && (
+                        <BiLstmTrajectoryCard forecast={m.lstm_forecast} compact />
+                      )}
+
+                      {/* Collapsible Clinical Reasoning Trace */}
+                      {!isUser && m.reasoning_trace && m.reasoning_trace.length > 0 && (
+                        <div className="rounded-xl border border-border/70 bg-surface-low/60 dark:bg-surface-variant/15 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedTraces((prev) => ({ ...prev, [m.id]: !traceOpen }))
+                            }
+                            className="w-full px-3 py-1.5 flex items-center justify-between text-[10px] font-bold text-foreground hover:bg-surface-low transition-colors"
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <SlidersHorizontal className="w-3 h-3 text-primary" />
+                              AI Reasoning & Verification Trace ({m.reasoning_trace.length} steps)
+                            </span>
+                            {traceOpen ? (
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                          {traceOpen && (
+                            <ul className="px-3 pb-2.5 pt-1 space-y-1 text-[10px] text-muted-foreground border-t border-border/50">
+                              {m.reasoning_trace.map((step, i) => (
+                                <li key={i} className="leading-snug">
+                                  {step}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      )}
 
                       {/* Cited Sources Grounding */}
                       {m.sources && m.sources.length > 0 && (
@@ -501,7 +1126,7 @@ export default function AssistantPage() {
                             {m.sources.map((src, idx) => (
                               <div
                                 key={idx}
-                                className="p-2 rounded-lg bg-surface-low/50 dark:bg-surface-variant/20 border border-border/50 text-[11px] flex items-center justify-between"
+                                className="p-2 rounded-lg bg-surface-low/50 dark:bg-surface-variant/20 border border-border/50 text-[11px] flex items-center justify-between gap-2"
                               >
                                 <div>
                                   <p className="font-semibold text-foreground">{src.title}</p>
@@ -516,7 +1141,7 @@ export default function AssistantPage() {
                                     href={src.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="p-1 text-primary hover:underline flex items-center gap-1 text-[10px]"
+                                    className="p-1 text-primary hover:underline flex items-center gap-1 text-[10px] shrink-0"
                                   >
                                     <span>PubMed</span>
                                     <ExternalLink className="w-3 h-3" />
@@ -528,14 +1153,49 @@ export default function AssistantPage() {
                         </div>
                       )}
 
-                      {/* Footer Actions for Assistant message */}
-                      {!isUser && (
-                        <div className="flex items-center justify-between pt-1 text-[10px] text-muted-foreground border-t border-border/40">
-                          <span className="flex items-center gap-1">
-                            <ShieldCheck className="w-3 h-3 text-secondary" /> Grounded Evidence
+                      {/* Next Follow-up Question Suggestions on Assistant Reply */}
+                      {!isUser && m.follow_up_questions && m.follow_up_questions.length > 0 && (
+                        <div className="pt-2 border-t border-border/40 space-y-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                            Suggested Follow-Up Questions
                           </span>
-                          <div className="flex items-center gap-3">
+                          <div className="flex flex-wrap gap-1.5">
+                            {m.follow_up_questions.map((fq) => (
+                              <button
+                                key={fq}
+                                type="button"
+                                onClick={() =>
+                                  handleSendMessage(
+                                    fq,
+                                    fq.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
+                                  )
+                                }
+                                className="text-left px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-border hover:border-teal-600/40 text-[10px] font-semibold text-foreground transition-colors"
+                              >
+                                + {fq}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Per-Message Action Bar: Print Only, Download PDF, WhatsApp/Social Share, Copy & Listen */}
+                      <div
+                        className={`flex flex-wrap items-center justify-between gap-2 pt-2 text-[10px] border-t ${
+                          isUser
+                            ? "border-white/20 text-white/90"
+                            : "border-border/50 text-muted-foreground"
+                        }`}
+                      >
+                        <span className="flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3" />
+                          {isUser ? "Query Message" : "Grounded Evidence"}
+                        </span>
+
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          {!isUser && (
                             <button
+                              type="button"
                               onClick={() => toggleSpeakMessage(m.id, m.content)}
                               className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
                               title="Text-to-speech audio readout"
@@ -552,26 +1212,57 @@ export default function AssistantPage() {
                                 </>
                               )}
                             </button>
+                          )}
 
-                            <button
-                              onClick={() => copyToClipboard(m.content, m.id)}
-                              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
-                            >
-                              {copiedId === m.id ? (
-                                <>
-                                  <Check className="w-3 h-3 text-emerald-600" />
-                                  <span>Copied</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3 h-3" />
-                                  <span>Copy</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(m.content, m.id)}
+                            className={`inline-flex items-center gap-1 transition-colors ${
+                              isUser ? "hover:text-white" : "hover:text-foreground"
+                            }`}
+                          >
+                            {copiedId === m.id ? (
+                              <>
+                                <Check className="w-3 h-3 text-emerald-500" />
+                                <span>Copied</span>
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="w-3 h-3" />
+                                <span>Copy</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => openExportModal("single", m)}
+                            className={`inline-flex items-center gap-1 font-semibold transition-colors ${
+                              isUser
+                                ? "hover:text-white"
+                                : "text-teal-700 dark:text-teal-300 hover:underline"
+                            }`}
+                            title="Print this single message only, download PDF, or share on WhatsApp/Social"
+                          >
+                            <Printer className="w-3 h-3" />
+                            <span>Print Msg Only</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => openExportModal("single", m)}
+                            className={`inline-flex items-center gap-1 font-semibold transition-colors ${
+                              isUser
+                                ? "hover:text-white"
+                                : "text-indigo-700 dark:text-indigo-300 hover:underline"
+                            }`}
+                            title="Download single message PDF or share to WhatsApp & social media"
+                          >
+                            <Share2 className="w-3 h-3" />
+                            <span>PDF & Share</span>
+                          </button>
                         </div>
-                      )}
+                      </div>
                     </div>
 
                     {isUser && (
@@ -584,19 +1275,35 @@ export default function AssistantPage() {
               })
             )}
             {isSending && (
-              <div className="flex items-start gap-3 animate-in fade-in">
-                <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+              <div
+                data-testid="assistant-thinking-indicator"
+                className="flex items-start gap-3 animate-in fade-in max-w-3xl"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
                   <Bot className="w-4 h-4" />
                 </div>
-                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1a2e38] border border-border/80 shadow-xs space-y-2">
+                <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1a2e38] border border-teal-500/30 shadow-xs space-y-2 min-w-[260px]">
                   <div className="flex items-center gap-2 text-xs font-semibold text-primary">
                     <Sparkles className="w-3.5 h-3.5 animate-spin" />
-                    <span>Multi-Agent Supervisor synthesizing PubMed citations & guidelines...</span>
+                    <span>
+                      {[
+                        activeEngine.isLstm
+                          ? `${activeEngine.shortName} encoding 5-visit biomarker sequence...`
+                          : "GeneWise Supervisor routing query & checking reference ranges...",
+                        "Retrieving peer-reviewed PubMed & ClinVar evidence...",
+                        "Generating structured clinical literacy response...",
+                      ][thinkingStage]}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 pt-1">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.3s]"></div>
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce [animation-delay:-0.15s]"></div>
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-full bg-teal-600 animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"></div>
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground">
+                      GeneWise AI typing...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -605,9 +1312,89 @@ export default function AssistantPage() {
           </div>
 
           {/* Chat Input Bar */}
-          <div className="p-4 border-t border-border bg-white dark:bg-[#1a2e38]">
+          <div className="p-3.5 sm:p-4 border-t border-border bg-white dark:bg-[#1a2e38] space-y-2">
+            {/* Active Follow-Up Prompt Strip (when conversation is underway) */}
+            {messages.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-4xl mx-auto">
+                <span className="text-[10px] font-bold text-primary shrink-0 uppercase tracking-wider">
+                  Quick Ask:
+                </span>
+                {latestFollowUps.map((qText) => (
+                  <button
+                    key={qText}
+                    type="button"
+                    onClick={() =>
+                      handleSendMessage(
+                        qText,
+                        qText.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
+                      )
+                    }
+                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 transition-colors"
+                  >
+                    {qText}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Quick Action Clinical Toolbar */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-[11px] max-w-4xl mx-auto">
+              {reports.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedReportId(reports[0]?.id)}
+                  className={`px-2.5 py-1 rounded-full border transition-all inline-flex items-center gap-1.5 shrink-0 ${
+                    selectedReportId
+                      ? "bg-primary/10 text-primary border-primary/30 font-semibold"
+                      : "bg-surface-low border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Paperclip className="w-3 h-3" />
+                  <span>
+                    {selectedReportId
+                      ? `Attached: ${reports.find((r) => r.id === selectedReportId)?.title.slice(0, 18)}...`
+                      : "Attach Rajesh Kumar CMP"}
+                  </span>
+                </button>
+              )}
+              <Link
+                href="/assistant/voice"
+                className="px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+              >
+                <Radio className="w-3 h-3 animate-pulse" />
+                <span>13 Indian Languages Voice Mode</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowLstmModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+              >
+                <BrainCircuit className="w-3 h-3" />
+                <span>Bi-LSTM Forecaster (AUC 0.958)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMlModal(true)}
+                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+              >
+                <Microscope className="w-3 h-3 text-primary" />
+                <span>ML Celiac Risk Model (AUC 0.94)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openExportModal("single")}
+                className="px-2.5 py-1 rounded-full border border-border bg-surface-low text-foreground font-semibold hover:border-teal-600/40 transition-all inline-flex items-center gap-1.5 shrink-0"
+              >
+                <Download className="w-3 h-3 text-primary" />
+                <span>Export PDF / Share</span>
+              </button>
+            </div>
+
             {isListening && (
-              <div className="flex items-center justify-center gap-1 py-1.5 px-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-semibold mb-2 animate-in fade-in max-w-4xl mx-auto">
+              <div className="flex items-center justify-center gap-1 py-1.5 px-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-semibold max-w-4xl mx-auto">
                 <span>Listening to your medical question...</span>
                 <div className="flex items-center gap-0.5 ml-2 h-4">
                   <div className="w-1 bg-red-500 rounded-full animate-wave [animation-delay:0ms]"></div>
@@ -617,6 +1404,7 @@ export default function AssistantPage() {
                 </div>
               </div>
             )}
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -632,11 +1420,14 @@ export default function AssistantPage() {
                 className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
 
-              {/* Voice Input Microphone Button */}
               <button
                 type="button"
                 onClick={toggleVoiceInput}
-                title={isListening ? "Listening... click to stop recording" : "Voice dictation (Speech-to-Text)"}
+                title={
+                  isListening
+                    ? "Listening... click to stop recording"
+                    : "Voice dictation (Speech-to-Text)"
+                }
                 className={`smooth-button p-2.5 rounded-xl border transition-all ${
                   isListening
                     ? "bg-red-500 text-white border-red-600 animate-pulse shadow-sm"
@@ -661,6 +1452,141 @@ export default function AssistantPage() {
           </div>
         </main>
       </div>
+
+      {/* Message-Only Print, PDF Download & Social Media Share Modal */}
+      <ExportPrintShareModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        title={activeConversation?.title || "Clinical Health Consultation"}
+        patientName="Rajesh Kumar (MRN #92041)"
+        allMessages={normalizedAllMessages}
+        focusedMessage={exportFocusMsg}
+        initialScope={exportScope}
+      />
+
+      {/* Interactive Bi-LSTM Longitudinal Sequence Forecaster Modal */}
+      {showLstmModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Bi-LSTM Longitudinal Biomarker Sequence Forecaster"
+          onClick={() => setShowLstmModal(false)}
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#14262f] p-6 border border-border shadow-2xl space-y-4 my-6"
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-indigo-600 text-white">
+                  <BrainCircuit className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    Bi-LSTM Temporal Biomarker Forecaster
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    2-Layer Bidirectional LSTM (128 hidden units) • Conformal 95% horizon intervals
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLstmModal(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:bg-surface-low"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
+                  Select Biomarker Trajectory Sequence
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {Object.values(BIOMARKER_LSTM_PRESETS).map((preset) => (
+                    <button
+                      key={preset.key}
+                      type="button"
+                      onClick={() => handleSelectBiomarkerPreset(preset.key)}
+                      className={`px-3 py-1 rounded-full border text-[11px] font-semibold transition-all ${
+                        selectedBiomarkerKey === preset.key
+                          ? "bg-indigo-700 text-white border-indigo-700 shadow-2xs"
+                          : "bg-surface-low border-border text-foreground hover:border-indigo-500/50"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Editable 5-Visit Sequence Strip */}
+              <div className="p-3 rounded-xl bg-surface-low/60 border border-border space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                  5-Visit Input Sequence ({BIOMARKER_LSTM_PRESETS[selectedBiomarkerKey]?.unit})
+                </span>
+                <div className="grid grid-cols-5 gap-2">
+                  {customLstmSeries.map((val, idx) => (
+                    <div key={idx}>
+                      <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
+                        {BIOMARKER_LSTM_PRESETS[selectedBiomarkerKey]?.visitLabels[idx]?.replace(
+                          /\s*\([^)]*\)/,
+                          ""
+                        ) || `V${idx + 1}`}
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={val}
+                        onChange={(e) => {
+                          const parsed = parseFloat(e.target.value);
+                          setCustomLstmSeries((prev) =>
+                            prev.map((oldVal, i) =>
+                              i === idx ? (Number.isFinite(parsed) ? parsed : 0) : oldVal
+                            )
+                          );
+                        }}
+                        className="w-full px-2 py-1.5 rounded-lg border border-border bg-white dark:bg-[#1a2e38] text-xs font-mono font-bold text-foreground"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <BiLstmTrajectoryCard forecast={liveLstmForecast} />
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed bg-surface-low/50 p-2.5 rounded-xl border border-border">
+                {liveLstmForecast.clinicalSummary}
+              </p>
+
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setShowLstmModal(false)}
+                  className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-surface-low"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const summaryPrompt = `Analyze Bi-LSTM trajectory for ${liveLstmForecast.biomarkerLabel}: sequence [${customLstmSeries.join(", ")}] ${liveLstmForecast.unit}, projected +30d ${liveLstmForecast.projected30d} and +90d ${liveLstmForecast.projected90d} ${liveLstmForecast.unit}.`;
+                    setShowLstmModal(false);
+                    handleSendMessage(summaryPrompt, "hybrid_rag_lstm");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Send Trajectory to Hybrid RAG+LSTM AI</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ML Risk Model Calculator Modal */}
       {showMlModal && (
@@ -723,7 +1649,6 @@ export default function AssistantPage() {
                 </div>
               </div>
 
-              {/* Lab Serology Inputs */}
               <div className="p-3 rounded-xl bg-surface-low/50 dark:bg-surface-variant/20 border border-border space-y-2">
                 <span className="font-bold text-[11px] text-primary uppercase">
                   Immunoglobulin Serology Markers (g/L)
@@ -768,7 +1693,6 @@ export default function AssistantPage() {
                 </div>
               </div>
 
-              {/* Clinical Manifestations */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="block font-medium text-muted-foreground mb-1">Diarrhea</label>
@@ -830,7 +1754,6 @@ export default function AssistantPage() {
               </div>
             </form>
 
-            {/* Prediction Result Display */}
             {mlResult && (
               <div className="p-4 rounded-xl border border-border bg-surface-low/50 dark:bg-surface-variant/20 space-y-3 animate-in fade-in text-xs">
                 <div className="flex items-center justify-between pb-2 border-b border-border">
@@ -870,6 +1793,135 @@ export default function AssistantPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Interactive Patient Dossier Modal: Rajesh Kumar */}
+      {showPatientDossier && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-[#14262f] rounded-2xl border border-border shadow-2xl max-w-2xl w-full p-6 space-y-5 animate-scale-in max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                  <Activity className="w-5 h-5" />
+                </span>
+                <div>
+                  <h3 className="font-extrabold text-base text-foreground">
+                    Patient Dossier: Rajesh Kumar (MRN #92041)
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    48Y Male • BMI 27.4 • Vitals: BP 122/78 mmHg • HR 72 bpm • SpO2 98.4%
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPatientDossier(false)}
+                className="p-1 rounded-lg text-muted-foreground hover:bg-surface-low"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                Active Laboratory Serum & Antibody Readings
+              </span>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">Fasting Glucose</span>
+                  <span className="text-sm font-extrabold text-amber-900 dark:text-amber-200">118 mg/dL</span>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 block mt-0.5">Elevated (Pre-DM)</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">HbA1c Glycated</span>
+                  <span className="text-sm font-extrabold text-amber-900 dark:text-amber-200">6.2%</span>
+                  <span className="text-[10px] text-amber-700 dark:text-amber-400 block mt-0.5">Impaired Glucose</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">tTG-IgA Antibody</span>
+                  <span className="text-sm font-extrabold text-red-900 dark:text-red-200">48.2 U/mL</span>
+                  <span className="text-[10px] text-red-700 dark:text-red-400 block mt-0.5">Positive (Ref: &lt;10)</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">Total Serum IgA</span>
+                  <span className="text-sm font-extrabold text-emerald-800 dark:text-emerald-300">210 mg/dL</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 block mt-0.5">Normal (Deficiency Ruled Out)</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-low border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">ApoB (Cardio)</span>
+                  <span className="text-sm font-extrabold text-foreground">112 mg/dL</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">Borderline High</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-low border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">eGFR Renal</span>
+                  <span className="text-sm font-extrabold text-foreground">88 mL/min</span>
+                  <span className="text-[10px] text-emerald-600 block mt-0.5">Preserved Stage 1</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-low border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">ALT Transaminase</span>
+                  <span className="text-sm font-extrabold text-foreground">34 U/L</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">Normal</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-surface-low border border-border">
+                  <span className="text-[10px] text-muted-foreground font-semibold block">AST Transaminase</span>
+                  <span className="text-sm font-extrabold text-foreground">28 U/L</span>
+                  <span className="text-[10px] text-muted-foreground block mt-0.5">Normal</span>
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-2 border-t border-border">
+                <span className="text-[11px] font-bold text-foreground block">
+                  One-Tap Clinical Consultations for Rajesh Kumar:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      setShowPatientDossier(false);
+                      handleSendMessage(
+                        "Analyze Rajesh Kumar's Fasting Glucose (118 mg/dL) and HbA1c (6.2%) with Bi-LSTM forecast. Does he require Metformin intervention per ADA 2024?",
+                        "hybrid_rag_lstm"
+                      );
+                    }}
+                    className="p-2.5 rounded-xl border border-border bg-surface-low hover:border-teal-600 text-left transition-all text-xs font-semibold text-foreground flex items-center justify-between"
+                  >
+                    <span>Analyze Glucose & HbA1c Discordance</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-primary" />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowPatientDossier(false);
+                      handleSendMessage(
+                        "Patient has tTG-IgA 48.2 U/mL with normal Total IgA (210 mg/dL). Does this warrant an immediate endoscopy and duodenal biopsy per ACG guidelines?",
+                        "hybrid_rag_lstm"
+                      );
+                    }}
+                    className="p-2.5 rounded-xl border border-border bg-surface-low hover:border-teal-600 text-left transition-all text-xs font-semibold text-foreground flex items-center justify-between"
+                  >
+                    <span>Evaluate Elevated Celiac tTG-IgA</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-primary" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-border flex items-center justify-end gap-2">
+              <button
+                onClick={() => setShowPatientDossier(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white transition-all shadow-2xs"
+              >
+                Close Dossier
+              </button>
+            </div>
           </div>
         </div>
       )}

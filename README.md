@@ -1,36 +1,36 @@
 ﻿<p align="center">
-  <img src="assets/header.svg" alt="MediPredict AI  -  Intelligent Healthcare. Earlier Insights. Better Decisions." width="100%" />
+  <img src="assets/header.svg" alt="GeneWise  -  Clinical-Grade Genetics Literacy. Earlier Insights. Better Decisions." width="100%" />
 </p>
 
 <p align="center">
   <a href="https://medipredict-k2upabmcy-ranjeet7680s-projects.vercel.app"><img src="https://img.shields.io/badge/Live%20Demo-Vercel%20Production-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Live Demo" /></a>
-  <a href="https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki"><img src="https://img.shields.io/badge/Wiki-22%20Chapters%20%7C%2042%2B%20Diagrams-00837b?style=for-the-badge&logo=gitbook&logoColor=white" alt="Comprehensive Wiki" /></a>
-  <a href="https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/actions"><img src="https://img.shields.io/badge/CI%2FCD-Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD Status" /></a>
+  <a href="https://github.com/Ranjeet7680/GeneWise/wiki"><img src="https://img.shields.io/badge/Wiki-22%20Chapters%20%7C%2042%2B%20Diagrams-00837b?style=for-the-badge&logo=gitbook&logoColor=white" alt="Comprehensive Wiki" /></a>
+  <a href="https://github.com/Ranjeet7680/GeneWise/actions"><img src="https://img.shields.io/badge/CI%2FCD-Passing-10b981?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD Status" /></a>
   <a href="#1-enterprise-system-architecture"><img src="https://img.shields.io/badge/Architecture-4--Tier%20Microservices-0284c7?style=for-the-badge&logo=diagramsdotnet&logoColor=white" alt="Architecture" /></a>
-  <a href="#7-complete-29-production-routes-reference"><img src="https://img.shields.io/badge/Frontend-Next.js%2014%20(29%20Routes)-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 14" /></a>
+  <a href="#7-complete-29-production-routes-reference"><img src="https://img.shields.io/badge/Frontend-Next.js%2014%20(43%20Build%20Routes)-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 14" /></a>
   <a href="#9-rest-api-gateway--real-time-websocket-specifications"><img src="https://img.shields.io/badge/Backend-FastAPI%20%2F%20Python%203.11-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" /></a>
   <a href="#5-machine-learning-research-lab--model-registry"><img src="https://img.shields.io/badge/ML%20ROC--AUC-0.962%20(Gradient%20Boost)-7c3aed?style=for-the-badge&logo=scikitlearn&logoColor=white" alt="ML ROC-AUC" /></a>
-  <a href="#10-automated-testing--verification-suite"><img src="https://img.shields.io/badge/Tests-36%2F36%20Pytest%20Passing-emerald?style=for-the-badge&logo=pytest&logoColor=white" alt="Pytest" /></a>
+  <a href="#10-automated-testing--verification-suite"><img src="https://img.shields.io/badge/Frontend%20Tests-37%2F37%20Vitest%20Passing-emerald?style=for-the-badge&logo=vitest&logoColor=white" alt="Vitest" /></a>
   <a href="#12-zero-trust-privacy--regulatory-compliance"><img src="https://img.shields.io/badge/Compliance-DPDP%20Act%202023%20%2F%20HIPAA-e11d48?style=for-the-badge&logo=shield&logoColor=white" alt="DPDP Act / HIPAA" /></a>
 </p>
 
 <p align="center">
-  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FRanjeet7680%2FMEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM&root-directory=apps/web"><img src="https://vercel.com/button" alt="Deploy with Vercel" /></a>
-  <a href="https://render.com/deploy?repo=https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" /></a>
+  <a href="https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FRanjeet7680%2FGeneWise&root-directory=apps/web"><img src="https://vercel.com/button" alt="Deploy with Vercel" /></a>
+  <a href="https://render.com/deploy?repo=https://github.com/Ranjeet7680/GeneWise"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" /></a>
 </p>
 
 ---
 
 <p align="center">
-  <img src="assets/architecture-overview.svg" alt="MediPredict AI Enterprise Platform Architecture Overview" width="100%" />
+  <img src="assets/architecture-overview.svg" alt="GeneWise Enterprise Platform Architecture Overview" width="100%" />
 </p>
 
 ---
 
-# MEDIPREDICT AI  -  ADVANCED MEDICAL INTELLIGENCE PLATFORM
-### *Intelligent Healthcare. Earlier Insights. Better Decisions.*
+# GENEWISE - GENOMIC HEALTH & CLINICAL INTELLIGENCE PLATFORM
+### *Clinical-Grade Genetics Literacy. Earlier Insights. Better Decisions.*
 
-**MediPredict AI** is an enterprise-grade medical science, connected healthcare, and clinical decision-support ecosystem engineered for patients, attending clinicians, and healthcare researchers:
+**GeneWise** is an enterprise-grade genomics literacy, medical science, connected healthcare, and clinical decision-support ecosystem engineered for patients, attending clinicians, and healthcare researchers:
 
 - **Principal Systems Architect** &bull; Distributed microservices topology, multi-cloud ingress, and zero-trust data segregation.
 - **Senior Full-Stack Engineer** &bull; Next.js 14 App Router, TypeScript 5.5, Clinical Calm token system, and FastAPI asynchronous services.
@@ -80,38 +80,38 @@
 
 ## Platform Knowledge Base & GitHub Wiki
 
-The official **[MediPredict AI GitHub Wiki](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki)** contains **22 deeply technical chapters** with **42+ architectural diagrams, flowcharts, sequence diagrams, and mathematical formulations**:
+The official **[GeneWise GitHub Wiki](https://github.com/Ranjeet7680/GeneWise/wiki)** contains **22 deeply technical chapters** with **42+ architectural diagrams, flowcharts, sequence diagrams, and mathematical formulations**:
 
 | Section | Wiki Chapter | Core Architectural Topic & Diagrams |
 |:---|:---|:---|
-| **Overview** | [01. System Architecture](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/01-System-Architecture) | 4-tier microservices, sequence ingress lifecycle, and class models |
-| **Clinical CDS** | [02. Clinical Decision Support](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/02-Clinical-Decision-Support) | STAT Critical triage prioritization and electronic sign-off state machine |
-| **Lab Diagnostics** | [03. Laboratory Intelligence Engine](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/03-Laboratory-Intelligence-Engine) | OCR parsing, panic threshold evaluation, and confidence metric algorithms |
-| **Voice AI** | [04. Multilingual Voice AI](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/04-Multilingual-Voice-AI) | 13 Indian languages, streaming VAD, and emergency triage redirection |
-| **Evidence RAG** | [05. Medical Evidence RAG](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/05-AI-Medical-RAG-Framework) | PubMed vector search, OCEBM evidence tiers, and anti-hallucination filter |
-| **Machine Learning**| [06. ML Research Laboratory](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/06-Machine-Learning-Laboratory) | Celiac Gradient Boosting (AUC 0.962), Platt calibration, and model cards |
-| **Explainable AI** | [07. Explainable AI & SHAP](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/07-Explainable-AI-SHAP) | TreeSHAP feature attribution and mathematical Shapley formulations |
-| **IoT & Sensors** | [08. IoT Medical Sensors Gateway](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/08-IoT-Medical-Sensors-Gateway) | Anti-replay timestamps, deduplication, and hardware fault tolerance |
-| **Wearables** | [09. Wearable Synchronization](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/09-Wearable-Device-Synchronization) | Continuous SpO2, Apple HealthKit/Health Connect sync, and anomaly alerts |
-| **Diseases** | [10. Disease Research Explorer](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/10-Disease-Research-Explorer) | Clinical pathophysiology and differential diagnosis decision trees |
-| **Genomics** | [11. Genetics & Genomics Intelligence](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/11-Genetics-Genomics-Intelligence) | HLA-DQ2/DQ8, HFE C282Y variant mapping, and incomplete penetrance models |
-| **Records Vault** | [12. Personal Health Records Vault](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/12-Personal-Health-Records-Vault) | Zero-trust PHR storage, document quarantine, and short-lived signed URLs |
-| **Security** | [13. Enterprise Healthcare Security](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/13-Enterprise-Healthcare-Security) | ReBAC care relationship checks, magic bytes, and sliding-window rate limits |
-| **Database RLS** | [14. PostgreSQL RLS Schema](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/14-PostgreSQL-RLS-Database-Schema) | Entity relationship diagrams and forced Row-Level Security on 20+ tables |
-| **Audit Trails** | [15. Tamper-Evident Audit Logging](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/15-Tamper-Evident-Audit-Logging) | HMAC-SHA256 cryptographic signing and independent audit verification |
-| **Compliance** | [16. DPDP Act 2023 & HIPAA Compliance](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/16-DPDP-Act-2023-HIPAA-Compliance) | Itemized consent manager, data portability export, and right to erasure |
-| **Deployment** | [17. Full-Stack Deployment Guide](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/17-Full-Stack-Deployment-Vercel-Render) | Vercel Edge Serverless Gateway and Render/Railway containerization |
-| **API Reference** | [18. REST API Specification](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/18-REST-API-Specification) | Complete OpenAPI endpoints, payload schemas, and error codes |
-| **Verification** | [19. Automated Testing & Verification](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/19-Testing-Clinical-Verification) | Pytest test execution guide and 36/36 automated test suite reports |
-| **Roadmap** | [20. Future Innovations & SaMD](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/20-Roadmap-Future-Innovations) | Multi-center IRB clinical pilot, CDSCO SaMD, and federated learning |
-| **Pipelines** | [21. Medical Data Pipelines (10 PIP)](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/21-Medical-Data-Pipelines-PIP-Architecture) | 10 end-to-end PIP clinical flowcharts (Biomarkers, Voice, ML, IoT, RAG, ReBAC, Audit, DPDP, Wearables, Triage) |
-| **Visual Atlas** | [22. Clinical Visualization Atlas](https://github.com/Ranjeet7680/MEDIPREDICT-AI-ADVANCED-MEDICAL-INTELLIGENCE-PLATFORM/wiki/22-Clinical-Data-Visualization-Atlas) | Complete 15 clinical visualization paradigms (Bar, Pie, Line, Area, Scatter, Histogram, Box Plot, Grouped Bar, Stacked Bar, Bubble, Heatmap, Radar, Doughnut, Map, Candlestick) |
+| **Overview** | [01. System Architecture](https://github.com/Ranjeet7680/GeneWise/wiki/01-System-Architecture) | 4-tier microservices, sequence ingress lifecycle, and class models |
+| **Clinical CDS** | [02. Clinical Decision Support](https://github.com/Ranjeet7680/GeneWise/wiki/02-Clinical-Decision-Support) | STAT Critical triage prioritization and electronic sign-off state machine |
+| **Lab Diagnostics** | [03. Laboratory Intelligence Engine](https://github.com/Ranjeet7680/GeneWise/wiki/03-Laboratory-Intelligence-Engine) | OCR parsing, panic threshold evaluation, and confidence metric algorithms |
+| **Voice AI** | [04. Multilingual Voice AI](https://github.com/Ranjeet7680/GeneWise/wiki/04-Multilingual-Voice-AI) | 13 Indian languages, streaming VAD, and emergency triage redirection |
+| **Evidence RAG** | [05. Medical Evidence RAG](https://github.com/Ranjeet7680/GeneWise/wiki/05-AI-Medical-RAG-Framework) | PubMed vector search, OCEBM evidence tiers, and anti-hallucination filter |
+| **Machine Learning**| [06. ML Research Laboratory](https://github.com/Ranjeet7680/GeneWise/wiki/06-Machine-Learning-Laboratory) | Celiac Gradient Boosting (AUC 0.962), Platt calibration, and model cards |
+| **Explainable AI** | [07. Explainable AI & SHAP](https://github.com/Ranjeet7680/GeneWise/wiki/07-Explainable-AI-SHAP) | TreeSHAP feature attribution and mathematical Shapley formulations |
+| **IoT & Sensors** | [08. IoT Medical Sensors Gateway](https://github.com/Ranjeet7680/GeneWise/wiki/08-IoT-Medical-Sensors-Gateway) | Anti-replay timestamps, deduplication, and hardware fault tolerance |
+| **Wearables** | [09. Wearable Synchronization](https://github.com/Ranjeet7680/GeneWise/wiki/09-Wearable-Device-Synchronization) | Continuous SpO2, Apple HealthKit/Health Connect sync, and anomaly alerts |
+| **Diseases** | [10. Disease Research Explorer](https://github.com/Ranjeet7680/GeneWise/wiki/10-Disease-Research-Explorer) | Clinical pathophysiology and differential diagnosis decision trees |
+| **Genomics** | [11. Genetics & Genomics Intelligence](https://github.com/Ranjeet7680/GeneWise/wiki/11-Genetics-Genomics-Intelligence) | HLA-DQ2/DQ8, HFE C282Y variant mapping, and incomplete penetrance models |
+| **Records Vault** | [12. Personal Health Records Vault](https://github.com/Ranjeet7680/GeneWise/wiki/12-Personal-Health-Records-Vault) | Zero-trust PHR storage, document quarantine, and short-lived signed URLs |
+| **Security** | [13. Enterprise Healthcare Security](https://github.com/Ranjeet7680/GeneWise/wiki/13-Enterprise-Healthcare-Security) | ReBAC care relationship checks, magic bytes, and sliding-window rate limits |
+| **Database RLS** | [14. PostgreSQL RLS Schema](https://github.com/Ranjeet7680/GeneWise/wiki/14-PostgreSQL-RLS-Database-Schema) | Entity relationship diagrams and forced Row-Level Security on 20+ tables |
+| **Audit Trails** | [15. Tamper-Evident Audit Logging](https://github.com/Ranjeet7680/GeneWise/wiki/15-Tamper-Evident-Audit-Logging) | HMAC-SHA256 cryptographic signing and independent audit verification |
+| **Compliance** | [16. DPDP Act 2023 & HIPAA Compliance](https://github.com/Ranjeet7680/GeneWise/wiki/16-DPDP-Act-2023-HIPAA-Compliance) | Itemized consent manager, data portability export, and right to erasure |
+| **Deployment** | [17. Full-Stack Deployment Guide](https://github.com/Ranjeet7680/GeneWise/wiki/17-Full-Stack-Deployment-Vercel-Render) | Vercel Edge Serverless Gateway and Render/Railway containerization |
+| **API Reference** | [18. REST API Specification](https://github.com/Ranjeet7680/GeneWise/wiki/18-REST-API-Specification) | Complete OpenAPI endpoints, payload schemas, and error codes |
+| **Verification** | [19. Automated Testing & Verification](https://github.com/Ranjeet7680/GeneWise/wiki/19-Testing-Clinical-Verification) | Pytest test execution guide and 36/36 automated test suite reports |
+| **Roadmap** | [20. Future Innovations & SaMD](https://github.com/Ranjeet7680/GeneWise/wiki/20-Roadmap-Future-Innovations) | Multi-center IRB clinical pilot, CDSCO SaMD, and federated learning |
+| **Pipelines** | [21. Medical Data Pipelines (10 PIP)](https://github.com/Ranjeet7680/GeneWise/wiki/21-Medical-Data-Pipelines-PIP-Architecture) | 10 end-to-end PIP clinical flowcharts (Biomarkers, Voice, ML, IoT, RAG, ReBAC, Audit, DPDP, Wearables, Triage) |
+| **Visual Atlas** | [22. Clinical Visualization Atlas](https://github.com/Ranjeet7680/GeneWise/wiki/22-Clinical-Data-Visualization-Atlas) | Complete 15 clinical visualization paradigms (Bar, Pie, Line, Area, Scatter, Histogram, Box Plot, Grouped Bar, Stacked Bar, Bubble, Heatmap, Radar, Doughnut, Map, Candlestick) |
 
 ---
 
 ## Clinical Data Visualizations & Process Pipeline Atlas
 
-MediPredict AI includes an enterprise clinical visualization atlas featuring **10 Data Ingestion Pipelines (PIP-01 to PIP-10)** and **15 Standard Clinical Visualization Paradigms**:
+GeneWise includes an enterprise clinical visualization atlas featuring **10 Data Ingestion Pipelines (PIP-01 to PIP-10)** and **15 Standard Clinical Visualization Paradigms**:
 
 <p align="center">
   <img src="assets/chart-candlestick-abpm.svg" alt="24-Hour ABPM Candlestick Movements" width="49%" />
@@ -146,7 +146,7 @@ The platform follows a clean **4-tier microservices-ready topology** separating 
 
 | Architecture Layer | Technology | Version | Purpose & Responsibilities |
 | :--- | :--- | :--- | :--- |
-| **Frontend UI** | **Next.js (App Router)** | `14.2.35` | 29 static/dynamic routes, server & client components, streaming SSR, PWA offline cache. |
+| **Frontend UI** | **Next.js (App Router)** | `14.2.35` | 43 static/dynamic build routes, server & client components, streaming SSR, PWA offline cache. |
 | **Language** | **TypeScript** | `5.5.0` | Strict type safety across client interfaces, API client, and backend data contracts. |
 | **Styling & Design** | **Tailwind CSS** | `3.4.1` | Clinical Calm design tokens (`#00635e` deep teal, `#0f2942` cosmic navy, `#f4faff` surface). |
 | **Visualizations** | **Recharts** | `2.12.7` | Physiological telemetry streams, dual-axis trends, risk gauges, and vitals time-series. |
@@ -202,7 +202,7 @@ The multi-agent framework (`backend/app/services/agents/`) coordinates specializ
 
 ## 3. Multilingual Voice AI System (13 Indian Languages)
 
-MediPredict AI features a **ChatGPT-style, real-time voice-to-voice assistant** supporting 13 official Indian languages plus mixed code dialects (Hinglish, Tanglish, Benglish) with instant emergency symptom triage:
+GeneWise features a **ChatGPT-style, real-time voice-to-voice assistant** supporting 13 official Indian languages plus mixed code dialects (Hinglish, Tanglish, Benglish) with instant emergency symptom triage:
 
 <p align="center">
   <img src="assets/voice-ai-pipeline.svg" alt="Multilingual Voice AI Pipeline (13 Indian Languages)" width="100%" />
@@ -216,7 +216,7 @@ MediPredict AI features a **ChatGPT-style, real-time voice-to-voice assistant** 
 
 ## 4. Connected Healthcare & Section 10 Ingestion Engine
 
-MediPredict AI implements the **Section 10 Unified Health Data Ingestion Standard** to normalize incoming telemetry from diverse microcontrollers, medical biosensors, and consumer smartwatches:
+GeneWise implements the **Section 10 Unified Health Data Ingestion Standard** to normalize incoming telemetry from diverse microcontrollers, medical biosensors, and consumer smartwatches:
 
 <p align="center">
   <img src="assets/diagram2_ingestion_pipeline.svg" alt="Connected Healthcare & Section 10 Telemetry Ingestion Engine" width="100%" />
@@ -264,7 +264,7 @@ Every connected device transmits telemetry conforming to the standardized Sectio
 
 ## 5. Machine Learning Research Lab & Model Registry
 
-Located in `medipredict-ai/ml/`, the machine learning pipeline trains, evaluates, tracks, and serves production-ready biomedical classification models:
+Located in `ml/`, the machine learning pipeline trains, evaluates, tracks, and serves production-ready biomedical classification models:
 
 <p align="center">
   <img src="assets/diagram3_ml_research.svg" alt="Machine Learning Research Lab & Predictive Diagnostics" width="100%" />
@@ -347,7 +347,7 @@ All **29 application routes** (28 static user/clinician views + 1 dynamic API ga
 
 ## 8. Hardware & Biosensor Embedded Engineering
 
-MediPredict AI includes physical microcontroller drivers and software simulators in `hardware/` for seamless biosensor integration:
+GeneWise includes physical microcontroller drivers and software simulators in `hardware/` for seamless biosensor integration:
 
 ### A. ESP32 + MAX30102 Optical PPG Wiring Diagram
 
@@ -499,7 +499,7 @@ npm run dev
 
 ## 12. Full-Stack Production Deployment (Vercel & Render)
 
-MediPredict AI is designed for dual-cloud deployment, pairing **Vercel Serverless Edge** with **Render / Railway / Docker** backend services.
+GeneWise is designed for dual-cloud deployment, pairing **Vercel Serverless Edge** with **Render / Railway / Docker** backend services.
 
 ```mermaid
 flowchart LR
@@ -539,7 +539,7 @@ flowchart LR
   <img src="assets/security-shield.svg" alt="Enterprise Healthcare Security & Compliance Architecture" width="100%" />
 </p>
 
-MediPredict AI adheres to international healthcare data protection regulations:
+GeneWise adheres to international healthcare data protection regulations:
 
 - **Digital Personal Data Protection (DPDP) Act 2023:** Itemized, revocable consent ledger (`UserConsent` entity) recording consent purpose, version, and timestamp.
 - **Cryptographic Data Portability (Section 11):** One-click full data export generates a cryptographically hashed JSON bundle containing all patient records, telemetry, and reports.
@@ -554,7 +554,7 @@ MediPredict AI adheres to international healthcare data protection regulations:
 
 > [!WARNING]
 > ### STATUTORY CLINICAL NOTICE
-> **MediPredict AI is an educational, research, and clinical decision-support software platform.**  
+> **GeneWise is an educational, research, and clinical decision-support software platform.**  
 > It is **not** an autonomous medical diagnostic device, does **not** provide definitive clinical diagnoses, does **not** independently prescribe medications or clinical therapies, and must **never** replace the direct clinical judgment of a licensed, qualified healthcare professional.
 >
 > All machine learning predictions, risk probabilities, and multi-agent AI outputs are probabilistic estimates requiring physician review. Observational data from point-of-care biosensors and commercial consumer wearables are susceptible to motion artifacts, ambient temperature variations, and optical noise.  
@@ -563,5 +563,5 @@ MediPredict AI adheres to international healthcare data protection regulations:
 ---
 
 <p align="center">
-  <b>MediPredict AI</b> &bull; Built for the Future Health Digital Innovation Challenge &bull; MIT License
+  <b>GeneWise</b> &bull; Built for the Future Health Digital Innovation Challenge &bull; MIT License
 </p>

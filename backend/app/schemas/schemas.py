@@ -45,6 +45,19 @@ class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str = Field(..., min_length=6)
 
+class PhoneOTPRequest(BaseModel):
+    phone: str
+    country_code: Optional[str] = "+1"
+
+class PhoneOTPResponse(BaseModel):
+    message: str
+    otp_preview: str
+    expires_in: int = 300
+
+class PhoneOTPVerify(BaseModel):
+    phone: str
+    otp: str
+
 # --- AI Assistant & Conversations ---
 class MessageSource(BaseModel):
     title: str

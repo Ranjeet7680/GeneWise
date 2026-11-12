@@ -1,5 +1,5 @@
 """
-MediPredict AI — Voice Assistant API Router
+GeneWise — Voice Assistant API Router
 Provides real-time voice session endpoints, multilingual transcription handling,
 language detection, medical tool calling, and clinical safety enforcement.
 """

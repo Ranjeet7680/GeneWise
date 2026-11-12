@@ -5,6 +5,7 @@ module.exports = {
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
+    "./lib/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
@@ -90,6 +91,13 @@ module.exports = {
           "0%, 100%": { opacity: "1", transform: "scale(1)" },
           "50%": { opacity: "0.85", transform: "scale(1.02)" },
         },
+        heartbeat: {
+          "0%, 100%": { transform: "scale(1)" },
+          "14%": { transform: "scale(1.14)" },
+          "28%": { transform: "scale(1)" },
+          "42%": { transform: "scale(1.08)" },
+          "70%": { transform: "scale(1)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
@@ -97,6 +105,10 @@ module.exports = {
         glow: {
           "0%": { boxShadow: "0 0 5px rgba(0, 180, 216, 0.2)" },
           "100%": { boxShadow: "0 0 20px rgba(0, 180, 216, 0.6)" },
+        },
+        "gradient-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
         },
         radar: {
           "0%": { transform: "rotate(0deg)" },
@@ -111,26 +123,37 @@ module.exports = {
           "50%": { transform: "translateY(-6px)" },
         },
         "fade-in-up": {
-          "0%": { opacity: "0", transform: "translateY(12px)" },
+          "0%": { opacity: "0", transform: "translateY(14px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         "scale-in": {
-          "0%": { opacity: "0", transform: "scale(0.96)" },
+          "0%": { opacity: "0", transform: "scale(0.95)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
         ripple: {
           "0%": { transform: "scale(0.8)", opacity: "1" },
-          "100%": { transform: "scale(2.2)", opacity: "0" },
+          "100%": { transform: "scale(2.4)", opacity: "0" },
         },
         "wave-bar": {
           "0%, 100%": { height: "12px" },
           "50%": { height: "36px" },
         },
+        "pulse-beacon": {
+          "0%": { transform: "scale(0.95)", boxShadow: "0 0 0 0 rgba(16, 185, 129, 0.6)" },
+          "70%": { transform: "scale(1)", boxShadow: "0 0 0 8px rgba(16, 185, 129, 0)" },
+          "100%": { transform: "scale(0.95)", boxShadow: "0 0 0 0 rgba(16, 185, 129, 0)" },
+        },
+        "ecg-draw": {
+          "0%": { strokeDashoffset: "200" },
+          "100%": { strokeDashoffset: "0" },
+        },
       },
       animation: {
         "pulse-slow": "pulse-slow 3s ease-in-out infinite",
-        shimmer: "shimmer 2s linear infinite",
+        heartbeat: "heartbeat 2s ease-in-out infinite",
+        shimmer: "shimmer 2.2s linear infinite",
         glow: "glow 2s ease-in-out infinite alternate",
+        "gradient-shift": "gradient-shift 8s ease infinite",
         radar: "radar 4s linear infinite",
         scan: "scan 2s ease-in-out infinite",
         "float-slow": "float-slow 4s ease-in-out infinite",
@@ -138,6 +161,8 @@ module.exports = {
         "scale-in": "scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards",
         ripple: "ripple 2.4s cubic-bezier(0, 0.2, 0.8, 1) infinite",
         "wave-bar": "wave-bar 1.2s ease-in-out infinite",
+        "pulse-beacon": "pulse-beacon 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "ecg-draw": "ecg-draw 3s ease-in-out infinite",
       },
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.16, 1, 0.3, 1)",

@@ -63,7 +63,7 @@ export default function PrivacySettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `medipredict_personal_data_export_${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `genewise_personal_data_export_${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -98,7 +98,7 @@ export default function PrivacySettingsPage() {
       <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-4xl overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-4xl w-full overflow-y-auto pb-28 md:pb-10">
           {/* Header */}
           <div className="pb-4 border-b border-border">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -110,20 +110,20 @@ export default function PrivacySettingsPage() {
           </div>
 
           {/* Sub Navigation */}
-          <div className="flex items-center gap-2 border-b border-border pb-1 text-xs font-semibold">
+          <div className="flex items-center gap-2 border-b border-border pb-2 text-xs font-semibold overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <Link
               href="/settings/profile"
-              className="px-3 py-1.5 rounded-lg text-muted-foreground hover:bg-surface-low"
+              className="px-3 py-1.5 rounded-lg text-muted-foreground hover:bg-surface-low whitespace-nowrap shrink-0"
             >
-              Profile
+              Profile & Workspace Brand
             </Link>
             <Link
               href="/settings/security"
-              className="px-3 py-1.5 rounded-lg text-muted-foreground hover:bg-surface-low"
+              className="px-3 py-1.5 rounded-lg text-muted-foreground hover:bg-surface-low whitespace-nowrap shrink-0"
             >
               Security & Sessions
             </Link>
-            <Link href="/settings/privacy" className="px-3 py-1.5 rounded-lg bg-primary text-white">
+            <Link href="/settings/privacy" className="px-3 py-1.5 rounded-lg bg-primary text-white whitespace-nowrap shrink-0">
               Privacy & Consents (DPDP)
             </Link>
           </div>

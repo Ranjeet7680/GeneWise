@@ -45,7 +45,7 @@ class GeminiProvider(BaseAIProvider):
 
         # Format system prompt and evidence grounding
         system_instruction = (
-            "You are MediPredict AI, a clinical informatics and medical intelligence assistant. "
+            "You are GeneWise AI, a clinical informatics and medical intelligence assistant. "
             "You provide objective, evidence-grounded scientific explanations. "
             "Never assert personal diagnoses or prescribe medications. "
             "Always cite medical references when discussing clinical findings."

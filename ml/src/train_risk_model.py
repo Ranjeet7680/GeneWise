@@ -1,5 +1,5 @@
 """
-MediPredict AI - Medical Machine Learning Research Pipeline
+GeneWise - Medical Machine Learning Research Pipeline
 Disease Risk Estimation Module: Celiac Disease Screening Lab Model
 
 Dataset: Celiac Disease Clinical & Laboratory Records (N=2206)

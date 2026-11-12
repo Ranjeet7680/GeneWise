@@ -1,9 +1,9 @@
-# MediPredict AI — Clinical & Algorithmic Model Limitations
+# GeneWise — Clinical & Algorithmic Model Limitations
 
 ## 1. Scope & Regulatory Notice
-MediPredict AI is an informational decision-support and medical education system. It is **NOT** a certified medical device (SaMD) and has not received formal 510(k), CE mark, or CDSCO medical device clearance.
+GeneWise is an informational decision-support and medical education system. It is **NOT** a certified medical device (SaMD) and has not received formal 510(k), CE mark, or CDSCO medical device clearance.
 
-Under no circumstances should outputs from MediPredict AI be treated as:
+Under no circumstances should outputs from GeneWise be treated as:
 1. An autonomous medical diagnosis.
 2. An order to initiate, alter, or discontinue prescription pharmacotherapy.
 3. A substitute for immediate emergency triage or in-person evaluation by a qualified, board-certified physician.

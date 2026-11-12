@@ -1,4 +1,4 @@
-# MediPredict AI — REST API Reference (`/api/v1`)
+# GeneWise — REST API Reference (`/api/v1`)
 
 ## Authentication & Session Management
 - `POST /api/v1/auth/register`: Create user account.

@@ -18,7 +18,7 @@
   <rect width="700" height="500" rx="14" fill="url(#radarBg)" stroke="#1e3a4a" stroke-width="2" />
 
   <text x="40" y="38" fill="#4ef3e2" font-family="sans-serif" font-size="11" font-weight="700" letter-spacing="1">🕸️ RADAR CHART: MULTI-AXIS MODEL EVALUATION</text>
-  <text x="40" y="65" fill="#ffffff" font-family="sans-serif" font-size="18" font-weight="800">Biomedical Model Performance: MediPredict GB v1 vs Baseline</text>
+  <text x="40" y="65" fill="#ffffff" font-family="sans-serif" font-size="18" font-weight="800">Biomedical Model Performance: GeneWise GB v1 vs Baseline</text>
 
   <!-- Center: 350, 270. Radius max: 160 -->
   <g transform="translate(350, 275)">
@@ -56,11 +56,11 @@
     <!-- r values: 124.8, 115.2, 129.6, 118.4, 112.0, 136.0 -->
     <polygon points="0,-124.8 99.8,-57.6 112.2,64.8 0,118.4 -97.0,56.0 -117.8,-68.0" fill="url(#polyGrad2)" stroke="#3b82f6" stroke-width="2" />
 
-    <!-- MediPredict Model (Teal Polygon): AUROC 0.962, Sens 0.941, Spec 0.955, F1 0.938, Calib 0.925, Latency 0.960 -->
+    <!-- GeneWise Model (Teal Polygon): AUROC 0.962, Sens 0.941, Spec 0.955, F1 0.938, Calib 0.925, Latency 0.960 -->
     <!-- r values: 153.9, 150.6, 152.8, 150.1, 148.0, 153.6 -->
     <polygon points="0,-153.9 130.4,-75.3 132.3,76.4 0,150.1 -128.2,74.0 -133.0,-76.8" fill="url(#polyGrad1)" stroke="#00b4a7" stroke-width="2.5" />
 
-    <!-- Points MediPredict -->
+    <!-- Points GeneWise -->
     <circle cx="0" cy="-153.9" r="4.5" fill="#4ef3e2" />
     <circle cx="130.4" cy="-75.3" r="4.5" fill="#4ef3e2" />
     <circle cx="132.3" cy="76.4" r="4.5" fill="#4ef3e2" />
@@ -80,7 +80,7 @@
   <!-- Legend -->
   <g transform="translate(480, 25)">
     <rect x="0" y="0" width="16" height="12" rx="3" fill="#00b4a7" />
-    <text x="24" y="11" fill="#4ef3e2" font-family="sans-serif" font-size="11" font-weight="700">MediPredict GB Ensemble</text>
+    <text x="24" y="11" fill="#4ef3e2" font-family="sans-serif" font-size="11" font-weight="700">GeneWise GB Ensemble</text>
 
     <rect x="0" y="20" width="16" height="12" rx="3" fill="#3b82f6" />
     <text x="24" y="31" fill="#7bc4ff" font-family="sans-serif" font-size="11" font-weight="700">Baseline Logistic Classifier</text>

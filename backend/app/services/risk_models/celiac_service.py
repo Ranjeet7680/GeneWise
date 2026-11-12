@@ -121,7 +121,7 @@ class CeliacRiskService:
             "contributing_factors": factors,
             "recommended_clinical_followup": recommendations,
             "disclaimer": (
-                "MediPredict AI Risk Modeling is an investigational decision-support tool. "
+                "GeneWise AI Risk Modeling is an investigational decision-support tool. "
                 "It is strictly for research and clinical education. It does NOT provide a definitive diagnosis "
                 "and does NOT replace gastrointestinal endoscopy or physician consultation."
             ),

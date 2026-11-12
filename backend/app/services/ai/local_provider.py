@@ -56,7 +56,7 @@ class LocalProvider(BaseAIProvider):
             from app.services.ai.clinical_evidence import ClinicalEvidenceProvider
             fallback = ClinicalEvidenceProvider()
             result = await fallback.generate_response(messages, retrieved_context, report_data)
-            result["safety_alerts"].append(f"Notice: Local inference endpoint unreachable ({e}). Served by MediPredict Evidence Engine.")
+            result["safety_alerts"].append(f"Notice: Local inference endpoint unreachable ({e}). Served by GeneWise Evidence Engine.")
             return result
 
         return {

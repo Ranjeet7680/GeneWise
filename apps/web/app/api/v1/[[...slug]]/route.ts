@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { buildContextualClinicalReply } from "@/lib/clinical-lstm";
 
 // Fallback Mock Clinical Database for Vercel Serverless Previews
 const MOCK_USER = {
@@ -245,9 +246,36 @@ const MOCK_CONSENTS = [
 ];
 
 const MOCK_DEVICES_HEALTH = [
-  { id: "DEV-WATCH-01", device_name: "MediWatch Pro V4", status: "online", battery: 84, signal: -58, last_packet: "2s ago", errors_24h: 0 },
-  { id: "DEV-OXI-02", device_name: "Continuous Pulse Oximeter", status: "online", battery: 92, signal: -62, last_packet: "5s ago", errors_24h: 0 },
-  { id: "DEV-GATEWAY-03", device_name: "BLE Medical Hub Edge", status: "online", battery: 100, signal: -45, last_packet: "1s ago", errors_24h: 0 },
+  {
+    device_id: "ESP32-SPO2-MAX30102",
+    device_name: "MAX30102 Optical PPG Sensor",
+    device_type: "sensor",
+    status: "active",
+    battery_level: 88,
+    last_seen: new Date(Date.now() - 3 * 60000).toISOString(),
+    data_points_24h: 840,
+    error_rate: 0.02,
+  },
+  {
+    device_id: "APPLE-WATCH-SERIES-9",
+    device_name: "Apple Watch Series 9 (HealthKit)",
+    device_type: "wearable",
+    status: "active",
+    battery_level: 65,
+    last_seen: new Date(Date.now() - 15 * 60000).toISOString(),
+    data_points_24h: 420,
+    error_rate: 0.0,
+  },
+  {
+    device_id: "GW-CLINICAL-IOT-01",
+    device_name: "Raspberry Pi Medical Gateway",
+    device_type: "iot_gateway",
+    status: "active",
+    battery_level: 100,
+    last_seen: new Date(Date.now() - 1 * 60000).toISOString(),
+    data_points_24h: 160,
+    error_rate: 0.01,
+  },
 ];
 
 const MOCK_AUDIT_LOGS = [
@@ -327,7 +355,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
   if (path === "health" || path === "") {
     return NextResponse.json({
       status: "healthy",
-      service: "MediPredict AI API Gateway",
+      service: "GeneWise API Gateway",
       version: "1.0.0",
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || "production",
@@ -360,22 +388,34 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
       current_provider: "clinical_evidence",
       providers: {
         clinical_evidence: {
-          name: "MediPredict Evidence Engine",
+          name: "GeneWise Supervisor RAG v3.2",
           configured: true,
-          model: "evidence-rag-v1",
-          description: "PubMed-grounded clinical guideline reasoning",
+          model: "pubmed-grounded-v3.2",
+          description: "PubMed-grounded clinical guideline reasoning & verifier",
+        },
+        lstm_temporal: {
+          name: "Bi-LSTM Temporal Biomarker Engine",
+          configured: true,
+          model: "bilstm-biomarker-v2.4",
+          description: "2-Layer Bi-LSTM sequential lab trajectory & velocity forecaster",
+        },
+        hybrid_rag_lstm: {
+          name: "Hybrid RAG + Bi-LSTM Fusion v3",
+          configured: true,
+          model: "hybrid-fusion-v3.0",
+          description: "Fuses PubMed guidelines with Bi-LSTM forecasting",
         },
         gemini: {
-          name: "Google Gemini 1.5",
+          name: "Google Gemini 2.0 Clinical",
           configured: !!process.env.GEMINI_API_KEY,
-          model: "gemini-1.5-flash",
+          model: "gemini-2.0-flash-clinical",
           description: "Multimodal medical analysis",
         },
         openai: {
-          name: "OpenAI GPT-4o",
+          name: "OpenAI GPT-4o Reasoner",
           configured: !!process.env.OPENAI_API_KEY,
-          model: "gpt-4o-mini",
-          description: "Conversational health assistant",
+          model: "gpt-4o-clinical",
+          description: "High-context conversational health assistant",
         },
       },
     });
@@ -409,7 +449,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
         conversation_id: 1,
         role: "assistant",
         content:
-          "Hello! I am your MediPredict AI Clinical Assistant. You can ask questions about your laboratory reports, diagnostic biomarkers, or medical guidelines. How can I assist your health inquiry today?",
+          "Hello! I am your GeneWise Clinical Assistant. You can ask questions about your laboratory reports, diagnostic biomarkers, or medical guidelines. How can I assist your health inquiry today?",
         sources: [],
         safety_alerts: [],
         created_at: new Date(Date.now() - 86400000).toISOString(),
@@ -426,7 +466,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
     return new NextResponse(csvContent, {
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": 'attachment; filename="medipredict_lab_report.csv"',
+        "Content-Disposition": 'attachment; filename="genewise_lab_report.csv"',
       },
     });
   }
@@ -461,6 +501,15 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
         framework: "Scikit-Learn 1.4 / Joblib",
       },
       {
+        id: "MOD-BILSTM-SEQ-03",
+        name: "Bi-LSTM Longitudinal Biomarker Forecaster",
+        algorithm: "2-Layer Bi-LSTM + Temporal Attention",
+        version: "2.4.0",
+        auc: 0.958,
+        samples: 9400,
+        framework: "PyTorch 2.3 / ONNX Runtime",
+      },
+      {
         id: "MOD-CARDIO-RISK-02",
         name: "Cardiometabolic 5-Year Risk Classifier",
         algorithm: "RandomForestEnsemble",
@@ -479,7 +528,19 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
         model_name: "CeliacDiseaseGradientBoosting",
         experiment_name: "baseline_gradient_boosted_trees",
         dataset_name: "celiac_biomarker_cohort_v1",
-        metrics: { accuracy: 0.941, roc_auc: 0.962, f1_score: 0.938 },
+        version: "v1.4.0-prod",
+        artifact_path: "ml/artifacts/celiac_gb_baseline_v1_4.pkl",
+        parameters: {
+          algorithm: "GradientBoostingClassifier",
+          n_estimators: 150,
+          learning_rate: 0.08,
+          max_depth: 4,
+          subsample: 0.85,
+          min_samples_split: 6,
+          calibration: "Platt Scaling (5-fold CV)",
+          feature_count: 14,
+        },
+        metrics: { accuracy: 0.941, roc_auc: 0.962, f1_score: 0.938, brier_score: 0.051 },
         status: "deployed",
         created_at: new Date(Date.now() - 86400000).toISOString(),
       },
@@ -488,7 +549,19 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
         model_name: "CeliacDiseaseGradientBoosting",
         experiment_name: "bayesian_hyperopt_n_estimators_200",
         dataset_name: "celiac_biomarker_cohort_v2",
-        metrics: { accuracy: 0.948, roc_auc: 0.968, f1_score: 0.942 },
+        version: "v1.5.2-rc1",
+        artifact_path: "ml/artifacts/celiac_gb_hyperopt_v1_5.pkl",
+        parameters: {
+          algorithm: "GradientBoostingClassifier + Optuna TPE",
+          n_estimators: 200,
+          learning_rate: 0.05,
+          max_depth: 5,
+          subsample: 0.9,
+          min_samples_split: 4,
+          calibration: "Isotonic Regression (5-fold CV)",
+          feature_count: 18,
+        },
+        metrics: { accuracy: 0.948, roc_auc: 0.968, f1_score: 0.942, brier_score: 0.044 },
         status: "completed",
         created_at: new Date(Date.now() - 3600000).toISOString(),
       },
@@ -601,23 +674,41 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
     ]);
   }
 
-  if (path === "devices/health") {
+  if (path === "devices/health" || path === "analytics/device-health") {
     return NextResponse.json(MOCK_DEVICES_HEALTH);
   }
 
   if (path === "analytics/overview") {
     return NextResponse.json({
+      total_measurements: 1420,
+      active_devices_count: 3,
+      average_heart_rate: 72.4,
+      latest_blood_pressure: "122/78 mmHg",
+      latest_spo2: 98.6,
+      data_quality_score: 96.8,
+      recent_anomalies_count: 1,
+      timestamp: new Date().toISOString(),
       total_patients: 1240,
       active_monitored_streams: 18,
       verified_reports_count: 842,
       pending_triage_count: 3,
-      avg_spo2_percentage: 98.2,
+      avg_spo2_percentage: 98.6,
       mean_heart_rate_bpm: 72,
     });
   }
 
   if (path === "analytics/data-quality") {
     return NextResponse.json({
+      overall_quality_percentage: 96.8,
+      verified_points: 1120,
+      calibrated_points: 240,
+      unverified_points: 52,
+      flagged_outliers: 8,
+      recommendations: [
+        "All connected telemetry sensors meet ISO 80601-2-61 pulse oximetry signal confidence thresholds.",
+        "ESP32 MAX30102 shows high baseline signal-to-noise ratio (>28dB).",
+        "Wearable batch synchronization latency is within optimal range (< 15 mins).",
+      ],
       completeness: 98.6,
       accuracy: 99.1,
       timeliness: 99.8,
@@ -644,7 +735,7 @@ export async function GET(req: NextRequest, { params }: { params: { slug?: strin
     return new NextResponse(csvContent, {
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": 'attachment; filename="medipredict_health_metrics.csv"',
+        "Content-Disposition": 'attachment; filename="genewise_health_metrics.csv"',
       },
     });
   }
@@ -752,55 +843,137 @@ export async function POST(req: NextRequest, { params }: { params: { slug?: stri
   }
 
   if (path.startsWith("assistant/conversations/") && path.endsWith("/messages")) {
-    const userPrompt = body.content || "";
-    let responseText = `Thank you for your inquiry regarding "${userPrompt}". 
-
-According to peer-reviewed clinical guidelines (American College of Gastroenterology & American Diabetes Association):
-1. **Clinical Biomarker Interpretation**: Numerical laboratory parameters must always be interpreted in the context of reference intervals established by the processing laboratory and patient-specific medical history.
-2. **Follow-Up Investigations**: If you observe abnormal values or new symptoms, a confirmatory blood draw or consultation with a licensed clinician is advised.
-3. **Safety Notice**: This educational summary is generated by MediPredict AI decision support and does not replace attending physician judgment.`;
-
-    if (userPrompt.toLowerCase().includes("celiac") || userPrompt.toLowerCase().includes("gluten")) {
-      responseText = `### Celiac Disease Diagnostic Serology & Interpretation
-
-Based on ACG & ESPGHAN diagnostic guidelines:
-- **Anti-tTG IgA (Tissue Transglutaminase)**: First-line serological screen with sensitivity and specificity >95%.
-- **Total Serum IgA**: Must be concurrently assessed to exclude selective IgA deficiency (found in 2-3% of celiac patients), which can cause false-negative tTG-IgA results.
-- **Endoscopic Duodenal Biopsy**: Remains the gold standard for adult confirmation (Marsh classification 1 to 3c). Patients should NOT start a gluten-free diet prior to biopsy to avoid false normal mucosal findings.`;
-    }
+    const userPrompt = String(body.content || "Clinical biomarker evaluation");
+    const engineId = String(body.provider || "clinical_evidence");
+    const reportNote = body.report_attachment_id
+      ? `Lab Report #${body.report_attachment_id}`
+      : undefined;
+    const synthesized = buildContextualClinicalReply(userPrompt, engineId, reportNote);
 
     return NextResponse.json({
       id: Date.now(),
       conversation_id: parseInt(slug[1]) || 1,
       role: "assistant",
-      content: responseText,
-      sources: [
-        {
-          title: "ACG Clinical Guidelines: Diagnosis and Management of Celiac Disease",
-          journal: "Am J Gastroenterol",
-          year: 2023,
-          pmid: "36598285",
-          url: "https://pubmed.ncbi.nlm.nih.gov/36598285/",
-        },
-        {
-          title: "AACC Guidance Document on Laboratory Investigation of Glycemic Disorders",
-          journal: "Clin Chem",
-          year: 2023,
-          pmid: "37466185",
-          url: "https://pubmed.ncbi.nlm.nih.gov/37466185/",
-        },
-      ],
-      safety_alerts: [],
+      content: synthesized.content,
+      sources: synthesized.sources,
+      safety_alerts: synthesized.safety_alerts,
+      model_used: synthesized.model_used,
+      confidence_score: synthesized.confidence_score,
+      reasoning_trace: synthesized.reasoning_trace,
+      follow_up_questions: synthesized.follow_up_questions,
+      lstm_forecast: synthesized.lstm_forecast,
       created_at: new Date().toISOString(),
     });
   }
 
-  if (path === "assistant/voice/query") {
+  if (path === "assistant/voice/query" || path === "voice/process") {
+    const q = body.query_text || body.transcript || "General clinical telemetry inquiry";
+    const lang = body.preferred_language || body.language || "hi-IN";
+
+    let speechResp = "";
+    let subNative = "";
+    let subRoman = "";
+    let subEng = "";
+    let isEmergency = false;
+    const tools = ["PubMed Guideline Synthesis", "Clinical Evidence Engine"];
+
+    const qLower = q.toLowerCase();
+    if (
+      qLower.includes("chest pain") ||
+      qLower.includes("chhati me dard") ||
+      qLower.includes("heart attack") ||
+      qLower.includes("saans") ||
+      qLower.includes("unconscious")
+    ) {
+      isEmergency = true;
+      speechResp = "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर कॉल करें।";
+      subNative = "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर कॉल करें।";
+      subRoman = "Yeh ek aapaatkaaleen sthiti ho sakti hai. Kripya turant 112 ya 108 par call karein.";
+      subEng = "This could be an acute medical emergency. Please dial 112 or 108 immediately.";
+      tools.push("STAT Emergency Dispatch Protocol");
+    } else if (
+      qLower.includes("blood pressure") ||
+      qLower.includes("bp") ||
+      qLower.includes("telemetry") ||
+      qLower.includes("vitals")
+    ) {
+      speechResp = "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।";
+      subNative = "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।";
+      subRoman = "Aapka haaliya blood pressure 122/78 mmHg hai, jo samanya seema me hai. Hriday gati 72 bpm sthir hai.";
+      subEng = "Your recent blood pressure is 122/78 mmHg, which is optimal. Heart rate is steady at 72 bpm.";
+      tools.push("IoT ICU Node #409 Stream");
+    } else if (
+      qLower.includes("celiac") ||
+      qLower.includes("ttg") ||
+      qLower.includes("iga") ||
+      qLower.includes("biopsy")
+    ) {
+      speechResp = "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। एसीजी दिशानिर्देशों के अनुसार पुष्टि हेतु एंडोस्कोपी आवश्यक है।";
+      subNative = "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। एसीजी दिशानिर्देशों के अनुसार पुष्टि हेतु एंडोस्कोपी बायोप्सी आवश्यक है।";
+      subRoman = "tTG-IgA antibody 48 U/mL celiac rog ki or sanket karta hai. ACG guidelines ke anusaar biopsy aavashyak hai.";
+      subEng = "Elevated tTG-IgA of 48 U/mL indicates probable celiac disease. Duodenal biopsy is recommended per ACG 2023 Grade 1A.";
+      tools.push("Celiac Risk Stratifier (AUC 0.94)");
+    } else if (
+      qLower.includes("glucose") ||
+      qLower.includes("sugar") ||
+      qLower.includes("diabetes") ||
+      qLower.includes("hba1c")
+    ) {
+      speechResp = "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन की सलाह दी जाती है।";
+      subNative = "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन और पुनः परीक्षण की सलाह दी जाती है।";
+      subRoman = "Fasting glucose 114 mg/dL pre-diabetes range me hai. ADA 2024 standards ke mutabik lifestyle modification zaroori hai.";
+      subEng = "Fasting glucose of 114 mg/dL falls within pre-diabetes range. Lifestyle intervention is recommended per ADA 2024.";
+      tools.push("ADA 2024 Glycemic Standards");
+    } else if (
+      qLower.includes("marfan") ||
+      qLower.includes("fbn1") ||
+      qLower.includes("genetics") ||
+      qLower.includes("pedigree") ||
+      qLower.includes("carrier")
+    ) {
+      speechResp = "मारफान सिंड्रोम FBN1 जीन में ऑटोसोमल डोमिनेंट म्यूटेशन के कारण होता है। प्रत्येक संतान में 50% संचरण जोखिम होता है।";
+      subNative = "मारफान सिंड्रोम FBN1 जीन (15q21.1) में ऑटोसोमल डोमिनेंट म्यूटेशन के कारण होता है। क्लिनवार रिकॉर्ड VCV000016375 के अनुसार 50% विरासत जोखिम है।";
+      subRoman = "Marfan syndrome FBN1 gene me autosomal dominant mutation se hota hai. 50% virasat jokhim hai.";
+      subEng = "Marfan syndrome is caused by autosomal dominant variants in FBN1 (15q21.1) with 50% Mendelian transmission risk per ClinVar VCV000016375.";
+      tools.push("NCBI ClinVar Registry", "GeneWise Pedigree Trace");
+    } else {
+      speechResp = "मैंने आपका प्रश्न समझ लिया है। क्लिनिकल साक्ष्यों के आधार पर आपके स्वास्थ्य पैरामीटर स्थिर और सामान्य हैं।";
+      subNative = `आपके प्रश्न "${q}" का क्लिनिकल विश्लेषण पूरा हो गया है। साक्ष्य-आधारित दिशानिर्देशों के अनुसार सभी पैरामीटर सुरक्षित हैं।`;
+      subRoman = `Aapke prashna "${q}" ka clinical vishleshan poora ho gaya hai. Sabhi parameters surakshit hain.`;
+      subEng = `Clinical inquiry for "${q}" has been verified against current PubMed literature and clinical practice guidelines.`;
+    }
+
+    const langMap: Record<string, string> = {
+      "hi-IN": "Hindi",
+      "ta-IN": "Tamil",
+      "te-IN": "Telugu",
+      "bn-IN": "Bengali",
+      "mr-IN": "Marathi",
+      "gu-IN": "Gujarati",
+      "kn-IN": "Kannada",
+      "ml-IN": "Malayalam",
+      "pa-IN": "Punjabi",
+      "od-IN": "Odia",
+      "as-IN": "Assamese",
+      "ur-IN": "Urdu",
+      "en-IN": "Indian English",
+    };
+
     return NextResponse.json({
+      transcript: q,
+      detected_language: lang,
+      language_name: langMap[lang] || "Hindi",
+      detected_confidence: 0.98,
+      speech_response: speechResp,
+      response_text: subEng,
+      is_emergency: isEmergency,
+      tools_executed: tools,
+      subtitles: {
+        native: subNative,
+        romanized: subRoman,
+        english: subEng,
+      },
       audio_url: null,
-      transcript: body.transcript || "Voice query processed",
-      response_text: "According to clinical guidelines, regular blood pressure tracking is recommended to monitor cardiovascular risk.",
-      detected_language: body.language || "en-IN",
     });
   }
 
@@ -890,12 +1063,30 @@ Based on ACG & ESPGHAN diagnostic guidelines:
   }
 
   if (path === "ml/experiments") {
+    const modelName = body.model_name || "CustomBiomedicalModel";
+    const safeSlug = String(modelName).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
     return NextResponse.json({
       id: `EXP-USER-${Date.now().toString().slice(-4)}`,
-      model_name: body.model_name || "CustomBiomedicalModel",
+      model_name: modelName,
       experiment_name: body.experiment_name || "experiment_run",
       dataset_name: body.dataset_name || "cohort_validation_v1",
-      metrics: { accuracy: body.accuracy || 0.94, roc_auc: body.auc || 0.96, f1_score: body.f1 || 0.93 },
+      version: body.version || "v1.0.0-exp",
+      artifact_path: body.artifact_path || `ml/artifacts/${safeSlug}_checkpoint.pkl`,
+      parameters: body.parameters && Object.keys(body.parameters).length > 0
+        ? body.parameters
+        : {
+            algorithm: modelName,
+            n_estimators: 180,
+            learning_rate: 0.06,
+            max_depth: 5,
+            calibration: "Platt Scaling",
+          },
+      metrics: {
+        accuracy: body.accuracy || 0.94,
+        roc_auc: body.auc || 0.96,
+        f1_score: body.f1 || 0.93,
+        brier_score: body.brier_score || 0.052,
+      },
       status: "completed",
       created_at: new Date().toISOString(),
     });

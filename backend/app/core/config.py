@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "MediPredict AI"
+    PROJECT_NAME: str = "GeneWise"
     VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     

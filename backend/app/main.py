@@ -87,13 +87,13 @@ async def lifespan(app: FastAPI):
         db.close()
     yield
     # Shutdown logic if needed
-    logger.info("MediPredict AI backend service shutting down.")
+    logger.info("GeneWise backend service shutting down.")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description=(
-        "MediPredict AI is an enterprise medical science, AI intelligence, and clinical decision support platform. "
+        "GeneWise is an enterprise genomics literacy, AI intelligence, and clinical decision support platform. "
         "Provides grounded medical RAG, laboratory report intelligence, risk estimation, and patient data management."
     ),
     lifespan=lifespan,

@@ -17,6 +17,5 @@
       <path d="M 8.8 20.2 C 11.5 18.4 20.5 18.4 23.2 20.2" stroke-width="1.3"/>
     </g>
   </g>
-  <text x="46" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="700" letter-spacing="-0.03em" class="brand-text">MediPredict</text>
-  <text x="174" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="800" letter-spacing="-0.02em" class="brand-accent">AI</text>
+  <text x="46" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="700" letter-spacing="-0.03em" class="brand-text">Gene<tspan font-weight="800" letter-spacing="-0.02em" class="brand-accent">Wise</tspan></text>
 </svg>

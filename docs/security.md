@@ -1,4 +1,4 @@
-# MediPredict AI — Security Architecture & Threat Modeling
+# GeneWise — Security Architecture & Threat Modeling
 
 ## 1. Authentication & Cryptography
 - **Password Hashing:** Passlib with Bcrypt (cost factor 12) preventing rainbow table attacks. Truncation guards enforce maximum 72-byte entropy limits.

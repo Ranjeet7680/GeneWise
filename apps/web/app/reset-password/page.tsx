@@ -158,7 +158,7 @@ export default function ResetPasswordPage() {
               <Globe className="w-6 h-6 stroke-[2.2]" />
             </div>
             <span className="font-bold text-xl tracking-tight text-foreground">
-              MediPredict <span className="text-primary">AI</span>
+              Gene<span className="text-primary">Wise</span>
             </span>
           </Link>
           <h2 className="text-xl font-bold tracking-tight text-foreground">Choose a New Password</h2>

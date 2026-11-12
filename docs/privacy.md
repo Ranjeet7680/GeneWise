@@ -1,7 +1,7 @@
-# MediPredict AI — Privacy, DPDP Act 2023 & HIPAA Compliance Framework
+# GeneWise — Privacy, DPDP Act 2023 & HIPAA Compliance Framework
 
 ## 1. Compliance Alignment
-MediPredict AI is designed around the core principles of India's **Digital Personal Data Protection (DPDP) Act 2023**, the European Union's **General Data Protection Regulation (GDPR)**, and the **HIPAA Security Rule** guidelines for electronic protected health information (ePHI).
+GeneWise is designed around the core principles of India's **Digital Personal Data Protection (DPDP) Act 2023**, the European Union's **General Data Protection Regulation (GDPR)**, and the **HIPAA Security Rule** guidelines for electronic protected health information (ePHI).
 
 ### Notice & Explicit Consent (DPDP Sec. 6)
 - Users are presented with itemized consent items:

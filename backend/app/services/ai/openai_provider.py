@@ -55,7 +55,7 @@ class OpenAIProvider(BaseAIProvider):
             {
                 "role": "system",
                 "content": (
-                    "You are MediPredict AI, a clinical informatics assistant. "
+                    "You are GeneWise AI, a clinical informatics assistant. "
                     "Provide evidence-based medical explanations. Do not formulate unsupported diagnoses. "
                     "Ground responses in clinical science and medical reference ranges."
                 ),

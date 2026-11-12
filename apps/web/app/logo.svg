@@ -1,22 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 40" fill="none" width="100%" height="100%">
-  <style>
-    .brand-text { fill: #0a1e27; }
-    .brand-accent { fill: #00635e; }
-    @media (prefers-color-scheme: dark) {
-      .brand-text { fill: #f4faff; }
-      .brand-accent { fill: #2dd4bf; }
-    }
-  </style>
-  <g transform="translate(4, 4)">
-    <rect width="32" height="32" rx="8" fill="#00635e"/>
-    <g stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="16" cy="16" r="9.5" stroke-width="1.8"/>
-      <line x1="6.5" y1="16" x2="25.5" y2="16" stroke-width="1.6"/>
-      <ellipse cx="16" cy="16" rx="4.8" ry="9.5" stroke-width="1.6"/>
-      <path d="M 8.8 11.8 C 11.5 13.6 20.5 13.6 23.2 11.8" stroke-width="1.3"/>
-      <path d="M 8.8 20.2 C 11.5 18.4 20.5 18.4 23.2 20.2" stroke-width="1.3"/>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 48" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="mpBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#004d47" />
+      <stop offset="50%" stopColor="#00635e" />
+      <stop offset="100%" stopColor="#0f766e" />
+    </linearGradient>
+    <linearGradient id="mpPulseGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#2dd4bf" />
+      <stop offset="50%" stopColor="#ffffff" />
+      <stop offset="100%" stopColor="#34d399" />
+    </linearGradient>
+    <filter id="mpDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1" floodColor="#002b28" floodOpacity="0.3" />
+    </filter>
+    <style>
+      .brand-title { fill: #0a1e27; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.03em; }
+      .brand-accent { fill: #00635e; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+      .brand-sub { fill: #64748b; font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif; font-size: 9.5px; font-weight: 500; }
+      @media (prefers-color-scheme: dark) {
+        .brand-title { fill: #f4faff; }
+        .brand-accent { fill: #2dd4bf; }
+        .brand-sub { fill: #94a3b8; }
+      }
+    </style>
+  </defs>
+
+  <!-- Logo Mark -->
+  <g transform="translate(2, 2)">
+    <rect width="44" height="44" rx="11" fill="url(#mpBgGradient)" />
+    
+    <!-- Hexagonal Matrix Outline -->
+    <path d="M22 6L36 14V30L22 38L8 30V14L22 6Z" stroke="#2dd4bf" stroke-width="0.9" stroke-dasharray="2 3" opacity="0.35"/>
+    
+    <!-- Neural Nodes -->
+    <circle cx="22" cy="10" r="1.8" fill="#2dd4bf" opacity="0.7"/>
+    <circle cx="12" cy="18" r="1.5" fill="#2dd4bf" opacity="0.6"/>
+    <circle cx="32" cy="18" r="1.5" fill="#2dd4bf" opacity="0.6"/>
+    <circle cx="14" cy="32" r="1.5" fill="#2dd4bf" opacity="0.5"/>
+    <circle cx="30" cy="32" r="1.5" fill="#2dd4bf" opacity="0.5"/>
+    
+    <line x1="22" y1="10" x2="12" y2="18" stroke="#2dd4bf" stroke-width="0.7" opacity="0.3"/>
+    <line x1="22" y1="10" x2="32" y2="18" stroke="#2dd4bf" stroke-width="0.7" opacity="0.3"/>
+
+    <!-- Dynamic ECG Pulse Waveform -->
+    <path d="M7 23.5H15L17 19.5L19.5 26L22 12L25 32L28 21.5L30 25H37" stroke="url(#mpPulseGradient)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" filter="url(#mpDropShadow)"/>
+    
+    <!-- Intelligence Spark Peak -->
+    <circle cx="22" cy="12" r="2.2" fill="#ffffff"/>
+    <circle cx="22" cy="12" r="1.4" fill="#2dd4bf"/>
+    <path d="M35 22.5L38 25L35 27.5" stroke="#34d399" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="46" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="700" letter-spacing="-0.03em" class="brand-text">MediPredict</text>
-  <text x="174" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="800" letter-spacing="-0.02em" class="brand-accent">AI</text>
+
+  <!-- Typography -->
+  <text x="56" y="25" class="brand-title">Gene<tspan class="brand-accent">Wise</tspan></text>
+  <rect x="166" y="14" width="30" height="15" rx="7.5" fill="#00635e" fill-opacity="0.1" stroke="#00635e" stroke-opacity="0.25" stroke-width="0.8"/>
+  <text x="173" y="24.5" font-family="monospace" font-size="8.5" font-weight="700" fill="#00635e">v2.4</text>
+  <text x="56" y="38" class="brand-sub">Intelligent Healthcare. Earlier Insights.</text>
 </svg>

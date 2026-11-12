@@ -3,7 +3,7 @@ Wearable Ecosystem Batch Synchronization Simulator.
 
 Simulates automated intraday health record batch export from Apple HealthKit (iOS)
 and Android Health Connect (Android 14+). Emits resting heart rate samples, cumulative step
-counts, active energy burn (kcal), and nocturnal sleep stages into the MediPredict AI
+counts, active energy burn (kcal), and nocturnal sleep stages into the GeneWise
 Section 10 Wearable Ingestion Endpoint.
 """
 
@@ -109,7 +109,7 @@ class WearableBatchSyncSimulator:
             headers["Authorization"] = f"Bearer {self.auth_token}"
 
         print(f"\n=======================================================")
-        print(f"  MediPredict AI - Wearable Sync Simulation")
+        print(f"  GeneWise - Wearable Sync Simulation")
         print(f"  Platform:    {self.platform.upper()}")
         print(f"  Device ID:   {self.device_id}")
         print(f"  Records:     {len(payload['records'])} entries")

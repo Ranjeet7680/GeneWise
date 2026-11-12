@@ -1,0 +1,15 @@
+.git
+.vercel
+node_modules
+.next
+backend
+ml
+tests
+docs
+*.py
+*.pyc
+__pycache__
+*.db
+*.sqlite3
+venv
+env

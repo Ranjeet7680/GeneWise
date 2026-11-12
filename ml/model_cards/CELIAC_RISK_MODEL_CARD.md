@@ -1,10 +1,10 @@
-# MediPredict AI — Machine Learning Model Card: Celiac Disease Screening Model
+# GeneWise — Machine Learning Model Card: Celiac Disease Screening Model
 
 ## 1. Model Details
 - **Model Name:** Celiac Disease Risk Stratification Model (Gradient Boosting Classifier)
 - **Model Version:** 1.0.0
 - **Model Type:** Scikit-Learn Supervised Tabular Classifier (`GradientBoostingClassifier` with `StandardScaler` and `OneHotEncoder`)
-- **Developer:** MediPredict AI Clinical Informatics & Data Science Team
+- **Developer:** GeneWise Clinical Informatics & Data Science Team
 - **Date:** October 2026
 - **License:** Research & Educational Use Only (CC-BY-NC 4.0)
 

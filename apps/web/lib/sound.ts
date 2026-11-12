@@ -1,5 +1,5 @@
 /**
- * Web Audio API Sound Synthesizer for MediPredict AI
+ * Web Audio API Sound Synthesizer for GeneWise
  * Provides non-blocking clinical auditory feedback (clicks, confirmations, alerts).
  */
 
@@ -69,6 +69,14 @@ class SoundEngine {
     this.playTone(640, 0.05, "triangle", 0.02);
   }
 
+  public playSoft() {
+    this.playTone(720, 0.03, "sine", 0.015);
+  }
+
+  public playPop() {
+    this.playTone(880, 0.04, "sine", 0.025);
+  }
+
   public playSuccess() {
     this.playTone(523.25, 0.1, "sine", 0.03); // C5
     setTimeout(() => this.playTone(659.25, 0.12, "sine", 0.035), 80); // E5
@@ -83,6 +91,17 @@ class SoundEngine {
   public playAlert() {
     this.playTone(392.0, 0.12, "sawtooth", 0.03); // G4
     setTimeout(() => this.playTone(329.63, 0.18, "sawtooth", 0.03), 90); // E4
+  }
+
+  public playWarning() {
+    this.playAlert();
+  }
+
+  public playEmergency() {
+    this.playTone(880, 0.12, "sawtooth", 0.05); // A5
+    setTimeout(() => this.playTone(659.25, 0.15, "sawtooth", 0.05), 130); // E5
+    setTimeout(() => this.playTone(880, 0.12, "sawtooth", 0.05), 280); // A5
+    setTimeout(() => this.playTone(659.25, 0.2, "sawtooth", 0.05), 410); // E5
   }
 
   public playHeartbeat() {
