@@ -99,28 +99,28 @@ export const NAV_GROUPS: NavGroup[] = [
 export default function AppSidebar() {
   const pathname = usePathname();
 
-  // Sidebar expansion state: false = Full expanded (w-64), true = Short / compact rail (w-16)
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  // Sidebar expansion state: defaults to compact icon rail (w-16) so navigation does NOT expand
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
 
   // Collapsible section accordions state for expanded mode
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
-  // Tooltip hover state in short / collapsed mode
+  // Floating tooltip hover state with viewport top coordinates so it is never clipped
   const [hoveredItem, setHoveredItem] = useState<{
     label: string;
     category: string;
     badge?: string;
+    top: number;
   } | null>(null);
 
-  // Initialize from localStorage preference or auto-compact on Assistant
+  // Initialize: default to compact mode (w-16) across the entire application
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("medipredict_sidebar_collapsed");
-      if (pathname?.startsWith("/assistant")) {
-        // AI Medical Assistant workspace: keep NAVIGATION compact/collapsed so GeneWise Clinical Intelligence has maximum room
+      if (stored === "false") {
+        setIsCollapsed(false);
+      } else {
         setIsCollapsed(true);
-      } else if (stored !== null) {
-        setIsCollapsed(stored === "true");
       }
     }
   }, [pathname]);
@@ -163,57 +163,58 @@ export default function AppSidebar() {
   };
 
   return (
-    <aside
-      className={cn(
-        "border-r border-border bg-surface-low/50 dark:bg-[#111d24]/70 backdrop-blur-xs hidden md:flex flex-col justify-between shrink-0 h-full min-h-0 max-h-full overflow-hidden transition-all duration-300 ease-in-out relative select-none",
-        isCollapsed ? "w-16" : "w-60 xl:w-64"
-      )}
-    >
-      {/* Top Sidebar Header with Shorten / Expand Toggle */}
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-        <div
-          className={cn(
-            "flex items-center border-b border-border/80 px-3 py-2.5 bg-surface-container/30 dark:bg-black/10 transition-all",
-            isCollapsed ? "justify-center" : "justify-between"
-          )}
-        >
-          {!isCollapsed && (
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                Navigation
-              </span>
-            </div>
-          )}
-
-          {/* Toggle Button */}
-          <button
-            onClick={toggleSidebar}
-            title={
-              isCollapsed
-                ? "Expand sidebar (Ctrl + B)"
-                : "Shorten sidebar to compact mode (Ctrl + B)"
-            }
+    <>
+      <aside
+        className={cn(
+          "border-r border-border bg-surface-low/85 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 sticky top-16 h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden transition-all duration-300 ease-in-out select-none z-30 self-start shadow-xs",
+          isCollapsed ? "w-16" : "w-60 xl:w-64"
+        )}
+      >
+        {/* Top Sidebar Header with Shorten / Expand Toggle */}
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div
             className={cn(
-              "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-container dark:hover:bg-[#1a2c38] transition-all cursor-pointer flex items-center gap-1 group",
-              isCollapsed && "w-10 h-10 justify-center"
+              "flex items-center border-b border-border/80 px-3 py-2.5 bg-surface-container/30 dark:bg-black/10 transition-all",
+              isCollapsed ? "justify-center" : "justify-between"
             )}
           >
-            {isCollapsed ? (
-              <PanelLeftOpen className="w-4 h-4 text-primary group-hover:scale-115 transition-transform" />
-            ) : (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground">
-                <span className="text-[10px] font-semibold text-muted-foreground/80 group-hover:text-primary transition-colors">
-                  Shorten
+            {!isCollapsed && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  Navigation
                 </span>
-                <PanelLeftClose className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
               </div>
             )}
-          </button>
-        </div>
 
-        {/* Scrollable Navigation List */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-4 scrollbar-thin">
+            {/* Toggle Button */}
+            <button
+              onClick={toggleSidebar}
+              title={
+                isCollapsed
+                  ? "Expand sidebar (Ctrl + B)"
+                  : "Lock sidebar to compact rail (Ctrl + B)"
+              }
+              className={cn(
+                "p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-container dark:hover:bg-[#1a2c38] transition-all cursor-pointer flex items-center gap-1 group",
+                isCollapsed && "w-10 h-10 justify-center"
+              )}
+            >
+              {isCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-primary group-hover:scale-115 transition-transform" />
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground group-hover:text-foreground">
+                  <span className="text-[10px] font-semibold text-muted-foreground/80 group-hover:text-primary transition-colors">
+                    Shorten
+                  </span>
+                  <PanelLeftClose className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+                </div>
+              )}
+            </button>
+          </div>
+
+          {/* Scrollable Navigation List */}
+          <div className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-4 scrollbar-thin">
           {NAV_GROUPS.map((group) => {
             const isGroupCollapsed = !!collapsedSections[group.id];
 
@@ -251,14 +252,16 @@ export default function AppSidebar() {
                         <div
                           key={item.href}
                           className="relative"
-                          onMouseEnter={() =>
-                            isCollapsed &&
+                          onMouseEnter={(e) => {
+                            if (!isCollapsed) return;
+                            const rect = e.currentTarget.getBoundingClientRect();
                             setHoveredItem({
                               label: item.label,
                               category: group.title,
                               badge: item.badge,
-                            })
-                          }
+                              top: rect.top + rect.height / 2,
+                            });
+                          }}
                           onMouseLeave={() => isCollapsed && setHoveredItem(null)}
                         >
                           <Link
@@ -323,33 +326,6 @@ export default function AppSidebar() {
                               />
                             )}
                           </Link>
-
-                          {/* Floating Tooltip in Short Mode */}
-                          {isCollapsed && hoveredItem?.label === item.label && (
-                            <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3.5 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
-                              <div className="rounded-xl bg-slate-900/95 dark:bg-[#162732]/95 backdrop-blur-md text-white border border-slate-700/60 dark:border-border/80 shadow-2xl p-2.5 whitespace-nowrap min-w-[140px]">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-xs font-bold leading-tight">
-                                    {item.label}
-                                  </span>
-                                  {item.badge && (
-                                    <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-primary text-white">
-                                      {item.badge}
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-[10px] text-slate-400 block mt-0.5">
-                                  {group.title}
-                                </span>
-                                {isActive && (
-                                  <span className="text-[9px] font-semibold text-emerald-400 block mt-1 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                                    Current View
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -385,20 +361,51 @@ export default function AppSidebar() {
           </div>
         </div>
       ) : (
-        <div className="p-2 border-t border-border/80 flex flex-col items-center gap-2 py-3">
+        <div className="p-2 border-t border-border/80 flex flex-col items-center gap-2 py-3 bg-surface-container/10">
           <button
             onClick={toggleSidebar}
-            title="Expand menu bar"
-            className="w-10 h-10 rounded-xl bg-surface-container dark:bg-[#162732] hover:bg-primary/10 text-muted-foreground hover:text-primary flex items-center justify-center transition-all cursor-pointer border border-border"
+            title="Expand menu bar (Ctrl + B)"
+            className="w-10 h-10 rounded-xl bg-surface-container/80 dark:bg-[#162732] hover:bg-primary/10 text-muted-foreground hover:text-primary flex items-center justify-center transition-all cursor-pointer border border-border"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
           <div
             title="FastAPI 0.111 Mesh Online"
-            className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse cursor-help"
+            className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse cursor-help"
           />
         </div>
       )}
     </aside>
+
+    {/* Global Floating Tooltip for Short/Compact Rail (Never clipped by container overflow) */}
+    {isCollapsed && hoveredItem && (
+      <div
+        style={{ top: `${hoveredItem.top}px` }}
+        className="fixed left-[4.5rem] -translate-y-1/2 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-100"
+      >
+        <div className="rounded-xl bg-slate-900/95 dark:bg-[#162732]/95 backdrop-blur-md text-white border border-slate-700/60 dark:border-border/80 shadow-2xl p-2.5 whitespace-nowrap min-w-[130px]">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold leading-tight">
+              {hoveredItem.label}
+            </span>
+            {hoveredItem.badge && (
+              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-primary text-white">
+                {hoveredItem.badge}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] text-slate-400 block mt-0.5">
+            {hoveredItem.category}
+          </span>
+          {isItemActive(hoveredItem.label) && (
+            <span className="text-[9px] font-semibold text-emerald-400 block mt-1 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Current View
+            </span>
+          )}
+        </div>
+      </div>
+    )}
+  </>
   );
 }

@@ -888,76 +888,151 @@ export async function POST(req: NextRequest, { params }: { params: { slug?: stri
     let subRoman = "";
     let subEng = "";
     let isEmergency = false;
+    let lstmBiomarker: "hba1c" | "ttg_iga" | "systolic_bp" | "apob" | "tsh" | null = null;
     const tools = ["PubMed Guideline Synthesis", "Clinical Evidence Engine"];
 
     const qLower = q.toLowerCase();
+
+    // Multilingual clinical dialect translations for 13 Indian languages
+    type VoiceDialectMap = Record<string, { speech: string; native: string; roman: string }>;
+
     if (
       qLower.includes("chest pain") ||
-      qLower.includes("chhati me dard") ||
+      qLower.includes("chhati") ||
       qLower.includes("heart attack") ||
       qLower.includes("saans") ||
-      qLower.includes("unconscious")
+      qLower.includes("unconscious") ||
+      qLower.includes("emergency") ||
+      qLower.includes("dard")
     ) {
       isEmergency = true;
-      speechResp = "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर कॉल करें।";
-      subNative = "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर कॉल करें।";
-      subRoman = "Yeh ek aapaatkaaleen sthiti ho sakti hai. Kripya turant 112 ya 108 par call karein.";
+      tools.push("STAT Emergency Dispatch Protocol (112/108)");
       subEng = "This could be an acute medical emergency. Please dial 112 or 108 immediately.";
-      tools.push("STAT Emergency Dispatch Protocol");
+      const emergencyMap: VoiceDialectMap = {
+        "hi-IN": { speech: "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर संपर्क करें।", native: "यह एक आपातकालीन स्थिति हो सकती है। कृपया तुरंत 112 या 108 पर संपर्क करें।", roman: "Yeh ek aapaatkaaleen sthiti ho sakti hai. Kripya turant 112 ya 108 par call karein." },
+        "bn-IN": { speech: "এটি একটি জরুরি অবস্থা হতে পারে। অনুগ্রহ করে অবিলম্বে ১১২ বা ১০৮ নম্বরে কল করুন।", native: "এটি একটি জরুরি অবস্থা হতে পারে। অনুগ্রহ করে অবিলম্বে ১১২ বা ১০৮ নম্বরে কল করুন।", roman: "Eti ekti joruri obostha hote pare. Onugroho kore obilombe 112 ba 108 e call korun." },
+        "ta-IN": { speech: "இது அவசர நிலையாக இருக்கலாம். தயவுசெய்து உடனடியாக 112 அல்லது 108 ஐ அழைக்கவும்.", native: "இது அவசர நிலையாக இருக்கலாம். தயவுசெய்து உடனடியாக 112 அல்லது 108 ஐ அழைக்கவும்.", roman: "Idhu avasara nilaiyaaga irukkalaam. Thayavuseithu udanadiyaaga 112 alladhu 108 ai alaikkavum." },
+        "te-IN": { speech: "ఇది అత్యవసర పరిస్థితి కావచ్చు. దయచేసి వెంటనే 112 లేదా 108 కు కాల్ చేయండి.", native: "ఇది అత్యవసర పరిస్థితి కావచ్చు. దయచేసి వెంటనే 112 లేదా 108 కు కాల్ చేయండి.", roman: "Idi atyavasara paristhiti kaavachu. Dayachesi ventane 112 leda 108 ku call cheyandi." },
+        "kn-IN": { speech: "ಇದು ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಾಗಿರಬಹುದು. ದಯವಿಟ್ಟು ತಕ್ಷಣ 112 ಅಥವಾ 108 ಗೆ ಕರೆ ಮಾಡಿ.", native: "ಇದು ತುರ್ತು ಪರಿಸ್ಥಿತಿಯಾಗಿರಬಹುದು. ದಯವಿಟ್ಟು ತಕ್ಷಣ 112 ಅಥವಾ 108 ಗೆ ಕರೆ ಮಾಡಿ.", roman: "Idu thurthu paristhithiyaagirabahudu. Dayavittu thakshana 112 athava 108 ge call maadi." },
+        "ml-IN": { speech: "ഇതൊരു അടിയന്തിര സാഹചര്യമാകാം. ദയവായി ഉടൻ 112 അല്ലെങ്കിൽ 108 ലേക്ക് വിളിക്കുക.", native: "ഇതൊരു അടിയന്തിര സാഹചര്യമാകാം. ദയവായി ഉടൻ 112 അല്ലെങ്കിൽ 108 ലേക്ക് വിളിക്കുക.", roman: "Ithoru adiyanthira saahacharyamaakaam. Dayavaayi udan 112 allekil 108 lekku vilikkuka." },
+        "mr-IN": { speech: "ही आणीबाणीची परिस्थिती असू शकते. कृपया त्वरित 112 किंवा 108 वर संपर्क साधा.", native: "ही आणीबाणीची परिस्थिती असू शकते. कृपया त्वरित 112 किंवा 108 वर संपर्क साधा.", roman: "Hee aaneebanechee paristhitee asoo shakate. Krupaya twarit 112 kinva 108 var samparka saadha." },
+        "gu-IN": { speech: "આ કટોકટી હોઈ શકે છે. કૃપા કરીને તાત્કાલિક 112 અથવા 108 પર કૉલ કરો.", native: "આ કટોકટી હોઈ શકે છે. કૃપા કરીને તાત્કાલિક 112 અથવા 108 પર કૉલ કરો.", roman: "Aa katokati hoi shake chhe. Krupa karine taatkaalik 112 athva 108 par call karo." },
+        "pa-IN": { speech: "ਇਹ ਇੱਕ ਐਮਰਜੈਂਸੀ ਹੋ ਸਕਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਤੁਰੰਤ 112 ਜਾਂ 108 'ਤੇ ਕਾਲ ਕਰੋ।", native: "ਇਹ ਇੱਕ ਐਮਰਜੈਂਸੀ ਹੋ ਸਕਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਤੁਰੰਤ 112 ਜਾਂ 108 'ਤੇ ਕਾਲ ਕਰੋ।", roman: "Ih ikk emergency ho sakdi hai. Kirpa karke turant 112 jaan 108 te call karo." },
+        "od-IN": { speech: "ଏହା ଏକ ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତି ହୋଇପାରେ। ଦୟାକରି ତୁରନ୍ତ ୧୧୨ କିମ୍ବା ୧୦୮ କୁ କଲ କରନ୍ତୁ।", native: "ଏହା ଏକ ଜରୁରୀକାଳୀନ ପରିସ୍ଥିତି ହୋଇପାରେ। ଦୟାକରି ତୁରନ୍ତ ୧୧୨ କିମ୍ବା ୧୦୮ କୁ କଲ କରନ୍ତୁ।", roman: "Eha eka jarureekaleena paristhiti hoipaare. Dayakari turanta 112 kimba 108 ku call karantu." },
+        "as-IN": { speech: "এইটো এটা জৰুৰীকালীন অৱস্থা হ’ব পাৰে। অনুগ্ৰহ কৰি ততালিকে ১১২ বা ১০৮ নম্বৰত যোগাযোগ কৰক।", native: "এইটো এটা জৰুৰীকালীন অৱস্থা হ’ব পাৰে। অনুগ্ৰহ কৰি ততালিকে ১১২ বা ১০৮ নম্বৰত যোগাযোগ কৰক।", roman: "Eito eta jorurikalin obostha hobo pare. Onugroh kori totalike 112 ba 108 nomborot jogajog korok." },
+        "ur-IN": { speech: "یہ ہنگامی صورتحال ہو سکتی ہے۔ براہ کرم فوری طور پر 112 یا 108 پر رابطہ کریں۔", native: "یہ ہنگامی صورتحال ہو سکتی ہے۔ براہ کرم فوری طور پر 112 یا 108 پر رابطہ کریں۔", roman: "Yeh hangami soorathal ho sakti hai. Barah-e-karam fori tor par 112 ya 108 par rabta karein." },
+        "en-IN": { speech: "This could be an acute medical emergency. Please dial 112 or 108 immediately.", native: "This could be an acute medical emergency. Please dial 112 or 108 immediately.", roman: "Acute Red-Flag Protocol triggered: Call 112 or 108." },
+      };
+      const sel = emergencyMap[lang] || emergencyMap["hi-IN"];
+      speechResp = sel.speech;
+      subNative = sel.native;
+      subRoman = sel.roman;
     } else if (
       qLower.includes("blood pressure") ||
       qLower.includes("bp") ||
       qLower.includes("telemetry") ||
       qLower.includes("vitals")
     ) {
-      speechResp = "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।";
-      subNative = "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।";
-      subRoman = "Aapka haaliya blood pressure 122/78 mmHg hai, jo samanya seema me hai. Hriday gati 72 bpm sthir hai.";
-      subEng = "Your recent blood pressure is 122/78 mmHg, which is optimal. Heart rate is steady at 72 bpm.";
-      tools.push("IoT ICU Node #409 Stream");
+      lstmBiomarker = "systolic_bp";
+      tools.push("IoT ICU Node #409 Stream", "Bi-LSTM Systolic BP Projection");
+      subEng = "Your recent blood pressure is 122/78 mmHg, which is optimal. Heart rate is steady at 72 bpm with normal Bi-LSTM stability.";
+      const bpMap: VoiceDialectMap = {
+        "hi-IN": { speech: "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।", native: "आपका हालिया ब्लड प्रेशर 122/78 mmHg है, जो सामान्य सीमा में है। हृदय गति 72 bpm स्थिर है।", roman: "Aapka haaliya blood pressure 122/78 mmHg hai, jo samanya seema me hai. Hriday gati 72 bpm sthir hai." },
+        "bn-IN": { speech: "আপনার সাম্প্রতিক রক্তচাপ ১২২/৭৮ mmHg, যা স্বাভাবিক সীমায় রয়েছে। হৃদস্পন্দন ৭২ bpm স্থিতিশীল।", native: "আপনার সাম্প্রতিক রক্তচাপ ১২২/৭৮ mmHg, যা স্বাভাবিক সীমায় রয়েছে। হৃদস্পন্দন ৭২ bpm স্থিতিশীল।", roman: "Aapnar samproti roktochap 122/78 mmHg, ja swabhabik seemay royeche." },
+        "ta-IN": { speech: "உங்கள் சமீபத்திய இரத்த அழுத்தம் 122/78 mmHg, இது சீரான வரம்பில் உள்ளது. இதயத் துடிப்பு 72 bpm நிலைபெற்றுள்ளது.", native: "உங்கள் சமீபத்திய இரத்த அழுத்தம் 122/78 mmHg, இது சீரான வரம்பில் உள்ளது. இதயத் துடிப்பு 72 bpm நிலைபெற்றுள்ளது.", roman: "Ungal sameebathiya ratha azhutham 122/78 mmHg, idhu seeraana varambil ulladhu." },
+        "te-IN": { speech: "మీ ఇటీవలి రక్తపోటు 122/78 mmHg, ఇది సాధారణ పరిధిలో ఉంది. గుండె వేగం 72 bpm స్థిరంగా ఉంది.", native: "మీ ఇటీవలి రక్తపోటు 122/78 mmHg, ఇది సాధారణ పరిధిలో ఉంది. గుండె వేగం 72 bpm స్థిరంగా ఉంది.", roman: "Mee iteevali raktapotu 122/78 mmHg, idi saadharana paridhilo vundi." },
+        "kn-IN": { speech: "ನಿಮ್ಮ ಇತ್ತೀಚಿನ ರಕ್ತದೊತ್ತಡ 122/78 mmHg ಆಗಿದೆ, ಇದು ಸಹಜ ಮಿತಿಯಲ್ಲಿದೆ. ಹೃದಯ ಬಡಿತ 72 bpm ಸ್ಥಿರವಾಗಿದೆ.", native: "ನಿಮ್ಮ ಇತ್ತೀಚಿನ ರಕ್ತದೊತ್ತಡ 122/78 mmHg ಆಗಿದೆ, ಇದು ಸಹಜ ಮಿತಿಯಲ್ಲಿದೆ. ಹೃದಯ ಬಡಿತ 72 bpm ಸ್ಥಿರವಾಗಿದೆ.", roman: "Ninna itteechina raktadottada 122/78 mmHg aagide, idu sahaja mitiyallide." },
+        "ml-IN": { speech: "നിങ്ങളുടെ സമീപകാല രക്തസമ്മർദ്ദം 122/78 mmHg ആണ്, ഇത് സാധാരണ പരിധിയിലാണ്. ഹൃദയമിടിപ്പ് 72 bpm സ്ഥിരമാണ്.", native: "നിങ്ങളുടെ സമീപകാല രക്തസമ്മർദ്ദം 122/78 mmHg ആണ്, ഇത് സാധാരണ പരിധിയിലാണ്. ഹൃദയമിടിപ്പ് 72 bpm സ്ഥിരമാണ്.", roman: "Ningalude sameepakaala rakthasammarddam 122/78 mmHg aanu, ithu saadhaaranam aanu." },
+        "mr-IN": { speech: "तुमचा अलिकडचा रक्तदाब 122/78 mmHg आहे, जो सामान्य मर्यादेत आहे. हृदयाचे ठोके 72 bpm स्थिर आहेत.", native: "तुमचा अलिकडचा रक्तदाब 122/78 mmHg आहे, जो सामान्य मर्यादेत आहे. हृदयाचे ठोके 72 bpm स्थिर आहेत.", roman: "Tumcha alikadcha raktadaab 122/78 mmHg aahe, jo samanya maryadet aahe." },
+        "gu-IN": { speech: "તમારું તાજેતરનું બ્લડ પ્રેશર 122/78 mmHg છે, જે સામાન્ય મર્યાદામાં છે. હૃદયના ધબકારા 72 bpm સ્થિર છે.", native: "તમારું તાજેતરનું બ્લડ પ્રેશર 122/78 mmHg છે, જે સામાન્ય મર્યાદામાં છે. હૃદયના ધબકારા 72 bpm સ્થિર છે.", roman: "Tamaaru taajetarnu blood pressure 122/78 mmHg chhe, je samanya maryadama chhe." },
+        "pa-IN": { speech: "ਤੁਹਾਡਾ ਹਾਲੀਆ ਬਲੱਡ ਪ੍ਰੈਸ਼ਰ 122/78 mmHg ਹੈ, ਜੋ ਕਿ ਆਮ ਸੀਮਾ ਵਿੱਚ ਹੈ। ਦਿਲ ਦੀ ਧੜਕਣ 72 bpm ਸਥਿਰ ਹੈ।", native: "ਤੁਹਾਡਾ ਹਾਲੀਆ ਬਲੱਡ ਪ੍ਰੈਸ਼ਰ 122/78 mmHg ਹੈ, ਜੋ ਕਿ ਆਮ ਸੀਮਾ ਵਿੱਚ ਹੈ। ਦਿਲ ਦੀ ਧੜਕਣ 72 bpm ਸਥਿਰ ਹੈ।", roman: "Tuhada haaliya blood pressure 122/78 mmHg hai, jo aam seema vich hai." },
+        "od-IN": { speech: "ଆପଣଙ୍କର ସାମ୍ପ୍ରତିକ ରକ୍ତଚାପ ୧୨୨/୭୮ mmHg ଅଛି, ଯାହା ସ୍ୱାଭାବିକ ସୀମା ମଧ୍ୟରେ ଅଛି।", native: "ଆପଣଙ୍କର ସାମ୍ପ୍ରତିକ ରକ୍ତଚାପ ୧୨୨/୭୮ mmHg ଅଛି, ଯାହା ସ୍ୱାଭାବିକ ସୀମା ମଧ୍ୟରେ ଅଛି।", roman: "Aapanankara sampratika raktachapa 122/78 mmHg achhi, jaha swabhabika seema re achhi." },
+        "as-IN": { speech: "আপোনাৰ শেহতীয়া ৰক্তচাপ ১২২/৭৮ mmHg, যি স্বাভাৱিক সীমাত আছে। হৃদস্পন্দন ৭২ bpm সুস্থিৰ।", native: "আপোনাৰ শেহতীয়া ৰক্তচাপ ১২২/৭৮ mmHg, যি স্বাভাৱিক সীমাত আছে। হৃদস্পন্দন ৭২ bpm সুস্থিৰ।", roman: "Apunar xehetiya roktosap 122/78 mmHg, ji swabhavik ximat ase." },
+        "ur-IN": { speech: "آپ کا حالیہ بلڈ پریشر 122/78 mmHg ہے، جو معمول کے مطابق ہے۔ نبض 72 bpm پر مستحکم ہے۔", native: "آپ کا حالیہ بلڈ پریشر 122/78 mmHg ہے، جو معمول کے مطابق ہے۔ نبض 72 bpm پر مستحکم ہے۔", roman: "Aap ka haliya blood pressure 122/78 mmHg hai, jo mamool ke mutabiq hai." },
+        "en-IN": { speech: "Your recent blood pressure is 122/78 mmHg, which is optimal. Heart rate is steady at 72 bpm.", native: "Your recent blood pressure is 122/78 mmHg, which is optimal. Heart rate is steady at 72 bpm.", roman: "Vitals verified via Telemetry Node #409: Normotensive." },
+      };
+      const sel = bpMap[lang] || bpMap["hi-IN"];
+      speechResp = sel.speech;
+      subNative = sel.native;
+      subRoman = sel.roman;
     } else if (
       qLower.includes("celiac") ||
       qLower.includes("ttg") ||
       qLower.includes("iga") ||
       qLower.includes("biopsy")
     ) {
-      speechResp = "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। एसीजी दिशानिर्देशों के अनुसार पुष्टि हेतु एंडोस्कोपी आवश्यक है।";
-      subNative = "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। एसीजी दिशानिर्देशों के अनुसार पुष्टि हेतु एंडोस्कोपी बायोप्सी आवश्यक है।";
-      subRoman = "tTG-IgA antibody 48 U/mL celiac rog ki or sanket karta hai. ACG guidelines ke anusaar biopsy aavashyak hai.";
-      subEng = "Elevated tTG-IgA of 48 U/mL indicates probable celiac disease. Duodenal biopsy is recommended per ACG 2023 Grade 1A.";
-      tools.push("Celiac Risk Stratifier (AUC 0.94)");
+      lstmBiomarker = "ttg_iga";
+      tools.push("Celiac Risk Stratifier (AUC 0.94)", "Bi-LSTM Antibody Kinetic (90d)");
+      subEng = "Elevated tTG-IgA of 48 U/mL indicates probable celiac disease. Bi-LSTM projects serology velocity at +2.58 U/mL/mo; duodenal biopsy is advised per ACG 2023 Grade 1A.";
+      const celiacMap: VoiceDialectMap = {
+        "hi-IN": { speech: "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। Bi-LSTM 90-दिन का अनुमान 55.9 U/mL है; पुष्टि हेतु एंडोस्कोपी बायोप्सी आवश्यक है।", native: "tTG-IgA एंटीबॉडी 48 U/mL का स्तर सीलिएक रोग की ओर संकेत करता है। Bi-LSTM 90-दिन का अनुमान 55.9 U/mL है; पुष्टि हेतु एंडोस्कोपी बायोप्सी आवश्यक है।", roman: "tTG-IgA antibody 48 U/mL celiac rog ki or sanket karta hai. Bi-LSTM 90d forecast 55.9 U/mL hai; biopsy aavashyak hai." },
+        "bn-IN": { speech: "tTG-IgA অ্যান্টিবডি ৪৮ U/mL সিলিয়াক রোগের ইঙ্গিত দেয়। Bi-LSTM ৯০ দিনের পূর্বাভাস ৫৫.৯ U/mL; এন্ডোস্কোপি বায়োপসি প্রয়োজন।", native: "tTG-IgA অ্যান্টিবডি ৪৮ U/mL সিলিয়াক রোগের ইঙ্গিত দেয়। এন্ডোস্কোপি বায়োপসি নিশ্চিতকরণের জন্য সুপারিশকৃত।", roman: "tTG-IgA antibody 48 U/mL celiac roger ingit dey. Bi-LSTM 90d forecast 55.9 U/mL." },
+        "ta-IN": { speech: "tTG-IgA ஆன்டிபாடி 48 U/mL செலியாக் நோயைக் குறிக்கிறது. Bi-LSTM 90 நாள் கணிப்பு 55.9 U/mL; பயாப்ஸி பரிசோதனை பரிந்துரைக்கப்படுகிறது.", native: "tTG-IgA ஆன்டிபாடி 48 U/mL செலியாக் நோயைக் குறிக்கிறது. உறுதிப்படுத்த எண்டோஸ்கோபி பயாப்ஸி தேவை.", roman: "tTG-IgA antibody 48 U/mL celiac noyik kurikkiradhu. Bi-LSTM 90 naal kanippu 55.9 U/mL." },
+        "te-IN": { speech: "tTG-IgA యాంటీబాడీ 48 U/mL ఉనికి సెలియాక్ వ్యాధిని సూచిస్తుంది. Bi-LSTM 90 రోజుల అంచనా 55.9 U/mL; బయాప్సీ అవసరం.", native: "tTG-IgA యాంటీబాడీ 48 U/mL ఉనికి సెలియాక్ వ్యాధిని సూచిస్తుంది. ఎండోస్కోపీ బయాప్సీ సిఫార్సు చేయబడింది.", roman: "tTG-IgA antibody 48 U/mL celiac vyadhini soochistundi. Biopsy aavashyakam." },
+        "kn-IN": { speech: "tTG-IgA ಆಂಟಿಬಾಡಿ 48 U/mL ಸೆಲಿಯಾಕ್ ಕಾಯಿಲೆಯ ಲಕ್ಷಣವಾಗಿದೆ. Bi-LSTM 90 ದಿನಗಳ ಮುನ್ಸೂಚನೆ 55.9 U/mL; ಬಯಾಪ್ಸಿ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.", native: "tTG-IgA ಆಂಟಿಬಾಡಿ 48 U/mL ಸೆಲಿಯಾಕ್ ಕಾಯಿಲೆಯ ಲಕ್ಷಣವಾಗಿದೆ. ಎಂಡೋಸ್ಕೋಪಿ ಬಯಾಪ್ಸಿ ಅಗತ್ಯವಿದೆ.", roman: "tTG-IgA antibody 48 U/mL celiac kayileya lakshanavaagide. Biopsy aavashyaka." },
+        "ml-IN": { speech: "tTG-IgA ആന്റിബോഡി 48 U/mL സീലിയാക് രോഗത്തെ സൂചിപ്പിക്കുന്നു. Bi-LSTM 90 ദിവസത്തെ പ്രവചനം 55.9 U/mL; ബയോപ്സി ആവശ്യമാണ്.", native: "tTG-IgA ആന്റിബോഡി 48 U/mL സീലിയാക് രോഗത്തെ സൂചിപ്പിക്കുന്നു. എന്റോസ്കോപ്പി ബയോപ്സി അത്യാവശ്യമാണ്.", roman: "tTG-IgA antibody 48 U/mL celiac rogathe soochippikkunnu." },
+        "mr-IN": { speech: "tTG-IgA अँटीबॉडी 48 U/mL सीलिएक आजाराकडे संकेत करते. Bi-LSTM 90 दिवसांचा अंदाज 55.9 U/mL आहे; बायोप्सी आवश्यक आहे.", native: "tTG-IgA अँटीबॉडी 48 U/mL सीलिएक आजाराकडे संकेत करते. पुष्टीसाठी एंडोस्कोपी बायोप्सी आवश्यक आहे.", roman: "tTG-IgA antibody 48 U/mL celiac aajarache sanket dete. Biopsy aavashyak aahe." },
+        "gu-IN": { speech: "tTG-IgA એન્ટિબોડી 48 U/mL સિલિયાક રોગ સૂચવે છે. Bi-LSTM 90 દિવસનું અનુમાન 55.9 U/mL છે; બાયોપ્સી જરૂરી છે.", native: "tTG-IgA એન્ટિબોડી 48 U/mL સિલિયાક રોગ સૂચવે છે. એન્ડોસ્કોપી બાયોપ્સી ભલામણપાત્ર છે.", roman: "tTG-IgA antibody 48 U/mL celiac rog suchve chhe. Biopsy jaruri chhe." },
+        "pa-IN": { speech: "tTG-IgA ਐਂਟੀਬਾਡੀ 48 U/mL ਸੀਲੀਏਕ ਰੋਗ ਵੱਲ ਇਸ਼ਾਰਾ ਕਰਦੀ ਹੈ। Bi-LSTM 90-ਦਿਨ ਦਾ ਅਨੁਮਾਨ 55.9 U/mL ਹੈ; ਬਾਇਓਪਸੀ ਜ਼ਰੂਰੀ ਹੈ।", native: "tTG-IgA ਐਂਟੀਬਾਡੀ 48 U/mL ਸੀਲੀਏਕ ਰੋਗ ਵੱਲ ਇਸ਼ਾਰਾ ਕਰਦੀ ਹੈ। ਪੁਸ਼ਟੀ ਲਈ ਐਂਡੋਸਕੋਪੀ ਬਾਇਓਪਸੀ ਜ਼ਰੂਰੀ ਹੈ।", roman: "tTG-IgA antibody 48 U/mL celiac rog vall ishara kardi hai. Biopsy zaroori hai." },
+        "od-IN": { speech: "tTG-IgA ଆଣ୍ଟିବଡି ୪୮ U/mL ସିଲିଆକ୍ ରୋଗକୁ ସୂଚାଉଛି। Bi-LSTM ୯୦ ଦିନର ପୂର୍ବାନୁମାନ ୫୫.୯ U/mL ଅଟେ; ବାୟୋପ୍ସି ଆବଶ୍ୟକ।", native: "tTG-IgA ଆଣ୍ଟିବଡି ୪୮ U/mL ସିଲିଆକ୍ ରୋଗକୁ ସୂଚାଉଛି। ଏଣ୍ଡୋସ୍କୋପି ବାୟୋପ୍ସି ନିଶ୍ଚିତକରଣ ପାଇଁ ଆବଶ୍ୟକ।", roman: "tTG-IgA antibody 48 U/mL celiac rogaku suchauchhi. Biopsy aavashyaka." },
+        "as-IN": { speech: "tTG-IgA এণ্টিবডী ৪৮ U/mL চিলিয়াক ৰোগৰ ইংগিত দিয়ে। Bi-LSTM ৯০ দিনৰ পূৰ্বানুমান ৫৫.৯ U/mL; বায়’প্সি পৰামৰ্শ দিয়া হৈছে।", native: "tTG-IgA এণ্টিবডী ৪৮ U/mL চিলিয়াক ৰোগৰ ইংগিত দিয়ে। নিশ্চিতকৰণৰ বাবে এণ্ডোস্কপী বায়'প্সি প্ৰয়োজনীয়।", roman: "tTG-IgA antibody 48 U/mL celiac rogor ingit diye." },
+        "ur-IN": { speech: "tTG-IgA اینٹی باڈی 48 U/mL سیلیک بیماری کی طرف اشارہ کرتی ہے۔ Bi-LSTM 90 دن کی پیشن گوئی 55.9 U/mL ہے؛ بایوپسی ضروری ہے۔", native: "tTG-IgA اینٹی باڈی 48 U/mL سیلیک بیماری کی طرف اشارہ کرتی ہے۔ توثیق کے لیے اینڈوسکوپی بائیوپسی ضروری ہے۔", roman: "tTG-IgA antibody 48 U/mL celiac bemari ki taraf ishara karti hai. Biopsy zaroori hai." },
+        "en-IN": { speech: "Elevated tTG-IgA of 48 U/mL indicates probable celiac disease. Bi-LSTM 90-day trajectory projects 55.93 U/mL (+2.58 U/mL/mo); duodenal biopsy is advised per ACG 2023 Grade 1A.", native: "Elevated tTG-IgA of 48 U/mL indicates probable celiac disease. Bi-LSTM projects 55.93 U/mL at 90 days; duodenal biopsy recommended per ACG 2023.", roman: "Serology-positive celiac evaluation with Bi-LSTM velocity tracking." },
+      };
+      const sel = celiacMap[lang] || celiacMap["hi-IN"];
+      speechResp = sel.speech;
+      subNative = sel.native;
+      subRoman = sel.roman;
     } else if (
       qLower.includes("glucose") ||
       qLower.includes("sugar") ||
       qLower.includes("diabetes") ||
       qLower.includes("hba1c")
     ) {
-      speechResp = "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन की सलाह दी जाती है।";
-      subNative = "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन और पुनः परीक्षण की सलाह दी जाती है।";
-      subRoman = "Fasting glucose 114 mg/dL pre-diabetes range me hai. ADA 2024 standards ke mutabik lifestyle modification zaroori hai.";
-      subEng = "Fasting glucose of 114 mg/dL falls within pre-diabetes range. Lifestyle intervention is recommended per ADA 2024.";
-      tools.push("ADA 2024 Glycemic Standards");
+      lstmBiomarker = "hba1c";
+      tools.push("ADA 2024 Glycemic Standards", "Bi-LSTM 90-Day Glycemic Model");
+      subEng = "Fasting glucose of 114 mg/dL falls within pre-diabetes range. Bi-LSTM longitudinal sequence projects HbA1c trajectory to 6.06% (-0.14%/mo) with clinical lifestyle modifications.";
+      const glycemicMap: VoiceDialectMap = {
+        "hi-IN": { speech: "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। Bi-LSTM 90-दिन का अनुमान 6.06% है; एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन की सलाह दी जाती है।", native: "फास्टिंग ब्लड ग्लूकोज 114 mg/dL प्रीडायबिटीज रेंज में है। Bi-LSTM 90-दिन का अनुमान 6.06% है; एडीए 2024 मानकों के अनुसार जीवनशैली में संशोधन और पुनः परीक्षण की सलाह दी जाती है।", roman: "Fasting glucose 114 mg/dL pre-diabetes range me hai. Bi-LSTM 90d forecast 6.06% hai; ADA standards ke mutabik lifestyle modification zaroori hai." },
+        "bn-IN": { speech: "ফাস্টিং রক্তে শর্করার মাত্রা ১১৪ mg/dL প্রি-ডায়াবেটিস নির্দেশ করে। Bi-LSTM ৯০ দিনের পূর্বাভাস ৬.০৬%; জীবনযাত্রার পরিবর্তনের পরামর্শ দেওয়া হচ্ছে।", native: "ফাস্টিং রক্তে শর্করার মাত্রা ১১৪ mg/dL প্রি-ডায়াবেটিস নির্দেশ করে। Bi-LSTM ৯০ দিনের পূর্বাভাস ৬.০৬%।", roman: "Fasting glucose 114 mg/dL pre-diabetes nirdesh kore. Bi-LSTM 90d forecast 6.06%." },
+        "ta-IN": { speech: "வெறும் வயிற்று சர்க்கரை அளவு 114 mg/dL முந்தைய நீரிழிவு வரம்பில் உள்ளது. Bi-LSTM 90 நாள் கணிப்பு 6.06% ஆகும்; வாழ்க்கை முறை மாற்றம் தேவை.", native: "வெறும் வயிற்று சர்க்கரை அளவு 114 mg/dL முந்தைய நீரிழிவு வரம்பில் உள்ளது. Bi-LSTM 90 நாள் கணிப்பு 6.06%.", roman: "Verum vayitru sarkarai alavu 114 mg/dL pre-diabetes varambil ulladhu. Bi-LSTM 90 naal kanippu 6.06%." },
+        "te-IN": { speech: "ఫాస్టింగ్ బ్లడ్ షుగర్ 114 mg/dL ప్రీ-డయాబెటిస్ పరిధిలో ఉంది. Bi-LSTM 90 రోజుల అంచనా 6.06%; జీవనశైలి మార్పులు అవసరం.", native: "ఫాస్టింగ్ బ్లడ్ షుగర్ 114 mg/dL ప్రీ-డయాబెటిస్ పరిధిలో ఉంది. Bi-LSTM 90 రోజుల అంచనా 6.06%.", roman: "Fasting blood sugar 114 mg/dL pre-diabetes paridhilo vundi. Bi-LSTM 90 rojula anchana 6.06%." },
+        "kn-IN": { speech: "ಫಾಸ್ಟಿಂಗ್ ಗ್ಲುಕೋಸ್ 114 mg/dL ಪ್ರಿ-ಡಯಾಬಿಟಿಸ್ ಶ್ರೇಣಿಯಲ್ಲಿದೆ. Bi-LSTM 90 ದಿನಗಳ ಮುನ್ಸೂಚನೆ 6.06% ಆಗಿದೆ; ಜೀವನಶೈಲಿ ಬದಲಾವಣೆ ಅಗತ್ಯ.", native: "ಫಾಸ್ಟಿಂಗ್ ಗ್ಲುಕೋಸ್ 114 mg/dL ಪ್ರಿ-ಡಯಾಬಿಟಿಸ್ ಶ್ರೇಣಿಯಲ್ಲಿದೆ. Bi-LSTM 90 ದಿನಗಳ ಮುನ್ಸೂಚನೆ 6.06%.", roman: "Fasting glucose 114 mg/dL pre-diabetes shreniyallide. Bi-LSTM 90 dinagala munsoochane 6.06%." },
+        "ml-IN": { speech: "ഫാസ്റ്റിംഗ് ബ്ലഡ് ഗ്ലൂക്കോസ് 114 mg/dL പ്രീ-ഡയബറ്റിസ് പരിധിയിലാണ്. Bi-LSTM 90 ദിവസത്തെ പ്രവചനം 6.06% ആണ്; ജീവിതശൈലി മാറ്റങ്ങൾ ശുപാർശ ചെയ്യുന്നു.", native: "ഫാസ്റ്റിംഗ് ബ്ലഡ് ഗ്ലൂക്കോസ് 114 mg/dL പ്രീ-ഡയബറ്റിസ് പരിധിയിലാണ്. Bi-LSTM 90 ദിവസത്തെ പ്രവചനം 6.06%.", roman: "Fasting blood glucose 114 mg/dL pre-diabetes paridhiyil aanu. Bi-LSTM 90d forecast 6.06%." },
+        "mr-IN": { speech: "फास्टिंग ब्लड ग्लुकोज 114 mg/dL प्री-डायबिटीज श्रेणीत आहे. Bi-LSTM 90 दिवसांचा अंदाज 6.06% आहे; जीवनशैलीतील बदलांची शिफारस केली जाते.", native: "फास्टिंग ब्लड ग्लुकोज 114 mg/dL प्री-डायबिटीज श्रेणीत आहे. Bi-LSTM 90 दिवसांचा अंदाज 6.06% आहे.", roman: "Fasting glucose 114 mg/dL pre-diabetes shrenit aahe. Bi-LSTM 90d andaj 6.06% aahe." },
+        "gu-IN": { speech: "ફાસ્ટિંગ બ્લડ ગ્લુકોઝ 114 mg/dL પ્રિ-ડાયાબિટીસ શ્રેણીમાં છે. Bi-LSTM 90 દિવસનું અનુમાન 6.06% છે; જીવનશૈલીમાં ફેરફાર કરવાની સલાહ છે.", native: "ફાસ્ટિંગ બ્લડ ગ્લુકોઝ 114 mg/dL પ્રિ-ડાયાબિટીસ શ્રેણીમાં છે. Bi-LSTM 90 દિવસનું અનુમાન 6.06%.", roman: "Fasting glucose 114 mg/dL pre-diabetes shrenima chhe. Bi-LSTM 90 divasnu anuman 6.06%." },
+        "pa-IN": { speech: "ਫਾਸਟਿੰਗ ਬਲੱਡ ਗਲੂਕੋਜ਼ 114 mg/dL ਪ੍ਰੀ-ਡਾਇਬਟੀਜ਼ ਰੇਂਜ ਵਿੱਚ ਹੈ। Bi-LSTM 90-ਦਿਨ ਦਾ ਅਨੁਮਾਨ 6.06% ਹੈ; ਜੀਵਨ ਸ਼ੈਲੀ ਵਿੱਚ ਤਬਦੀਲੀ ਦੀ ਲੋੜ ਹੈ।", native: "ਫਾਸਟਿੰਗ ਬਲੱਡ ਗਲੂਕੋਜ਼ 114 mg/dL ਪ੍ਰੀ-ਡਾਇਬਟੀਜ਼ ਰੇਂਜ ਵਿੱਚ ਹੈ। Bi-LSTM 90-ਦਿਨ ਦਾ ਅਨੁਮਾਨ 6.06% ਹੈ।", roman: "Fasting glucose 114 mg/dL pre-diabetes range vich hai. Bi-LSTM 90d forecast 6.06%." },
+        "od-IN": { speech: "ଫାଷ୍ଟିଙ୍ଗ୍ ଗ୍ଲୁକୋଜ୍ ୧୧୪ mg/dL ପ୍ରି-ଡାଇବେଟିସ୍ ପରିସରରେ ଅଛି। Bi-LSTM ୯୦ ଦିନର ପୂର୍ବାନୁମାନ ୬.୦୬% ଅଟେ; ଜୀବନଶୈଳୀ ପରିବର୍ତ୍ତନ ଆବଶ୍ୟକ।", native: "ଫାଷ୍ଟିଙ୍ଗ୍ ଗ୍ଲୁକୋଜ୍ ୧୧୪ mg/dL ପ୍ରି-ଡାଇବେଟିସ୍ ପରିସରରେ ଅଛି। Bi-LSTM ୯୦ ଦିନର ପୂର୍ବାନୁମାନ ୬.୦୬%।", roman: "Fasting glucose 114 mg/dL pre-diabetes re achhi. Bi-LSTM 90 dinara purbanuman 6.06%." },
+        "as-IN": { speech: "ফাষ্টিং গ্লুক’জ ১১৪ mg/dL প্ৰি-ডায়াবেটিচ পৰিসৰত আছে। Bi-LSTM ৯০ দিনৰ পূৰ্বানুমান ৬০৬%; জীৱনশৈলীৰ সংশোধন প্ৰয়োজন।", native: "ফাষ্টিং গ্লুক’জ ১১৪ mg/dL প্ৰি-ডায়াবেটিচ পৰিসৰত আছে। Bi-LSTM ৯০ দিনৰ পূৰ্বানুমান ৬০৬%।", roman: "Fasting glucose 114 mg/dL pre-diabetes porisorot ase. Bi-LSTM 90d forecast 6.06%." },
+        "ur-IN": { speech: "فاسٹنگ بلڈ گلوکوز 114 mg/dL پری ذیابیطس کے دائرے میں ہے۔ Bi-LSTM کی 90 دن کی پیشن گوئی 6.06% ہے؛ طرز زندگی میں تبدیلی کی ضرورت ہے۔", native: "فاسٹنگ بلڈ گلوکوز 114 mg/dL پری ذیابیطس کے دائرے میں ہے۔ Bi-LSTM کی 90 دن کی پیشن گوئی 6.06% ہے۔", roman: "Fasting blood glucose 114 mg/dL pre-diabetes range mein hai. Bi-LSTM 90d peshan goi 6.06% hai." },
+        "en-IN": { speech: "Fasting glucose of 114 mg/dL falls within pre-diabetes range. Bi-LSTM sequence projects 90-day trajectory at 6.06% (-0.14%/mo) with lifestyle intervention per ADA 2024.", native: "Fasting glucose of 114 mg/dL falls within pre-diabetes range. Bi-LSTM projects 6.06% at 90 days with -0.14%/mo velocity.", roman: "Pre-diabetes glycemic trajectory with Bi-LSTM 90d forecasting." },
+      };
+      const sel = glycemicMap[lang] || glycemicMap["hi-IN"];
+      speechResp = sel.speech;
+      subNative = sel.native;
+      subRoman = sel.roman;
     } else if (
       qLower.includes("thyroid") ||
       qLower.includes("tsh") ||
       qLower.includes("hypothyroid")
     ) {
-      speechResp = "थायरॉइड (TSH) के स्तर का मूल्यांकन Free T4 के साथ किया जाता है। सुबह खाली पेट दोबारा जांच और बायोटिन सप्लीमेंट से सावधानी रखने की सलाह दी जाती है।";
+      lstmBiomarker = "tsh";
+      tools.push("ATA Thyroid Axis Analyzer", "Bi-LSTM Pituitary-Thyroid Horizon");
+      subEng = "Elevated TSH (4.9 mIU/L) suggests mild subclinical hypothyroidism; confirm with morning fasting TSH, Free T4, and Anti-TPO per ATA guidelines.";
+      speechResp = "थायरॉइड (TSH) का स्तर 4.9 mIU/L हल्के सबक्लिनिकल बदलाव का संकेत दे सकता है। सुबह खाली पेट TSH व Free T4 जांच कराएं।";
       subNative = "थायरॉइड (TSH) का स्तर 4.9 mIU/L हल्के सबक्लिनिकल बदलाव का संकेत दे सकता है। स्पष्ट निदान हेतु सुबह TSH व Free T4 जांच कराएं।";
       subRoman = "Thyroid TSH level 4.9 mIU/L subclinical change darshata hai. Subah khali pet TSH aur Free T4 jaanch karayein.";
-      subEng = "Elevated TSH (4.9 mIU/L) suggests subclinical hypothyroidism; confirm with morning fasting TSH, Free T4, and Anti-TPO per ATA guidelines.";
-      tools.push("ATA Thyroid Axis Analyzer");
     } else if (
       qLower.includes("kidney") ||
       qLower.includes("creatinine") ||
       qLower.includes("egfr") ||
       qLower.includes("renal")
     ) {
+      tools.push("KDIGO 2024 Renal Stratifier", "CKD-EPI Race-Free Engine");
+      subEng = "Assess serum creatinine (1.14 mg/dL) using race-free 2021 CKD-EPI eGFR plus urine albumin-to-creatinine ratio (uACR) per KDIGO 2024.";
       speechResp = "सीरम क्रिएटिनिन और eGFR के साथ यूरिन uACR टेस्ट किडनी की कार्यक्षमता का सटीक आकलन करते हैं।";
       subNative = "सीरम क्रिएटिनिन 1.14 mg/dL के साथ 2021 CKD-EPI eGFR और यूरिन uACR की जांच किडनी स्वास्थ्य के लिए महत्वपूर्ण है।";
       subRoman = "Serum creatinine 1.14 mg/dL ke saath eGFR aur urine uACR ki jaanch kidney health ke liye zaroori hai.";
-      subEng = "Assess serum creatinine (1.14 mg/dL) using race-free 2021 CKD-EPI eGFR plus urine albumin-to-creatinine ratio (uACR) per KDIGO 2024.";
-      tools.push("KDIGO 2024 Renal Stratifier");
     } else if (
       qLower.includes("lipid") ||
       qLower.includes("cholesterol") ||
@@ -967,11 +1042,12 @@ export async function POST(req: NextRequest, { params }: { params: { slug?: stri
       qLower.includes("liver") ||
       qLower.includes("alt")
     ) {
+      lstmBiomarker = "apob";
+      tools.push("AHA/ACC Lipid Node", "AASLD FIB-4 Evaluator");
+      subEng = "Borderline ApoB (112 mg/dL) reflects circulating atherogenic particles, while ALT (64 U/L) warrants FIB-4 staging per AHA/ACC & AASLD guidance.";
       speechResp = "ApoB, लिपिड प्रोफाइल और लिवर एंजाइम ALT/फेरिटिन का मूल्यांकन हृदय व मेटाबॉलिक जोखिम कम करने के लिए महत्वपूर्ण है।";
       subNative = "बॉर्डरलाइन ApoB (112 mg/dL) और ALT (64 U/L) के लिए FIB-4 स्कोर व लिपिड प्रोफाइल की समीक्षा डॉक्टर के साथ करें।";
       subRoman = "Borderline ApoB (112 mg/dL) aur ALT (64 U/L) ke liye FIB-4 score aur lipid profile ki samiksha doctor ke saath karein.";
-      subEng = "Borderline ApoB (112 mg/dL) reflects circulating atherogenic particles, while ALT (64 U/L) warrants FIB-4 staging per AHA/ACC & AASLD guidance.";
-      tools.push("AHA/ACC Lipid Node", "AASLD FIB-4 Evaluator");
     } else if (
       qLower.includes("marfan") ||
       qLower.includes("fbn1") ||
@@ -980,11 +1056,11 @@ export async function POST(req: NextRequest, { params }: { params: { slug?: stri
       qLower.includes("pedigree") ||
       qLower.includes("carrier")
     ) {
+      tools.push("NCBI ClinVar Registry", "GeneWise Pedigree Trace");
+      subEng = "Autosomal dominant variants (e.g., FBN1, BRCA1/2) carry a 50% transmission probability; review ClinVar & ACMG status with a genetic counselor.";
       speechResp = "जेनेटिक वेरिएंट्स (जैसे FBN1 या BRCA1) की व्याख्या ACMG 5-टियर मानकों और जेनेटिक काउंसलर की सलाह से की जानी चाहिए।";
       subNative = "FBN1 (15q21.1) या BRCA1/2 जैसे ऑटोसोमल डोमिनेंट वेरिएंट्स में 50% विरासत जोखिम होता है; VUS परिणाम पर स्वतः उपचार न बदलें।";
       subRoman = "FBN1 ya BRCA1/2 jaise autosomal dominant variants me 50% virasat jokhim hota hai; ACMG guidelines ke anusaar genetic counselor se milen.";
-      subEng = "Autosomal dominant variants (e.g., FBN1, BRCA1/2) carry a 50% transmission probability; review ClinVar & ACMG status with a genetic counselor.";
-      tools.push("NCBI ClinVar Registry", "GeneWise Pedigree Trace");
     } else {
       const contextual = buildContextualClinicalReply(q, "hybrid_rag_lstm");
       const conciseEnglish = contextual.content
@@ -1027,6 +1103,7 @@ export async function POST(req: NextRequest, { params }: { params: { slug?: stri
       response_text: subEng,
       is_emergency: isEmergency,
       tools_executed: tools,
+      lstm_biomarker: lstmBiomarker,
       subtitles: {
         native: subNative,
         romanized: subRoman,

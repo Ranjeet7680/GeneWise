@@ -106,6 +106,18 @@ const CLINICAL_VOICE_SCENARIOS = [
     badge: "Bi-LSTM • Sequence",
   },
   {
+    title: "Thyroid TSH Axis & Free T4",
+    native: "What does elevated TSH (4.9 mIU/L) indicate for subclinical thyroid?",
+    lang: "en-IN",
+    badge: "Thyroid • ATA 2024",
+  },
+  {
+    title: "Renal Creatinine & eGFR",
+    native: "Explain Serum Creatinine 1.14 mg/dL and race-free eGFR staging",
+    lang: "en-IN",
+    badge: "Renal • KDIGO 2024",
+  },
+  {
     title: "Emergency Red-Flag Sim",
     native: "Mujhe chhati me tej dard aur saans lene me takleef hai",
     lang: "hi-IN",
@@ -127,6 +139,15 @@ export default function VoiceAssistantPage() {
   const [selectedLang, setSelectedLang] = useState<string>("hi-IN");
   const [autoDetect, setAutoDetect] = useState<boolean>(true);
   const [voiceLstmEnabled, setVoiceLstmEnabled] = useState<boolean>(true);
+  const [continuousMode, setContinuousMode] = useState<boolean>(false);
+  const continuousModeRef = useRef<boolean>(false);
+  useEffect(() => {
+    continuousModeRef.current = continuousMode;
+  }, [continuousMode]);
+
+  const [visualizerMode, setVisualizerMode] = useState<"waves" | "spectrum" | "ecg">("waves");
+  const [currentLstmResult, setCurrentLstmResult] = useState<any>(null);
+
   const [voiceState, setVoiceState] = useState<"idle" | "listening" | "thinking" | "speaking">("idle");
   const [transcript, setTranscript] = useState<string>("");
   const [interimText, setInterimText] = useState<string>("");
@@ -161,9 +182,6 @@ export default function VoiceAssistantPage() {
   // Audio Context & Canvas visualizer references
   const recognitionRef = useRef<any>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const [typingVoiceMsgId, setTypingVoiceMsgId] = useState<string | null>(null);
   const [typedVoiceLength, setTypedVoiceLength] = useState<number>(0);
@@ -208,7 +226,7 @@ export default function VoiceAssistantPage() {
     return () => stopVoiceTyping();
   }, []);
 
-  // Initialize Canvas Visualizer Loop
+  // Initialize Canvas Visualizer Loop with Multi-Mode rendering (Waves, Spectrum, ECG)
   useEffect(() => {
     let phase = 0;
     const canvas = canvasRef.current;
@@ -230,42 +248,100 @@ export default function VoiceAssistantPage() {
       let amplitude = 12;
 
       if (voiceState === "listening") {
-        strokeColor1 = "rgba(16, 185, 129, 0.7)";
-        strokeColor2 = "rgba(5, 150, 105, 0.45)";
-        strokeColor3 = "rgba(52, 211, 153, 0.25)";
-        amplitude = 28 + (audioVolume / 4);
+        strokeColor1 = "rgba(16, 185, 129, 0.75)";
+        strokeColor2 = "rgba(5, 150, 105, 0.5)";
+        strokeColor3 = "rgba(52, 211, 153, 0.3)";
+        amplitude = 28 + (audioVolume / 3.5);
       } else if (voiceState === "speaking") {
-        strokeColor1 = "rgba(14, 165, 233, 0.75)";
-        strokeColor2 = "rgba(2, 132, 199, 0.5)";
-        strokeColor3 = "rgba(56, 189, 248, 0.3)";
-        amplitude = 24 + Math.sin(phase * 2) * 10;
+        strokeColor1 = "rgba(14, 165, 233, 0.85)";
+        strokeColor2 = "rgba(2, 132, 199, 0.55)";
+        strokeColor3 = "rgba(56, 189, 248, 0.35)";
+        amplitude = 26 + Math.sin(phase * 2) * 12;
       } else if (voiceState === "thinking") {
-        strokeColor1 = "rgba(139, 92, 246, 0.7)";
-        strokeColor2 = "rgba(168, 85, 247, 0.4)";
-        strokeColor3 = "rgba(192, 132, 252, 0.2)";
+        strokeColor1 = "rgba(139, 92, 246, 0.75)";
+        strokeColor2 = "rgba(168, 85, 247, 0.45)";
+        strokeColor3 = "rgba(192, 132, 252, 0.25)";
         amplitude = 18 + Math.cos(phase * 3) * 8;
       }
 
-      // Draw 3 layered harmonic sine waves
-      const drawWave = (color: string, freq: number, amp: number, phaseShift: number) => {
+      if (visualizerMode === "spectrum") {
+        // Frequency Bar Spectrum Analyzer
+        const numBars = 48;
+        const barWidth = width / numBars - 3;
+        for (let i = 0; i < numBars; i++) {
+          const norm = i / numBars;
+          const barHeight =
+            Math.sin(norm * Math.PI) *
+            (amplitude * (0.8 + 0.4 * Math.sin(phase * 3 + i * 0.4))) *
+            1.8;
+          const x = i * (barWidth + 3);
+          const y = height / 2 - barHeight / 2;
+
+          ctx.fillStyle =
+            voiceState === "listening"
+              ? `rgba(16, 185, 129, ${0.4 + 0.5 * Math.sin(norm * Math.PI)})`
+              : voiceState === "speaking"
+              ? `rgba(14, 165, 233, ${0.4 + 0.5 * Math.sin(norm * Math.PI)})`
+              : `rgba(99, 102, 241, ${0.4 + 0.5 * Math.sin(norm * Math.PI)})`;
+
+          ctx.beginPath();
+          ctx.roundRect ? ctx.roundRect(x, y, barWidth, Math.max(4, barHeight), 2) : ctx.rect(x, y, barWidth, Math.max(4, barHeight));
+          ctx.fill();
+        }
+      } else if (visualizerMode === "ecg") {
+        // Clinical ICU ECG P-Q-R-S-T Rhythmic Trace
         ctx.beginPath();
         ctx.lineWidth = 2.5;
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = strokeColor1;
+        const speed = (phase * 180) % width;
 
-        for (let x = 0; x < width; x += 4) {
-          const y = height / 2 + Math.sin(x * freq + phase + phaseShift) * amp * Math.sin((x / width) * Math.PI);
-          if (x === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
+        for (let x = 0; x < width; x += 3) {
+          const relX = (x + speed) % 200;
+          let yOffset = 0;
+          if (relX > 40 && relX < 60) {
+            // P Wave
+            yOffset = -Math.sin(((relX - 40) / 20) * Math.PI) * 10;
+          } else if (relX >= 60 && relX < 66) {
+            // Q Dip
+            yOffset = 6;
+          } else if (relX >= 66 && relX < 76) {
+            // R Spike
+            yOffset = -amplitude * 1.7;
+          } else if (relX >= 76 && relX < 84) {
+            // S Dip
+            yOffset = 12;
+          } else if (relX > 100 && relX < 140) {
+            // T Wave
+            yOffset = -Math.sin(((relX - 100) / 40) * Math.PI) * 14;
           }
+
+          const y = height / 2 + yOffset;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
         ctx.stroke();
-      };
+      } else {
+        // 3 Layered Harmonic Sine Waves (Default)
+        const drawWave = (color: string, freq: number, amp: number, phaseShift: number) => {
+          ctx.beginPath();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = color;
 
-      drawWave(strokeColor3, 0.012, amplitude * 0.6, 0);
-      drawWave(strokeColor2, 0.018, amplitude * 0.85, 1.2);
-      drawWave(strokeColor1, 0.024, amplitude, 2.4);
+          for (let x = 0; x < width; x += 4) {
+            const y = height / 2 + Math.sin(x * freq + phase + phaseShift) * amp * Math.sin((x / width) * Math.PI);
+            if (x === 0) {
+              ctx.moveTo(x, y);
+            } else {
+              ctx.lineTo(x, y);
+            }
+          }
+          ctx.stroke();
+        };
+
+        drawWave(strokeColor3, 0.012, amplitude * 0.6, 0);
+        drawWave(strokeColor2, 0.018, amplitude * 0.85, 1.2);
+        drawWave(strokeColor1, 0.024, amplitude, 2.4);
+      }
 
       animationFrameRef.current = requestAnimationFrame(render);
     };
@@ -277,7 +353,7 @@ export default function VoiceAssistantPage() {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [voiceState, audioVolume]);
+  }, [voiceState, audioVolume, visualizerMode]);
 
   // Barge-In: Interrupt speech
   const handleInterrupt = () => {
@@ -376,14 +452,16 @@ export default function VoiceAssistantPage() {
 
       const qLower = queryText.toLowerCase();
       const forecastKey =
-        qLower.includes("celiac") || qLower.includes("ttg")
+        response.lstm_biomarker ||
+        (qLower.includes("celiac") || qLower.includes("ttg")
           ? "ttg_iga"
           : qLower.includes("bp") || qLower.includes("pressure")
           ? "systolic_bp"
           : qLower.includes("apob")
           ? "apob"
-          : "hba1c";
+          : "hba1c");
       const lstmNote = voiceLstmEnabled ? runBiLstmForecast(forecastKey) : null;
+      setCurrentLstmResult(lstmNote);
 
       setTranscript(response.transcript || queryText);
       setDetectedBadge(
@@ -452,6 +530,14 @@ export default function VoiceAssistantPage() {
 
     utterance.onend = () => {
       setVoiceState("idle");
+      // Hands-free continuous auto-listening
+      if (continuousModeRef.current) {
+        setTimeout(() => {
+          if (continuousModeRef.current) {
+            startListening();
+          }
+        }, 900);
+      }
     };
 
     utterance.onerror = () => {
@@ -501,6 +587,68 @@ export default function VoiceAssistantPage() {
                 <BrainCircuit className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Bi-LSTM: {voiceLstmEnabled ? "Active" : "Off"}</span>
               </button>
+
+              {/* Hands-Free Auto-Listen Toggle Pill */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playSoft();
+                  setContinuousMode((c) => !c);
+                }}
+                className={`px-3 py-1.5 rounded-full border text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  continuousMode
+                    ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 shadow-2xs"
+                    : "bg-white dark:bg-[#14262f] border-border text-muted-foreground hover:text-foreground"
+                }`}
+                title="Continuous conversation: voice assistant automatically listens after answering"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    continuousMode ? "bg-emerald-500 animate-ping" : "bg-muted-foreground"
+                  }`}
+                />
+                <span>Hands-Free: {continuousMode ? "On" : "Off"}</span>
+              </button>
+
+              {/* Visualizer Mode Switcher */}
+              <div className="flex items-center gap-0.5 bg-white dark:bg-[#14262f] p-1 rounded-xl border border-border text-[10px] font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setVisualizerMode("waves")}
+                  className={`px-2 py-0.5 rounded-lg transition-all ${
+                    visualizerMode === "waves"
+                      ? "bg-teal-700 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="3-Harmonic Sine Wave Visualizer"
+                >
+                  Waves
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisualizerMode("spectrum")}
+                  className={`px-2 py-0.5 rounded-lg transition-all ${
+                    visualizerMode === "spectrum"
+                      ? "bg-teal-700 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Frequency Spectrum Bars"
+                >
+                  Spectrum
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisualizerMode("ecg")}
+                  className={`px-2 py-0.5 rounded-lg transition-all ${
+                    visualizerMode === "ecg"
+                      ? "bg-teal-700 text-white shadow-2xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                  title="Clinical ICU ECG Heartbeat Trace"
+                >
+                  ECG
+                </button>
+              </div>
 
               {/* Language Active Indicator */}
               <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-[#14262f] border border-border text-xs font-medium shadow-2xs">
@@ -771,6 +919,71 @@ export default function VoiceAssistantPage() {
               )}
             </div>
 
+            {/* Inline Dynamic Bi-LSTM Forecast Card */}
+            {voiceLstmEnabled && currentLstmResult && (
+              <div className="relative z-10 w-full max-w-2xl p-4 rounded-2xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/90 via-teal-50/50 to-white dark:from-indigo-950/40 dark:via-[#14262f] dark:to-[#1a2e38] shadow-xs space-y-2.5 animate-in fade-in-up duration-300">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-indigo-600 text-white shadow-2xs">
+                      <BrainCircuit className="w-4 h-4" />
+                    </span>
+                    <div className="text-left">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300">
+                        Bi-LSTM Sequence Forecast
+                      </span>
+                      <h4 className="text-xs font-bold text-foreground">
+                        {currentLstmResult.biomarkerLabel}
+                      </h4>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-600/15 text-indigo-800 dark:text-indigo-200 border border-indigo-500/30">
+                      AUC {currentLstmResult.auc}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-xl bg-white/80 dark:bg-[#14262f] border border-border/60">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Baseline</span>
+                    <span className="text-sm font-extrabold text-foreground">
+                      {currentLstmResult.baseline} {currentLstmResult.unit}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/80 dark:bg-[#14262f] border border-indigo-500/30">
+                    <span className="text-[9px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 block font-bold">90-Day Projection</span>
+                    <span className="text-sm font-extrabold text-indigo-700 dark:text-indigo-300">
+                      {currentLstmResult.projected90d} {currentLstmResult.unit}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white/80 dark:bg-[#14262f] border border-border/60">
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground block">Velocity Rate</span>
+                    <span className="text-sm font-extrabold text-foreground">
+                      {currentLstmResult.velocityPerMonth > 0 ? "+" : ""}{currentLstmResult.velocityPerMonth} {currentLstmResult.unit}/mo
+                    </span>
+                  </div>
+                </div>
+
+                {/* Trajectory Timeline Bar Visual */}
+                <div className="pt-1 flex items-center justify-between text-[10px] text-muted-foreground">
+                  {currentLstmResult.trajectory.map((step: any, idx: number) => (
+                    <div key={idx} className="flex flex-col items-center">
+                      <span className="font-mono text-[9px] text-muted-foreground">{step.day}d</span>
+                      <div className="w-10 sm:w-16 h-1.5 rounded-full bg-indigo-500/20 my-1 overflow-hidden">
+                        <div
+                          className="h-full bg-indigo-600 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${Math.min(100, Math.max(25, (step.value / (currentLstmResult.baseline * 1.3)) * 100))}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="font-mono font-bold text-foreground text-[10px]">{step.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Active Medical Tools Badges */}
             {activeTools.length > 0 && (
               <div className="relative z-10 flex flex-wrap items-center justify-center gap-2 text-xs">
@@ -788,8 +1001,18 @@ export default function VoiceAssistantPage() {
             )}
           </div>
 
-          {/* Suggested Indian-Language Clinical Inquiries */}
-          <div className="pt-4 border-t border-border space-y-2">
+          {/* Patient Context & One-Tap Indian-Language Inquiries */}
+          <div className="pt-4 border-t border-border space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                Patient Context: Rajesh Kumar (MRN #92041)
+              </span>
+              <span className="text-[10px] text-muted-foreground font-mono bg-surface-low dark:bg-[#14262f] px-2 py-0.5 rounded-md border border-border">
+                CMP: FPG 118 mg/dL • HbA1c 6.2% • tTG 48.2 U/mL
+              </span>
+            </div>
+
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
               One-Tap Clinical Voice Scenarios
             </span>
