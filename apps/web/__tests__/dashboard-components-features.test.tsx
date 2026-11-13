@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import AppHeader from "@/components/AppHeader";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import ClinicalMarkdown from "@/components/ClinicalMarkdown";
 import EmptyState from "@/components/EmptyState";
 import MedicalStatusBadge from "@/components/MedicalStatusBadge";
@@ -124,6 +125,24 @@ describe("Dashboard Synchronization, Reusable Clinical Components & Core Pages",
     // Open Emergency 112 / 911 modal
     fireEvent.click(screen.getByTitle(/Rapid Emergency SOS/i));
     expect(screen.getByText(/STAT Emergency Clinical Dispatch/i)).toBeInTheDocument();
+
+    // Open & close Mobile Navigation Drawer
+    fireEvent.click(screen.getByRole("button", { name: /Open navigation menu/i }));
+    expect(screen.getByLabelText(/Mobile workspace navigation/i)).toBeInTheDocument();
+    expect(screen.getByText(/ICU Node #409: ACTIVE/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Close navigation menu/i }));
+    expect(screen.queryByLabelText(/Mobile workspace navigation/i)).not.toBeInTheDocument();
+  });
+
+  it("renders unified MobileBottomNav on standard pages and hides it on /assistant", () => {
+    setMockPathname("/dashboard");
+    const { rerender } = render(<MobileBottomNav />);
+    expect(screen.getByLabelText(/Mobile quick navigation/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /AI Chat/i })).toHaveAttribute("href", "/assistant");
+
+    setMockPathname("/assistant");
+    rerender(<MobileBottomNav />);
+    expect(screen.queryByLabelText(/Mobile quick navigation/i)).not.toBeInTheDocument();
   });
 
   it("renders MedicalStatusBadge, MetricCard, ClinicalMarkdown, SafetyNotice, EmptyState & PipTelemetryWidget cleanly", () => {

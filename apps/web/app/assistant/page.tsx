@@ -10,16 +10,23 @@ import {
   BrainCircuit,
   Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
   Copy,
   Download,
   ExternalLink,
+  FastForward,
   Loader2,
   MessageSquare,
   Mic,
   MicOff,
   Microscope,
   Paperclip,
+  PanelLeft,
+  PanelLeftClose,
+  Pause,
+  PenTool,
+  Play,
   Plus,
   Printer,
   Radio,
@@ -36,6 +43,7 @@ import {
   Volume2,
   VolumeX,
   X,
+  Zap,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import AppSidebar from "@/components/AppSidebar";
@@ -43,6 +51,7 @@ import SafetyNotice from "@/components/SafetyNotice";
 import ClinicalMarkdown from "@/components/ClinicalMarkdown";
 import BiLstmTrajectoryCard from "@/components/BiLstmTrajectoryCard";
 import ExportPrintShareModal from "@/components/ExportPrintShareModal";
+import AiModelArchitectureModal from "@/components/AiModelArchitectureModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -60,6 +69,27 @@ import {
   Message,
   ProviderStatus,
 } from "@/types";
+
+function stabilizeStreamingMarkdown(partial: string): string {
+  if (!partial) return "";
+  // Avoid flashing an empty heading/list row at the slice boundary before text arrives
+  let clean = partial.replace(/(?:^|\n)(?:#{1,3}|[-*•+]|\d+[.)]?)\s*$/, "");
+  const boldCount = (clean.match(/\*\*/g) || []).length;
+  if (boldCount % 2 === 1) {
+    clean += "**";
+  } else {
+    // If not in bold, check if single asterisk (italic) is dangling
+    const loneAsterisks = clean.replace(/\*\*/g, "").match(/\*/g) || [];
+    if (loneAsterisks.length % 2 === 1) {
+      clean += "*";
+    }
+  }
+  const tickCount = (clean.match(/`/g) || []).length;
+  if (tickCount % 2 === 1) {
+    clean += "`";
+  }
+  return clean;
+}
 
 interface CategorizedPrompt {
   category: string;
@@ -161,6 +191,29 @@ const CATEGORIZED_PROMPTS: CategorizedPrompt[] = [
     recommendedEngine: "lstm_temporal",
     biomarkerFocus: "systolic_bp",
   },
+  {
+    category: "Endocrinology",
+    badge: "ATA Thyroid + LSTM",
+    title: "Subclinical TSH Elevation & Biotin Interference",
+    prompt: "Interpret TSH 4.9 mIU/L trend with Bi-LSTM and explain when Free T4 or Anti-TPO is needed.",
+    recommendedEngine: "hybrid_rag_lstm",
+    biomarkerFocus: "tsh",
+  },
+  {
+    category: "Biomarker Triaging",
+    badge: "KDIGO 2024 CKD-EPI",
+    title: "Serum Creatinine, eGFR & uACR Kidney Workup",
+    prompt: "Evaluate serum creatinine 1.14 mg/dL, eGFR calculation, and urine uACR thresholds.",
+    recommendedEngine: "hybrid_rag_lstm",
+    biomarkerFocus: "creatinine",
+  },
+  {
+    category: "Medical Genetics",
+    badge: "ACMG 5-Tier Rules",
+    title: "BRCA1/2 Pathogenic vs VUS Interpretation",
+    prompt: "Explain how ACMG classifies a Variant of Uncertain Significance (VUS) vs Pathogenic variant in BRCA1.",
+    recommendedEngine: "clinical_evidence",
+  },
 ];
 
 const PROMPT_CATEGORIES = [
@@ -191,8 +244,10 @@ export default function AssistantPage() {
   const [promptQuery, setPromptQuery] = useState<string>("");
   const [promptRotationSeed, setPromptRotationSeed] = useState<number>(0);
   const [convSearch, setConvSearch] = useState<string>("");
+  const [showMobileThreads, setShowMobileThreads] = useState<boolean>(false);
   const [showPatientDossier, setShowPatientDossier] = useState<boolean>(false);
   const [expandedTraces, setExpandedTraces] = useState<Record<number, boolean>>({});
+  const [isConsultationsCollapsed, setIsConsultationsCollapsed] = useState<boolean>(false);
 
   // Export, Print Only & Social Share Modal
   const [showExportModal, setShowExportModal] = useState<boolean>(false);
@@ -205,6 +260,15 @@ export default function AssistantPage() {
   const [customLstmSeries, setCustomLstmSeries] = useState<number[]>(
     BIOMARKER_LSTM_PRESETS.hba1c.history
   );
+
+  // AI Model Architecture & Blueprint Inspector Modal
+  const [showModelModal, setShowModelModal] = useState<boolean>(false);
+  const latestTelemetry = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].neural_telemetry) return messages[i].neural_telemetry;
+    }
+    return undefined;
+  }, [messages]);
 
   // ML Risk Tool Modal
   const [showMlModal, setShowMlModal] = useState(false);
@@ -230,15 +294,100 @@ export default function AssistantPage() {
   const [typingMessageId, setTypingMessageId] = useState<number | null>(null);
   const [typedLength, setTypedLength] = useState<number>(0);
   const [thinkingStage, setThinkingStage] = useState<number>(0);
+  const [typingSpeed, setTypingSpeed] = useState<number>(1);
+  const [isTypingPaused, setIsTypingPaused] = useState<boolean>(false);
+  const [typewriterSoundEnabled, setTypewriterSoundEnabled] = useState<boolean>(false);
 
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const typingRafRef = useRef<number | null>(null);
+  const prevScrollHeightRef = useRef<number>(0);
+  const isAutoScrollPinnedRef = useRef<boolean>(true);
+  const typingSpeedRef = useRef<number>(1);
+  const isTypingPausedRef = useRef<boolean>(false);
+  const typewriterSoundRef = useRef<boolean>(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    typingSpeedRef.current = typingSpeed;
+  }, [typingSpeed]);
+
+  useEffect(() => {
+    isTypingPausedRef.current = isTypingPaused;
+  }, [isTypingPaused]);
+
+  useEffect(() => {
+    typewriterSoundRef.current = typewriterSoundEnabled;
+  }, [typewriterSoundEnabled]);
+
+  const playTypewriterClick = (char: string) => {
+    if (!typewriterSoundRef.current || typeof window === "undefined") return;
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new AudioCtx();
+      }
+      const ctx = audioCtxRef.current;
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const now = ctx.currentTime;
+      const isPunctuation = /[.,:;!?\n]/.test(char);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(isPunctuation ? 360 : 540 + Math.random() * 80, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.022);
+      gain.gain.setValueAtTime(isPunctuation ? 0.02 : 0.012, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.022);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.025);
+    } catch {
+      // Audio fallback
+    }
+  };
+
+  const handleMessagesScroll = () => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isAutoScrollPinnedRef.current = distanceFromBottom < 140;
+  };
+
+  const scrollChatToBottom = (force = false) => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    if (force) {
+      isAutoScrollPinnedRef.current = true;
+    }
+    if (force || isAutoScrollPinnedRef.current) {
+      if (typeof el.scrollTo === "function") {
+        try {
+          el.scrollTo({ top: el.scrollHeight, behavior: force ? "auto" : "smooth" });
+        } catch {
+          el.scrollTop = el.scrollHeight;
+        }
+      } else {
+        el.scrollTop = el.scrollHeight;
+      }
+    }
+    prevScrollHeightRef.current = el.scrollHeight;
+  };
 
   const stopTypingAnimation = () => {
     if (typingTimerRef.current) {
       clearInterval(typingTimerRef.current);
       typingTimerRef.current = null;
     }
+    if (typingRafRef.current !== null && typeof cancelAnimationFrame === "function") {
+      cancelAnimationFrame(typingRafRef.current);
+      typingRafRef.current = null;
+    }
+    setIsTypingPaused(false);
     setTypingMessageId(null);
   };
 
@@ -247,29 +396,113 @@ export default function AssistantPage() {
     const fullText = msg.content || "";
     if (!fullText) return;
 
-    setTypingMessageId(msg.id);
-    setTypedLength(Math.min(fullText.length, 24));
-
     const totalLen = fullText.length;
-    const stepSize = Math.max(14, Math.ceil(totalLen / 28));
-    let cursor = Math.min(totalLen, 24);
+    // Reveal initial comfortable token so user sees text flowing immediately
+    const firstSpace = fullText.indexOf(" ", 10);
+    const initialChars = Math.min(totalLen, firstSpace !== -1 ? firstSpace + 1 : 14);
+    setTypingMessageId(msg.id);
+    setTypedLength(initialChars);
+    if (initialChars >= totalLen) {
+      setTypingMessageId(null);
+      return;
+    }
 
+    let cursor = initialChars;
+    let nextEligibleTs = 0;
+
+    if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+      const step = (ts: number) => {
+        if (isTypingPausedRef.current) {
+          typingRafRef.current = requestAnimationFrame(step);
+          return;
+        }
+
+        if (ts < nextEligibleTs) {
+          typingRafRef.current = requestAnimationFrame(step);
+          return;
+        }
+
+        const mult = typingSpeedRef.current || 1;
+        // Dynamic chunk sizing for natural organic typing cadence
+        const baseChunk =
+          mult === 3
+            ? 12
+            : mult === 2
+            ? 6
+            : Math.max(2, Math.min(5, Math.ceil(totalLen / 350)));
+        let nextCursor = Math.min(totalLen, cursor + baseChunk);
+
+        // Word snap for clean token appearance
+        if (nextCursor < totalLen) {
+          const nextSpace = fullText.indexOf(" ", nextCursor);
+          const nextNewline = fullText.indexOf("\n", nextCursor);
+          const boundary =
+            nextNewline !== -1 && (nextSpace === -1 || nextNewline < nextSpace)
+              ? nextNewline
+              : nextSpace;
+          if (boundary !== -1 && boundary - nextCursor <= 4) {
+            nextCursor = boundary + 1;
+          }
+        }
+
+        // Punctuation and cadence rhythm: natural pauses at sentences, breaks, clauses
+        const latestSlice = fullText.slice(cursor, nextCursor);
+        let pauseDuration = 22 / mult;
+
+        if (/[.!?]\s*$/.test(latestSlice)) {
+          pauseDuration = 120 / mult; // sentence end pause
+        } else if (/[\n]/.test(latestSlice)) {
+          pauseDuration = 100 / mult; // newline pause
+        } else if (/[:,;—–]\s*$/.test(latestSlice)) {
+          pauseDuration = 55 / mult; // clause separator pause
+        }
+
+        nextEligibleTs = ts + pauseDuration;
+        cursor = nextCursor;
+        setTypedLength(cursor);
+        playTypewriterClick(latestSlice.slice(-1));
+
+        if (cursor >= totalLen) {
+          setTypedLength(totalLen);
+          stopTypingAnimation();
+          return;
+        }
+
+        typingRafRef.current = requestAnimationFrame(step);
+      };
+
+      typingRafRef.current = requestAnimationFrame(step);
+      return;
+    }
+
+    // Fallback interval if requestAnimationFrame is unavailable
+    const stepSize = Math.max(4, Math.min(14, Math.ceil(totalLen / 60)));
     typingTimerRef.current = setInterval(() => {
-      cursor = Math.min(totalLen, cursor + stepSize);
-      // Snap forward cleanly to next whitespace boundary for word-by-word flow
+      if (isTypingPausedRef.current) return;
+      const mult = typingSpeedRef.current || 1;
+      cursor = Math.min(totalLen, cursor + stepSize * mult);
       if (cursor < totalLen) {
         const nextSpace = fullText.indexOf(" ", cursor);
-        if (nextSpace !== -1 && nextSpace - cursor <= 12) {
+        if (nextSpace !== -1 && nextSpace - cursor <= 4) {
           cursor = nextSpace + 1;
         }
       }
       setTypedLength(cursor);
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      playTypewriterClick(fullText[cursor - 1] || "");
       if (cursor >= totalLen) {
         stopTypingAnimation();
       }
-    }, 20);
+    }, 24);
   };
+
+  // Scroll only the inner message pane when content height actually grows (prevents screen vibration)
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    if (el.scrollHeight !== prevScrollHeightRef.current) {
+      scrollChatToBottom(false);
+    }
+  }, [typedLength, typingMessageId, messages.length, isSending]);
 
   useEffect(() => {
     if (!isSending) {
@@ -321,7 +554,8 @@ export default function AssistantPage() {
     setActiveConvId(id);
     try {
       const detail = await api.getConversation(id);
-      setMessages(detail.messages || []);
+      const msgs = detail.messages || [];
+      setMessages(msgs);
     } catch (err) {
       console.error("Load conversation error:", err);
     }
@@ -335,6 +569,7 @@ export default function AssistantPage() {
       setActiveConvId(newConv.id);
       const detail = await api.getConversation(newConv.id);
       setMessages(detail.messages || []);
+      setIsConsultationsCollapsed(false);
     } catch (err) {
       console.error("Create conversation error:", err);
     }
@@ -391,6 +626,8 @@ export default function AssistantPage() {
       created_at: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempUserMsg]);
+    isAutoScrollPinnedRef.current = true;
+    requestAnimationFrame(() => scrollChatToBottom(true));
 
     try {
       const responseMsg = await api.sendMessage(
@@ -399,7 +636,7 @@ export default function AssistantPage() {
         engineToUse,
         selectedReportId
       );
-      setMessages((prev) => [...prev.slice(0, -1), tempUserMsg, responseMsg]);
+      setMessages((prev) => [...prev, responseMsg]);
       startTypingAnimation(responseMsg);
       api.listConversations().then(setConversations);
     } catch (err: any) {
@@ -414,7 +651,6 @@ export default function AssistantPage() {
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsSending(false);
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -554,24 +790,61 @@ export default function AssistantPage() {
   }, [messages]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface text-foreground">
+    <div className="fixed inset-0 flex flex-col bg-surface text-foreground overflow-hidden h-screen max-h-screen">
       <AppHeader />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex overflow-hidden relative">
         <AppSidebar />
 
+        {/* Mobile / Tablet Threads Backdrop */}
+        {showMobileThreads && (
+          <div
+            onClick={() => setShowMobileThreads(false)}
+            className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-[1px] lg:hidden"
+            aria-hidden="true"
+          />
+        )}
+
         {/* Consultations & AI Model Sidebar */}
-        <aside className="w-68 border-r border-border bg-white dark:bg-[#1a2e38] flex-col shrink-0 hidden md:flex">
-          <div className="p-3 border-b border-border space-y-2">
-            <div className="flex items-center justify-between">
+        <aside
+          className={`border-r border-border bg-white dark:bg-[#1a2e38] flex-col shrink-0 h-full min-h-0 max-h-full overflow-hidden transition-all duration-300 ease-in-out ${
+            isConsultationsCollapsed
+              ? "w-0 p-0 border-none opacity-0 pointer-events-none hidden"
+              : "w-72 lg:w-64 xl:w-72 flex"
+          } ${
+            showMobileThreads
+              ? "fixed inset-y-16 left-0 z-40 shadow-2xl !flex !w-72 !opacity-100 !pointer-events-auto"
+              : ""
+          }`}
+        >
+          <div className="p-3 border-b border-border space-y-2 shrink-0">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-foreground">Consultations</span>
-              <button
-                onClick={startNewConversation}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container transition-all shadow-xs"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>New</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={startNewConversation}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary-container transition-all shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>New</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsConsultationsCollapsed(true)}
+                  title="Collapse Consultations (Expand GeneWise Clinical Intelligence)"
+                  className="hidden lg:inline-flex p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-low transition-colors"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowMobileThreads(false)}
+                  aria-label="Close consultations drawer"
+                  className="lg:hidden p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-surface-low"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -586,11 +859,14 @@ export default function AssistantPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+          <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-2">
             {filteredConversations.map((c) => (
               <div
                 key={c.id}
-                onClick={() => selectConversation(c.id)}
+                onClick={() => {
+                  selectConversation(c.id);
+                  setShowMobileThreads(false);
+                }}
                 className={`group flex items-center justify-between p-2.5 rounded-lg text-xs cursor-pointer transition-all ${
                   activeConvId === c.id
                     ? "bg-surface-low dark:bg-surface-variant/30 text-primary font-semibold border border-primary/20 shadow-2xs"
@@ -613,89 +889,168 @@ export default function AssistantPage() {
                 </button>
               </div>
             ))}
-          </div>
 
-          {/* Interactive Bi-LSTM Temporal Forecaster Card */}
-          <div className="px-3 py-2.5 mx-2 mt-2 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/80 to-teal-50/40 dark:from-indigo-950/30 dark:to-teal-950/20 text-xs space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1">
-                <BrainCircuit className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                Bi-LSTM Sequence
-              </span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold">
-                AUC 0.958
-              </span>
+            {/* Compact Clinical Dossier Summary inside sidebar to avoid empty void */}
+            <div className="mt-2 p-2.5 rounded-xl border border-border/80 bg-surface-low/60 dark:bg-surface-variant/15 text-[11px] space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-foreground flex items-center gap-1">
+                  <Activity className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                  Active Patient Panel
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold">
+                  CMP-14
+                </span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Rajesh Kumar (MRN #92041)
+              </p>
+              <div className="grid grid-cols-3 gap-1 pt-0.5 text-center">
+                <div className="rounded-lg bg-white dark:bg-[#1a2e38] px-1.5 py-1 border border-border/60">
+                  <span className="block text-[8px] uppercase text-muted-foreground">HbA1c</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400 text-[10px]">6.2%</span>
+                </div>
+                <div className="rounded-lg bg-white dark:bg-[#1a2e38] px-1.5 py-1 border border-border/60">
+                  <span className="block text-[8px] uppercase text-muted-foreground">FPG</span>
+                  <span className="font-bold text-foreground text-[10px]">118</span>
+                </div>
+                <div className="rounded-lg bg-white dark:bg-[#1a2e38] px-1.5 py-1 border border-border/60">
+                  <span className="block text-[8px] uppercase text-muted-foreground">tTG-IgA</span>
+                  <span className="font-bold text-rose-600 dark:text-rose-400 text-[10px]">48.2</span>
+                </div>
+              </div>
             </div>
-            <p className="text-[10px] text-indigo-900/80 dark:text-indigo-300/90">
-              2-Layer LSTM 90-day biomarker forecasting & attention gates.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                sound.playClick();
-                setShowLstmModal(true);
-              }}
-              className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
-            >
-              Open Bi-LSTM Forecaster
-            </button>
-          </div>
 
-          {/* ML Risk Research Tool Banner */}
-          <div className="p-3 m-2 rounded-xl border border-teal-200 bg-teal-50 dark:bg-teal-950/20 text-xs space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-teal-900 dark:text-teal-300 flex items-center gap-1">
-                <Microscope className="w-3.5 h-3.5 text-primary" /> ML Risk Model
-              </span>
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-teal-200 dark:bg-teal-900 text-teal-900 font-bold">
-                AUC 0.94
-              </span>
+            {/* Interactive Bi-LSTM Temporal Forecaster Card */}
+            <div className="px-3 py-2.5 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/80 to-teal-50/40 dark:from-indigo-950/30 dark:to-teal-950/20 text-xs space-y-1.5">
+              <div className="flex items-center justify-between gap-1">
+                <span className="font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1 truncate">
+                  <BrainCircuit className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                  Bi-LSTM Sequence
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-600 text-white font-bold shrink-0">
+                  AUC 0.958
+                </span>
+              </div>
+              <p className="text-[10px] text-indigo-900/80 dark:text-indigo-300/90 leading-snug">
+                2-Layer LSTM 90-day biomarker forecasting & attention gates.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowLstmModal(true);
+                  setShowMobileThreads(false);
+                }}
+                className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-indigo-700 text-white hover:bg-indigo-800 transition-colors"
+              >
+                Open Bi-LSTM Forecaster
+              </button>
             </div>
-            <p className="text-[10px] text-teal-800/80 dark:text-teal-400">
-              Interactive Celiac risk stratification calculator.
-            </p>
-            <button
-              onClick={() => setShowMlModal(true)}
-              className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-primary text-white hover:bg-primary-container transition-colors"
-            >
-              Open Research Model
-            </button>
+
+            {/* ML Risk Research Tool Banner */}
+            <div className="p-3 rounded-xl border border-teal-200 dark:border-teal-900/60 bg-teal-50 dark:bg-teal-950/20 text-xs space-y-1.5">
+              <div className="flex items-center justify-between gap-1">
+                <span className="font-bold text-teal-900 dark:text-teal-300 flex items-center gap-1 truncate">
+                  <Microscope className="w-3.5 h-3.5 shrink-0 text-primary" /> ML Risk Model
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-teal-200 dark:bg-teal-900 text-teal-900 dark:text-teal-200 font-bold shrink-0">
+                  AUC 0.94
+                </span>
+              </div>
+              <p className="text-[10px] text-teal-800/80 dark:text-teal-400 leading-snug">
+                Interactive Celiac risk stratification calculator.
+              </p>
+              <button
+                onClick={() => {
+                  setShowMlModal(true);
+                  setShowMobileThreads(false);
+                }}
+                className="w-full py-1.5 text-center font-semibold text-[11px] rounded-lg bg-primary text-white hover:bg-primary-container transition-colors"
+              >
+                Open Research Model
+              </button>
+            </div>
           </div>
         </aside>
 
         {/* Main Chat Workspace */}
-        <main className="flex-1 flex flex-col bg-surface-low/20 overflow-hidden">
+        <main className="flex-1 min-h-0 min-w-0 flex flex-col bg-surface-low/20 overflow-hidden">
           {/* Top Assistant Status & AI Engine Switcher Bar */}
-          <div className="px-4 py-2.5 border-b border-border bg-white/95 dark:bg-[#1a2e38]/95 backdrop-blur-sm space-y-2 text-xs">
-            <div className="flex flex-wrap items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center font-bold shadow-xs">
-                  <Bot className="w-4 h-4" />
+          <div className="shrink-0 px-3 sm:px-5 py-2 sm:py-2.5 border-b border-border bg-white/95 dark:bg-[#1a2e38]/95 backdrop-blur-sm space-y-1.5 sm:space-y-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileThreads(true)}
+                  aria-label="Open consultations and clinical models"
+                  className="lg:hidden p-2 rounded-xl border border-border bg-surface-low text-foreground hover:bg-surface-container shrink-0 active:scale-95 transition-transform"
+                >
+                  <PanelLeft className="w-4 h-4" />
+                </button>
+
+                {/* Desktop Consultations / Expand Workspace Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsConsultationsCollapsed(!isConsultationsCollapsed)}
+                  className="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border bg-surface-low hover:bg-surface-container text-foreground transition-all text-xs font-semibold shrink-0 cursor-pointer"
+                  title={
+                    isConsultationsCollapsed
+                      ? "Show Consultations sidebar"
+                      : "Hide Consultations sidebar (Expand GeneWise Clinical Intelligence)"
+                  }
+                >
+                  {isConsultationsCollapsed ? (
+                    <>
+                      <PanelLeft className="w-3.5 h-3.5 text-primary" />
+                      <span className="text-[11px]">Consultations</span>
+                      <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.2 rounded-full font-bold">
+                        {conversations.length}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <PanelLeftClose className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="text-[11px] text-muted-foreground">Expand View</span>
+                    </>
+                  )}
+                </button>
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-foreground leading-tight">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-bold text-foreground leading-tight truncate text-xs sm:text-sm">
                       GeneWise Clinical Intelligence
                     </p>
-                    <span className="hidden lg:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        sound.playSoft();
+                        setShowModelModal(true);
+                      }}
+                      className="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25 shrink-0 hover:bg-indigo-500/20 transition-all cursor-pointer"
+                      title="Inspect neural architecture, gate activations, and live hyperparameters"
+                    >
                       <BrainCircuit className="w-3 h-3" /> {activeEngine.aucLabel}
-                    </span>
+                      <span className="text-[9px] opacity-75 underline ml-0.5">Blueprint</span>
+                    </button>
                   </div>
-                  <p className="text-[10px] text-muted-foreground leading-tight">
+                  <p className="hidden sm:block text-[10px] text-muted-foreground leading-tight truncate">
                     {activeEngine.architecture} • {activeEngine.latencyLabel} • Evidence-Grounded
                   </p>
                 </div>
               </div>
 
               {/* Provider, Voice, Lab Report & Print/Share Controls */}
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <Link
                   href="/assistant/voice"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs hover:scale-[1.02] transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs transition-all"
                 >
-                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
                   <Radio className="w-3.5 h-3.5" />
-                  <span>Real-Time Voice Mode</span>
+                  <span className="sm:hidden">Voice Mode</span>
+                  <span className="hidden sm:inline">Real-Time Voice Mode</span>
                   <span className="text-[9px] bg-white/20 px-1.5 py-0.5 rounded-full hidden xl:inline">
                     13 Indian Languages
                   </span>
@@ -703,14 +1058,14 @@ export default function AssistantPage() {
 
                 {reports.length > 0 && (
                   <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
-                    <Paperclip className="w-3 h-3 text-muted-foreground" />
+                    <Paperclip className="w-3 h-3 text-muted-foreground shrink-0" />
                     <select
                       aria-label="Attach medical lab report"
                       value={selectedReportId || ""}
                       onChange={(e) =>
                         setSelectedReportId(e.target.value ? Number(e.target.value) : undefined)
                       }
-                      className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none"
+                      className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none max-w-[165px] sm:max-w-none"
                     >
                       <option value="">Attach Lab Report (Optional)</option>
                       {reports.map((r) => (
@@ -723,12 +1078,12 @@ export default function AssistantPage() {
                 )}
 
                 <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
-                  <Sparkles className="w-3 h-3 text-primary" />
+                  <Sparkles className="w-3 h-3 text-primary shrink-0" />
                   <select
                     aria-label="Select AI Model Engine"
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
-                    className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none"
+                    className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none max-w-[175px] sm:max-w-none"
                   >
                     {AI_ENGINE_PROFILES.map((eng) => (
                       <option key={eng.id} value={eng.id}>
@@ -743,7 +1098,7 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => openExportModal(messages.length === 1 ? "single" : "all")}
                   title="Print Message Only, Download PDF, or Share via WhatsApp"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print / Share / PDF</span>
@@ -752,7 +1107,7 @@ export default function AssistantPage() {
             </div>
 
             {/* Interactive Quick AI Engine Pills Strip */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1">
                 AI Model:
               </span>
@@ -782,7 +1137,7 @@ export default function AssistantPage() {
                     )}
                     <span>{eng.shortName}</span>
                     {!isConfigured && (
-                      <span className="text-[9px] opacity-75">(Offline)</span>
+                      <span className="text-[9px] opacity-75">(Local)</span>
                     )}
                   </button>
                 );
@@ -791,13 +1146,18 @@ export default function AssistantPage() {
           </div>
 
           {/* Messages Stream or Enhanced Discovery Hero */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <div
+            ref={messagesContainerRef}
+            onScroll={handleMessagesScroll}
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4"
+            style={{ overflowAnchor: "none" }}
+          >
             {isLoading && messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
             ) : messages.length === 0 ? (
-              <div className="max-w-4xl mx-auto space-y-5 py-2 animate-fade-in-up">
+              <div className="max-w-5xl w-full mx-auto space-y-5 py-2 animate-fade-in-up">
                 {/* Hero Card */}
                 <div className="rounded-2xl border border-border bg-gradient-to-br from-white via-teal-50/40 to-indigo-50/40 dark:from-[#1a2e38] dark:via-[#14262f] dark:to-[#182338] p-5 sm:p-6 shadow-xs text-center space-y-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-700 to-indigo-600 text-white flex items-center justify-center shadow-sm mx-auto">
@@ -1005,44 +1365,129 @@ export default function AssistantPage() {
                 const traceOpen = Boolean(expandedTraces[m.id]);
                 const isTypingThisMsg = !isUser && typingMessageId === m.id;
                 const displayContent = isTypingThisMsg
-                  ? m.content.slice(0, Math.max(1, typedLength))
+                  ? stabilizeStreamingMarkdown(m.content.slice(0, Math.max(1, typedLength)))
                   : m.content;
                 return (
                   <div
                     key={m.id}
-                    className={`flex gap-3 max-w-3xl animate-fade-in-up ${isUser ? "ml-auto" : "mr-auto"}`}
+                    className={`flex gap-2 sm:gap-3 w-full max-w-5xl mx-auto ${
+                      isUser ? "justify-end" : "justify-start"
+                    }`}
                   >
                     {!isUser && (
-                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                        <Bot className="w-4 h-4" />
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
+                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </div>
                     )}
 
                     <div
-                      className={`rounded-2xl p-4 text-xs space-y-3 shadow-xs ${
+                      className={`relative rounded-2xl p-3 sm:p-4 text-xs space-y-2.5 sm:space-y-3 shadow-xs transition-all duration-300 ${
                         isUser
-                          ? "bg-primary text-white rounded-tr-none ml-8 sm:ml-12"
-                          : "bg-white dark:bg-[#1a2e38] border border-border text-foreground rounded-tl-none mr-4 sm:mr-10"
+                          ? "bg-primary text-white rounded-tr-none max-w-[88%] sm:max-w-[72%]"
+                          : isTypingThisMsg
+                          ? "flex-1 min-w-0 max-w-full sm:max-w-[90%] bg-white dark:bg-[#1a2e38] border border-teal-500 text-foreground rounded-tl-none shadow-lg shadow-teal-500/10 writing-active-border"
+                          : "flex-1 min-w-0 max-w-full sm:max-w-[90%] bg-white dark:bg-[#1a2e38] border border-border text-foreground rounded-tl-none"
                       }`}
                     >
+                      {/* Top Animated Writing Scanner Bar */}
+                      {isTypingThisMsg && (
+                        <div className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl overflow-hidden pointer-events-none">
+                          <div className="w-full h-full writing-scan-line" />
+                        </div>
+                      )}
+
                       {/* Model Telemetry Header for Assistant Reply */}
                       {!isUser && (m.model_used || m.confidence_score || isTypingThisMsg) && (
                         <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-border/50 text-[10px]">
                           <div className="flex flex-wrap items-center gap-1.5">
-                            <span className="inline-flex items-center gap-1.5 font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 px-2 py-0.5 rounded-full border border-teal-500/20">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                sound.playSoft();
+                                setShowModelModal(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 font-bold text-teal-800 dark:text-teal-300 bg-teal-500/10 hover:bg-teal-500/20 px-2 py-0.5 rounded-full border border-teal-500/20 transition-colors cursor-pointer"
+                              title="Click to inspect model architecture and gate attributions"
+                            >
                               <BrainCircuit className="w-3 h-3" />
                               {m.model_used || activeEngine.name}
-                            </span>
-                            {isTypingThisMsg && (
+                            </button>
+                            {m.neural_telemetry && (
                               <button
                                 type="button"
-                                onClick={stopTypingAnimation}
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25 font-bold hover:bg-indigo-500/20"
-                                title="Show full message immediately"
+                                onClick={() => {
+                                  sound.playSoft();
+                                  setShowModelModal(true);
+                                }}
+                                className="hidden sm:inline-flex items-center gap-1 font-mono text-[9px] text-muted-foreground hover:text-foreground bg-surface-low border border-border/80 px-1.5 py-0.5 rounded-md cursor-pointer transition-colors"
+                                title="Click to view full neural telemetry"
                               >
-                                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-ping" />
-                                Typing... Show Full
+                                <Zap className="w-2.5 h-2.5 text-amber-500" />
+                                <span>{m.neural_telemetry.latency_ms}ms</span>
+                                <span>•</span>
+                                <span>{m.neural_telemetry.tokens_per_second} t/s</span>
                               </button>
+                            )}
+                            {isTypingThisMsg && (
+                              <div className="inline-flex items-center gap-1 bg-surface-low dark:bg-surface-variant/30 border border-teal-500/30 rounded-full px-2 py-0.5 shadow-2xs">
+                                <span className="inline-flex items-center gap-1 font-mono font-bold text-teal-700 dark:text-teal-300">
+                                  <PenTool className="w-3 h-3 text-teal-600 dark:text-teal-400 animate-bounce" />
+                                  Writing{" "}
+                                  {String(
+                                    Math.min(
+                                      99,
+                                      Math.round((typedLength / Math.max(1, m.content.length)) * 100)
+                                    )
+                                  ).padStart(2, "0")}
+                                  %
+                                </span>
+                                <span className="text-border">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setTypingSpeed((prev) => (prev === 1 ? 2 : prev === 2 ? 3 : 1))}
+                                  className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded hover:bg-surface-container font-mono font-bold text-teal-800 dark:text-teal-200 transition-colors"
+                                  title="Change typing speed: 1x (Natural), 2x (Fast), 3x (Hyper)"
+                                >
+                                  <Zap className="w-2.5 h-2.5 text-amber-500" />
+                                  <span>{typingSpeed}x</span>
+                                </button>
+                                <span className="text-border">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setIsTypingPaused((prev) => !prev)}
+                                  className="p-0.5 rounded hover:bg-surface-container text-muted-foreground hover:text-foreground transition-colors"
+                                  title={isTypingPaused ? "Resume writing" : "Pause writing"}
+                                >
+                                  {isTypingPaused ? (
+                                    <Play className="w-2.5 h-2.5 text-teal-600" />
+                                  ) : (
+                                    <Pause className="w-2.5 h-2.5" />
+                                  )}
+                                </button>
+                                <span className="text-border">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setTypewriterSoundEnabled((prev) => !prev)}
+                                  className="p-0.5 rounded hover:bg-surface-container text-muted-foreground hover:text-foreground transition-colors"
+                                  title={typewriterSoundEnabled ? "Mute typewriter sound" : "Enable tactile typewriter keystroke clicks"}
+                                >
+                                  {typewriterSoundEnabled ? (
+                                    <Volume2 className="w-2.5 h-2.5 text-teal-600 animate-pulse" />
+                                  ) : (
+                                    <VolumeX className="w-2.5 h-2.5" />
+                                  )}
+                                </button>
+                                <span className="text-border">|</span>
+                                <button
+                                  type="button"
+                                  onClick={stopTypingAnimation}
+                                  className="inline-flex items-center gap-1 font-bold text-indigo-700 dark:text-indigo-300 hover:text-indigo-900 dark:hover:text-indigo-100 transition-colors"
+                                  title="Skip writing animation and show full message immediately"
+                                >
+                                  <FastForward className="w-2.5 h-2.5" />
+                                  <span>Show Full</span>
+                                </button>
+                              </div>
                             )}
                           </div>
                           {typeof m.confidence_score === "number" && (
@@ -1066,27 +1511,49 @@ export default function AssistantPage() {
                         <div className="whitespace-pre-line leading-relaxed font-medium">{m.content}</div>
                       ) : (
                         <div className="relative">
-                          <ClinicalMarkdown content={displayContent} />
+                          <ClinicalMarkdown content={displayContent} isStreaming={isTypingThisMsg} />
                           {isTypingThisMsg && (
-                            <span
+                            <div
                               data-testid="ai-typing-cursor"
-                              className="inline-flex items-center gap-1 mt-1 text-[10px] font-semibold text-teal-700 dark:text-teal-300"
+                              className="mt-3 pt-2 border-t border-teal-500/20 flex flex-wrap items-center justify-between gap-2 text-[10px]"
                             >
-                              <span className="inline-block w-1.5 h-3.5 rounded-xs bg-teal-600 dark:bg-teal-400 animate-pulse align-middle" />
-                              <span>Streaming clinical brief...</span>
-                            </span>
+                              <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />
+                                  <span className="w-2 h-2 rounded-full bg-teal-600 dark:bg-teal-400" />
+                                </div>
+                                <span className="font-semibold text-teal-800 dark:text-teal-200">
+                                  GeneWise AI composing clinical answer...
+                                </span>
+                                <span className="font-mono text-muted-foreground text-[9px]">
+                                  (~{Math.max(1, displayContent.split(/\s+/).filter(Boolean).length)} words drafted)
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={stopTypingAnimation}
+                                  className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+                                >
+                                  <span>Instant Reveal</span>
+                                  <ChevronRight className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
                           )}
                         </div>
                       )}
 
-                      {/* Inline Bi-LSTM Sequence Trajectory Card */}
-                      {!isUser && m.lstm_forecast && (
-                        <BiLstmTrajectoryCard forecast={m.lstm_forecast} compact />
+                      {/* Inline Bi-LSTM Sequence Trajectory Card (reveals smoothly on stream completion) */}
+                      {!isUser && !isTypingThisMsg && m.lstm_forecast && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <BiLstmTrajectoryCard forecast={m.lstm_forecast} compact />
+                        </div>
                       )}
 
                       {/* Collapsible Clinical Reasoning Trace */}
-                      {!isUser && m.reasoning_trace && m.reasoning_trace.length > 0 && (
-                        <div className="rounded-xl border border-border/70 bg-surface-low/60 dark:bg-surface-variant/15 overflow-hidden">
+                      {!isUser && !isTypingThisMsg && m.reasoning_trace && m.reasoning_trace.length > 0 && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 rounded-xl border border-border/70 bg-surface-low/60 dark:bg-surface-variant/15 overflow-hidden">
                           <button
                             type="button"
                             onClick={() =>
@@ -1117,8 +1584,8 @@ export default function AssistantPage() {
                       )}
 
                       {/* Cited Sources Grounding */}
-                      {m.sources && m.sources.length > 0 && (
-                        <div className="pt-2 border-t border-border/60 space-y-1.5">
+                      {!isTypingThisMsg && m.sources && m.sources.length > 0 && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 pt-2 border-t border-border/60 space-y-1.5">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-primary flex items-center gap-1">
                             <BookOpen className="w-3 h-3" /> Peer-Reviewed Citations & Evidence
                           </p>
@@ -1154,8 +1621,8 @@ export default function AssistantPage() {
                       )}
 
                       {/* Next Follow-up Question Suggestions on Assistant Reply */}
-                      {!isUser && m.follow_up_questions && m.follow_up_questions.length > 0 && (
-                        <div className="pt-2 border-t border-border/40 space-y-1.5">
+                      {!isUser && !isTypingThisMsg && m.follow_up_questions && m.follow_up_questions.length > 0 && (
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 pt-2 border-t border-border/40 space-y-1.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
                             Suggested Follow-Up Questions
                           </span>
@@ -1277,14 +1744,14 @@ export default function AssistantPage() {
             {isSending && (
               <div
                 data-testid="assistant-thinking-indicator"
-                className="flex items-start gap-3 animate-in fade-in max-w-3xl"
+                className="flex items-start gap-3 w-full max-w-5xl mx-auto"
               >
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-700 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1a2e38] border border-teal-500/30 shadow-xs space-y-2 min-w-[260px]">
                   <div className="flex items-center gap-2 text-xs font-semibold text-primary">
-                    <Sparkles className="w-3.5 h-3.5 animate-spin" />
+                    <Sparkles className="w-3.5 h-3.5 animate-pulse shrink-0" />
                     <span>
                       {[
                         activeEngine.isLstm
@@ -1295,11 +1762,11 @@ export default function AssistantPage() {
                       ][thinkingStage]}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 pt-0.5">
+                  <div className="flex items-center gap-2 pt-0.5 h-4">
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 rounded-full bg-teal-600 animate-bounce [animation-delay:-0.3s]"></div>
-                      <div className="w-2 h-2 rounded-full bg-teal-500 animate-bounce [animation-delay:-0.15s]"></div>
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 animate-bounce"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse [animation-delay:-0.3s]"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse [animation-delay:-0.15s]"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
                     </div>
                     <span className="text-[10px] font-mono text-muted-foreground">
                       GeneWise AI typing...
@@ -1312,10 +1779,10 @@ export default function AssistantPage() {
           </div>
 
           {/* Chat Input Bar */}
-          <div className="p-3.5 sm:p-4 border-t border-border bg-white dark:bg-[#1a2e38] space-y-2">
+          <div className="shrink-0 p-2.5 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white dark:bg-[#1a2e38] space-y-1.5 sm:space-y-2">
             {/* Active Follow-Up Prompt Strip (when conversation is underway) */}
             {messages.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-4xl mx-auto">
+              <div className="flex flex-wrap items-center gap-1.5 w-full max-w-5xl mx-auto max-h-[4.25rem] overflow-y-auto sm:max-h-none sm:overflow-visible">
                 <span className="text-[10px] font-bold text-primary shrink-0 uppercase tracking-wider">
                   Quick Ask:
                 </span>
@@ -1329,7 +1796,8 @@ export default function AssistantPage() {
                         qText.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
                       )
                     }
-                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 transition-colors"
+                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground max-w-[260px] sm:max-w-xs truncate transition-colors"
+                    title={qText}
                   >
                     {qText}
                   </button>
@@ -1338,7 +1806,7 @@ export default function AssistantPage() {
             )}
 
             {/* Quick Action Clinical Toolbar */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-[11px] max-w-4xl mx-auto">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto">
               {reports.length > 0 && (
                 <button
                   type="button"
@@ -1394,7 +1862,7 @@ export default function AssistantPage() {
             </div>
 
             {isListening && (
-              <div className="flex items-center justify-center gap-1 py-1.5 px-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-semibold max-w-4xl mx-auto">
+              <div className="flex items-center justify-center gap-1 py-1.5 px-3 bg-red-500/10 border border-red-500/20 rounded-lg text-xs text-red-500 font-semibold w-full max-w-5xl mx-auto">
                 <span>Listening to your medical question...</span>
                 <div className="flex items-center gap-0.5 ml-2 h-4">
                   <div className="w-1 bg-red-500 rounded-full animate-wave [animation-delay:0ms]"></div>
@@ -1410,14 +1878,14 @@ export default function AssistantPage() {
                 e.preventDefault();
                 handleSendMessage();
               }}
-              className="flex items-center gap-2 max-w-4xl mx-auto"
+              className="flex items-center gap-2 w-full max-w-5xl mx-auto"
             >
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about laboratory findings, symptoms, or medical literature..."
-                className="flex-1 px-4 py-2.5 text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 text-[15px] sm:text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
               />
 
               <button
@@ -1428,7 +1896,7 @@ export default function AssistantPage() {
                     ? "Listening... click to stop recording"
                     : "Voice dictation (Speech-to-Text)"
                 }
-                className={`smooth-button p-2.5 rounded-xl border transition-all ${
+                className={`smooth-button p-3 sm:p-2.5 rounded-xl border transition-all shrink-0 ${
                   isListening
                     ? "bg-red-500 text-white border-red-600 animate-pulse shadow-sm"
                     : "bg-surface-low border-border text-muted-foreground hover:text-foreground hover:bg-surface-container"
@@ -1440,7 +1908,7 @@ export default function AssistantPage() {
               <button
                 type="submit"
                 disabled={isSending || !inputText.trim()}
-                className="smooth-button p-2.5 rounded-xl bg-primary text-white hover:bg-primary-container transition-all shadow-xs disabled:opacity-50"
+                className="smooth-button p-3 sm:p-2.5 rounded-xl bg-primary text-white hover:bg-primary-container transition-all shadow-xs disabled:opacity-50 shrink-0"
               >
                 {isSending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1924,6 +2392,20 @@ export default function AssistantPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Model Architecture & Blueprint Inspector Modal */}
+      {showModelModal && (
+        <AiModelArchitectureModal
+          isOpen={showModelModal}
+          onClose={() => setShowModelModal(false)}
+          activeProfile={activeEngine}
+          telemetry={latestTelemetry}
+          onSelectEngine={(id) => {
+            setSelectedProvider(id);
+            setShowModelModal(false);
+          }}
+        />
       )}
     </div>
   );

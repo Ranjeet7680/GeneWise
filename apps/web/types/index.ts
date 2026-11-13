@@ -60,6 +60,22 @@ export interface LstmStepPoint {
   isForecast: boolean;
 }
 
+export interface NeuralTelemetry {
+  tokens_per_second?: number;
+  latency_ms?: number;
+  attention_peak?: string;
+  consensus_score?: number;
+  evidence_grounding_score?: number;
+  architecture_label?: string;
+  hyperparameters?: {
+    sequence_horizon?: string;
+    temperature?: number;
+    brier_score?: number;
+    dropout?: number;
+    zero_trust_status?: string;
+  };
+}
+
 export interface LstmBiomarkerForecast {
   biomarkerKey: string;
   biomarkerLabel: string;
@@ -68,6 +84,7 @@ export interface LstmBiomarkerForecast {
   currentValue: number;
   projected30d: number;
   projected90d: number;
+  projected180d?: number;
   deltaPerMonth: number;
   trend: "improving" | "stable" | "elevating";
   confidence: number;
@@ -79,6 +96,8 @@ export interface LstmBiomarkerForecast {
   attentionPeakVisit: string;
   sequence: LstmStepPoint[];
   clinicalSummary: string;
+  riskTier?: "optimal" | "borderline" | "elevated" | "high";
+  accelerationScore?: number;
 }
 
 export interface Message {
@@ -94,6 +113,7 @@ export interface Message {
   reasoning_trace?: string[];
   follow_up_questions?: string[];
   lstm_forecast?: LstmBiomarkerForecast;
+  neural_telemetry?: NeuralTelemetry;
 }
 
 export interface Conversation {

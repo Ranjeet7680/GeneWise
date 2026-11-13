@@ -2,9 +2,10 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import MediPredictLogo from "@/components/MediPredictLogo";
 import UserAvatar from "@/components/UserAvatar";
+import { NAV_GROUPS } from "@/components/AppSidebar";
 import {
   Activity,
   AlertOctagon,
@@ -18,6 +19,7 @@ import {
   Cpu,
   HeartPulse,
   LogOut,
+  Menu,
   Moon,
   PhoneCall,
   Radio,
@@ -79,8 +81,10 @@ export default function AppHeader() {
   const { user, logout, isAuthenticated, switchRole } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const router = useRouter();
+  const pathname = usePathname();
 
   // Header Dropdown & Modal States
+  const [showMobileNav, setShowMobileNav] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotificationFlyout, setShowNotificationFlyout] = useState(false);
   const [showTelemetryModal, setShowTelemetryModal] = useState(false);
@@ -190,10 +194,23 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-white/90 dark:bg-[#111d24]/90 backdrop-blur-md border-b border-border shadow-xs transition-colors duration-200">
-        <div className="flex h-16 items-center justify-between px-3 sm:px-6">
-          {/* Left: Brand Logo */}
-          <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-40 w-full shrink-0 bg-white/90 dark:bg-[#111d24]/90 backdrop-blur-md border-b border-border shadow-xs transition-colors duration-200">
+        <div className="flex h-16 items-center justify-between px-3 sm:px-6 gap-2">
+          {/* Left: Mobile Drawer Trigger + Brand Logo */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                sound.playClick();
+                setShowMobileNav(true);
+                setShowNotificationFlyout(false);
+                setShowProfileMenu(false);
+              }}
+              aria-label="Open navigation menu"
+              className="md:hidden p-2 -ml-1 rounded-xl text-foreground hover:bg-surface-low dark:hover:bg-[#1a2c38] active:scale-95 transition-all shrink-0 border border-border/60"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
             <MediPredictLogo
               href={isAuthenticated ? "/dashboard" : "/"}
               size="md"
@@ -252,7 +269,7 @@ export default function AppHeader() {
               {/* Notification Flyout */}
               {showNotificationFlyout && (
                 <div
-                  className="absolute right-0 mt-2 w-80 sm:w-96 rounded-xl bg-white dark:bg-[#162732] shadow-2xl border border-border p-3 z-50 animate-in fade-in slide-in-from-top-2"
+                  className="fixed left-3 right-3 top-[4.25rem] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-96 rounded-xl bg-white dark:bg-[#162732] shadow-2xl border border-border p-3 z-50 animate-in fade-in slide-in-from-top-2"
                   onMouseLeave={() => setShowNotificationFlyout(false)}
                 >
                   <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
@@ -320,8 +337,8 @@ export default function AppHeader() {
               )}
             </div>
 
-            {/* Sound FX Toggle with Audio Synthesizer */}
-            <div className="relative">
+            {/* Sound FX Toggle with Audio Synthesizer (desktop quick icon; moved into drawer on < sm) */}
+            <div className="relative hidden sm:block">
               <button
                 onClick={handleToggleSound}
                 title={isAudioMuted ? "Enable Sound FX" : "Mute Sound FX"}
@@ -395,7 +412,7 @@ export default function AppHeader() {
                 {/* Profile Dropdown Menu */}
                 {showProfileMenu && (
                   <div
-                    className="absolute right-0 mt-2 w-72 rounded-xl bg-white dark:bg-[#162732] shadow-2xl border border-border py-2 z-50 animate-in fade-in slide-in-from-top-2"
+                    className="fixed left-3 right-3 top-[4.25rem] sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-72 rounded-xl bg-white dark:bg-[#162732] shadow-2xl border border-border py-2 z-50 animate-in fade-in slide-in-from-top-2"
                     onMouseLeave={() => setShowProfileMenu(false)}
                   >
                     <div className="px-4 py-2.5 border-b border-border flex items-start gap-2.5">
@@ -540,11 +557,143 @@ export default function AppHeader() {
       </header>
 
       {/* ========================================================================= */}
+      {/* 0. MOBILE FULL-WORKSPACE NAVIGATION DRAWER (< md) */}
+      {/* ========================================================================= */}
+      {showMobileNav && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            onClick={() => setShowMobileNav(false)}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs animate-in fade-in"
+            aria-hidden="true"
+          />
+          <aside
+            aria-label="Mobile workspace navigation"
+            className="relative z-10 w-[85vw] max-w-[310px] h-[100dvh] bg-white dark:bg-[#101c24] border-r border-border shadow-2xl flex flex-col overflow-hidden"
+          >
+            {/* Drawer Header */}
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-surface-low/50 dark:bg-black/20 shrink-0">
+              <MediPredictLogo
+                href={isAuthenticated ? "/dashboard" : "/"}
+                size="sm"
+                animated={false}
+                showText={true}
+                showSubtitle={false}
+                showBadge={true}
+              />
+              <button
+                type="button"
+                onClick={() => setShowMobileNav(false)}
+                aria-label="Close navigation menu"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-surface-container"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Live Telemetry Quick Card */}
+            <div className="px-3 pt-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileNav(false);
+                  handleOpenTelemetryModal();
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-semibold"
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>ICU Node #409: ACTIVE</span>
+                </span>
+                <span className="font-mono text-[10px]">93.9% AUC</span>
+              </button>
+            </div>
+
+            {/* Scrollable Route List */}
+            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4">
+              {NAV_GROUPS.map((group) => (
+                <div key={group.id} className="space-y-1">
+                  <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    {group.title}
+                  </p>
+                  <div className="space-y-0.5">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const baseHref = item.href.split("?")[0];
+                      const active =
+                        pathname === baseHref ||
+                        (baseHref !== "/dashboard" && pathname.startsWith(`${baseHref}/`));
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => {
+                            sound.playClick();
+                            setShowMobileNav(false);
+                          }}
+                          className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                            active
+                              ? "bg-primary/12 text-primary border border-primary/25 shadow-2xs"
+                              : "text-foreground/85 hover:bg-surface-low dark:hover:bg-[#1a2c38]"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2.5 min-w-0">
+                            <Icon
+                              className={`w-4 h-4 shrink-0 ${
+                                active ? "text-primary" : "text-muted-foreground"
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </span>
+                          {item.badge && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary shrink-0">
+                              {item.badge}
+                            </span>
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Quick Controls Footer */}
+            <div className="shrink-0 p-3 border-t border-border bg-surface-low/50 dark:bg-black/20 grid grid-cols-2 gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <button
+                type="button"
+                onClick={handleToggleSound}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground"
+              >
+                {isAudioMuted ? (
+                  <VolumeX className="w-3.5 h-3.5 text-muted-foreground" />
+                ) : (
+                  <Volume2 className="w-3.5 h-3.5 text-primary" />
+                )}
+                <span>{isAudioMuted ? "Unmute FX" : "Sound On"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleTheme}
+                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground"
+              >
+                {isDark ? (
+                  <Sun className="w-3.5 h-3.5 text-amber-400" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-slate-700" />
+                )}
+                <span>{isDark ? "Light Mode" : "Night Mode"}</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* 1. LIVE ICU TELEMETRY NODE #409 MONITOR MODAL */}
       {/* ========================================================================= */}
       {showTelemetryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="relative w-full max-w-2xl rounded-2xl bg-white dark:bg-[#12222b] border border-border shadow-2xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#12222b] border border-border shadow-2xl p-4 sm:p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-start justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-3">
@@ -716,8 +865,8 @@ export default function AppHeader() {
       {/* 2. STAT EMERGENCY SOS & RAPID RESPONSE DIALOG */}
       {/* ========================================================================= */}
       {showEmergencyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-red-950/70 backdrop-blur-md animate-in fade-in">
-          <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-[#1a1215] border-2 border-red-500 shadow-2xl p-5 sm:p-6 space-y-4 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-red-950/70 backdrop-blur-md animate-in fade-in">
+          <div className="relative w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#1a1215] border-2 border-red-500 shadow-2xl p-4 sm:p-6 space-y-4 max-h-[90dvh] overflow-y-auto">
             {/* Alert Header */}
             <div className="flex items-start justify-between pb-3 border-b border-red-500/30">
               <div className="flex items-center gap-3">

@@ -29,12 +29,24 @@ export default function BiLstmTrajectoryCard({
   const yMin = rawMin - pad;
   const yMax = rawMax + pad;
 
-  const w = 440;
-  const h = compact ? 112 : 148;
-  const padX = 28;
-  const padY = 16;
+  const w = 480;
+  const h = compact ? 122 : 156;
+  const padX = 38;
+  const padY = 18;
   const innerW = w - padX * 2;
   const innerH = h - padY * 2;
+
+  // Parse optional upper clinical reference cutoff (e.g., "< 10.0 U/mL" or "4.0 - 5.6 %")
+  const refMatches = forecast.referenceRange.match(/\d+(?:\.\d+)?/g);
+  const refLimitVal =
+    refMatches && refMatches.length > 0
+      ? Number(refMatches[refMatches.length - 1])
+      : undefined;
+  const showRefLine =
+    refLimitVal !== undefined &&
+    Number.isFinite(refLimitVal) &&
+    refLimitVal >= yMin &&
+    refLimitVal <= yMax;
 
   const toX = (idx: number) =>
     pts.length <= 1 ? padX + innerW / 2 : padX + (idx / (pts.length - 1)) * innerW;
@@ -107,7 +119,7 @@ export default function BiLstmTrajectoryCard({
       </div>
 
       {/* SVG Sequence Trajectory */}
-      <div className="w-full overflow-hidden rounded-lg bg-white/80 dark:bg-[#0f1d24]/80 border border-border/60 px-2 py-1.5">
+      <div className="w-full overflow-hidden rounded-lg bg-white/85 dark:bg-[#0f1d24]/90 border border-border/60 px-2.5 py-2 space-y-1.5">
         <svg
           viewBox={`0 0 ${w} ${h}`}
           className="w-full h-auto"
@@ -127,6 +139,40 @@ export default function BiLstmTrajectoryCard({
               strokeDasharray="3 3"
             />
           ))}
+
+          {/* Y-axis scale bounds */}
+          <text x={4} y={padY + 4} fontSize="8" fill="#64748b">
+            {yMax.toFixed(1)}
+          </text>
+          <text x={4} y={padY + innerH} fontSize="8" fill="#64748b">
+            {yMin.toFixed(1)}
+          </text>
+
+          {/* Upper Clinical Reference Limit */}
+          {showRefLine && refLimitVal !== undefined && (
+            <g>
+              <line
+                x1={padX}
+                y1={toY(refLimitVal)}
+                x2={w - padX}
+                y2={toY(refLimitVal)}
+                stroke="#f59e0b"
+                strokeWidth="1.2"
+                strokeDasharray="4 3"
+                strokeOpacity="0.8"
+              />
+              <text
+                x={w - padX}
+                y={Math.max(10, toY(refLimitVal) - 4)}
+                textAnchor="end"
+                fontSize="8"
+                fontWeight="700"
+                fill="#d97706"
+              >
+                Ref Cutoff ({refLimitVal})
+              </text>
+            </g>
+          )}
 
           {/* 95% confidence band */}
           {forecastPts.length > 1 && (
@@ -178,20 +224,24 @@ export default function BiLstmTrajectoryCard({
                 />
                 <text
                   x={cx}
-                  y={Math.max(10, cy - 8)}
+                  y={Math.max(11, cy - 8)}
                   textAnchor="middle"
                   fontSize="9"
                   fontWeight="700"
-                  fill={p.isForecast ? "#4f46e5" : "#0f172a"}
+                  className={
+                    p.isForecast
+                      ? "fill-indigo-600 dark:fill-indigo-300"
+                      : "fill-slate-800 dark:fill-slate-100"
+                  }
                 >
                   {p.value}
                 </text>
                 <text
                   x={cx}
-                  y={h - 2}
+                  y={h - 3}
                   textAnchor="middle"
                   fontSize="8.5"
-                  fill="#64748b"
+                  className="fill-slate-500 dark:fill-slate-400"
                 >
                   {p.visitLabel.replace(/\s*\([^)]*\)/, "")}
                 </text>
@@ -199,6 +249,22 @@ export default function BiLstmTrajectoryCard({
             );
           })}
         </svg>
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[9px] text-muted-foreground pt-0.5 border-t border-border/40">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="inline-flex items-center gap-1">
+              <span className="w-3 h-0.5 bg-teal-700 inline-block" /> Observed V-4..V0
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <span className="w-3 h-0.5 border-t-2 border-dashed border-indigo-500 inline-block" /> Bi-LSTM +30d/+90d (95% CI)
+            </span>
+            {showRefLine && (
+              <span className="inline-flex items-center gap-1">
+                <span className="w-3 h-0.5 border-t border-dashed border-amber-500 inline-block" /> Clinical Ref Cutoff
+              </span>
+            )}
+          </div>
+          <span className="font-mono">Unit: {forecast.unit}</span>
+        </div>
       </div>
 
       {/* Key Metrics + Gate Weights */}

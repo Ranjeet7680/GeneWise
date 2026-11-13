@@ -1,9 +1,16 @@
 import "./globals.css";
 import React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import MobileBottomNav from "@/components/MobileBottomNav";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#00635e",
+};
 
 export const metadata: Metadata = {
   title: "GeneWise · Genomic Health & Clinical Pedigree Literacy",
@@ -53,7 +60,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased text-foreground transition-colors duration-200 pb-16 md:pb-0">
+      <body className="min-h-screen bg-background font-sans antialiased text-foreground transition-colors duration-200 overflow-x-clip">
         <ThemeProvider>
           <AuthProvider>
             {children}

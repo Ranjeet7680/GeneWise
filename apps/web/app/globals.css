@@ -399,6 +399,95 @@ body {
   animation: otpPulseActive 1.6s infinite;
 }
 
+/* High-Polish Clinical AI Writing / Typewriter Animations */
+@keyframes typewriterCaretBlink {
+  0%, 45% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50%, 95% {
+    opacity: 0.15;
+    transform: scaleY(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes typewriterPenPulse {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+    filter: drop-shadow(0 0 6px rgba(20, 184, 166, 0.7));
+  }
+  50% {
+    transform: scale(1.08) translateY(-1px);
+    filter: drop-shadow(0 0 12px rgba(20, 184, 166, 0.95));
+  }
+}
+
+@keyframes writingInkFlow {
+  0% {
+    opacity: 0;
+    transform: translateY(2px);
+    filter: blur(0.5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes writingGlowBorder {
+  0%, 100% {
+    border-color: rgba(20, 184, 166, 0.45);
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.12);
+  }
+  50% {
+    border-color: rgba(20, 184, 166, 0.85);
+    box-shadow: 0 0 25px rgba(20, 184, 166, 0.22);
+  }
+}
+
+@keyframes writingProgressScan {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.typewriter-caret {
+  animation: typewriterCaretBlink 0.85s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.writing-pen-pulse {
+  animation: typewriterPenPulse 1.8s ease-in-out infinite;
+}
+
+.writing-active-border {
+  animation: writingGlowBorder 2s ease-in-out infinite;
+}
+
+.writing-ink-fade {
+  animation: writingInkFlow 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.writing-scan-line {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(20, 184, 166, 0.2) 25%,
+    rgba(20, 184, 166, 0.85) 50%,
+    rgba(20, 184, 166, 0.2) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: writingProgressScan 2.2s linear infinite;
+}
+
 .animate-scan-beam {
   animation: scanBeamLight 1.8s ease-in-out infinite;
 }
@@ -658,4 +747,11 @@ body {
     background: #ffffff !important;
     color: #0f172a !important;
   }
+}
+
+/* Mobile Touch & Viewport Ergonomics */
+html,
+body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
 }

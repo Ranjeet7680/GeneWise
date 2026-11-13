@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AssistantPage from "@/app/assistant/page";
 import VoiceAssistantPage from "@/app/assistant/voice/page";
+import BiLstmTrajectoryCard from "@/components/BiLstmTrajectoryCard";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import {
@@ -173,6 +174,7 @@ describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Me
     const showFullBtn = screen.queryByRole("button", { name: /Show Full/i });
     if (showFullBtn) {
       expect(screen.getByTestId("ai-typing-cursor")).toBeInTheDocument();
+      expect(screen.getByTestId("ai-typing-inline-cursor")).toBeInTheDocument();
       fireEvent.click(showFullBtn);
     }
     expect(screen.getByTestId("lstm-trajectory-card")).toBeInTheDocument();
@@ -238,5 +240,78 @@ describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Me
     fireEvent.click(screen.getByRole("button", { name: /Transcript \(1\)/i }));
     expect(screen.getAllByText(/GeneWise AI/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/मेडीप्रेडिक्ट/i)).not.toBeInTheDocument();
+  });
+
+  it("tailors clinical answers dynamically for user lab values, multi-system topics, and paired HbA1c/Glucose Bi-LSTM", () => {
+    // 1. Combined HbA1c + Fasting Glucose should prioritize HbA1c forecast, embed paired Glucose, & honor user values
+    const glycemicReply = buildContextualClinicalReply(
+      "Run a Bi-LSTM 90-day sequence forecast for HbA1c (7.4%) and Fasting Glucose (142 mg/dL) progression.",
+      "openai"
+    );
+    expect(glycemicReply.lstm_forecast?.biomarkerKey).toBe("hba1c");
+    expect(glycemicReply.lstm_forecast?.currentValue).toBe(7.4);
+    expect(glycemicReply.content).toContain("7.4%");
+    expect(glycemicReply.content).toContain("142 mg/dL");
+    expect(glycemicReply.content).toContain("Paired Fasting Glucose Trajectory");
+
+    // 2. Thyroid TSH query routes to ATA Thyroid axis with extracted TSH number
+    const thyroidReply = buildContextualClinicalReply(
+      "My TSH is 6.8 mIU/L, what should I forecast?",
+      "hybrid_rag_lstm"
+    );
+    expect(thyroidReply.lstm_forecast?.biomarkerKey).toBe("tsh");
+    expect(thyroidReply.lstm_forecast?.currentValue).toBe(6.8);
+    expect(thyroidReply.content).toContain("Thyroid Axis Evaluation");
+    expect(thyroidReply.content).toContain("6.8 mIU/L");
+
+    // 3. Kidney creatinine query routes to KDIGO 2024 eGFR & uACR guidance
+    const renalReply = buildContextualClinicalReply(
+      "Evaluate serum creatinine 1.65 mg/dL and eGFR",
+      "clinical_evidence"
+    );
+    expect(renalReply.content).toContain("KDIGO 2024");
+    expect(renalReply.content).toContain("1.65 mg/dL");
+
+    // 4. Genetics BRCA1 query routes to ACMG 5-tier interpretation
+    const geneticsReply = buildContextualClinicalReply(
+      "Explain a VUS vs Pathogenic variant in BRCA1",
+      "clinical_evidence"
+    );
+    expect(geneticsReply.content).toContain("ACMG/AMP");
+    expect(geneticsReply.content).toContain("VUS");
+
+    // 5. General lifestyle/wellness question must NOT wrongly fall back to Iron Overload / Ferritin 420
+    const generalReply = buildContextualClinicalReply(
+      "How can I prepare questions for my annual preventive checkup?",
+      "clinical_evidence"
+    );
+    expect(generalReply.content).toContain("Clinical Synthesis:");
+    expect(generalReply.content).not.toContain("Iron Overload & Ferritin");
+
+    // 6. Bracketed 5-visit modal sequence propagates custom V0 & series into clinical reply & chart legend
+    const seqReply = buildContextualClinicalReply(
+      "Run a Bi-LSTM 90-day sequence forecast for HbA1c with visit sequence [5.4, 5.8, 6.2, 6.7, 7.1] and analyze progression.",
+      "lstm_temporal"
+    );
+    expect(seqReply.lstm_forecast?.biomarkerKey).toBe("hba1c");
+    expect(seqReply.lstm_forecast?.currentValue).toBe(7.1);
+    expect(seqReply.lstm_forecast?.sequence.slice(0, 5).map((s) => s.value)).toEqual([
+      5.4, 5.8, 6.2, 6.7, 7.1,
+    ]);
+    expect(seqReply.content).toContain("7.1%");
+    expect(seqReply.content).toContain("Diabetes Range");
+
+    render(<BiLstmTrajectoryCard forecast={seqReply.lstm_forecast!} />);
+    expect(screen.getByText(/Observed V-4\.\.V0/i)).toBeInTheDocument();
+    expect(screen.getByText(/Clinical Ref Cutoff/i)).toBeInTheDocument();
+
+    // 7. Google Gemini 2.0 Clinical routes and injects multimodal clinical reasoning trace
+    const geminiReply = buildContextualClinicalReply(
+      "How to naturally optimize lifestyle, nutrition, and diet?",
+      "gemini"
+    );
+    expect(geminiReply.model_used).toContain("Google Gemini 2.0 Clinical");
+    expect(geminiReply.content).toContain("Core Metabolic & Lifestyle Principles");
+    expect(geminiReply.reasoning_trace.some((t) => t.includes("Gemini multimodal"))).toBe(true);
   });
 });

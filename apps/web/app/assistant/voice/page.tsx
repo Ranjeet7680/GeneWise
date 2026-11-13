@@ -181,21 +181,27 @@ export default function VoiceAssistantPage() {
     stopVoiceTyping();
     if (!fullText) return;
     const total = fullText.length;
-    let pos = Math.min(total, 24);
+    let pos = Math.min(total, 4);
     setTypingVoiceMsgId(msgId);
     setTypedVoiceLength(pos);
     if (pos >= total) {
       setTypingVoiceMsgId(null);
       return;
     }
-    const step = Math.max(4, Math.ceil(total / 26));
+    const step = Math.max(3, Math.min(8, Math.ceil(total / 48)));
     voiceTypingTimerRef.current = setInterval(() => {
       pos = Math.min(total, pos + step);
+      if (pos < total) {
+        const nextSpace = fullText.indexOf(" ", pos);
+        if (nextSpace !== -1 && nextSpace - pos <= 6) {
+          pos = nextSpace + 1;
+        }
+      }
       setTypedVoiceLength(pos);
       if (pos >= total) {
         stopVoiceTyping();
       }
-    }, 22);
+    }, 20);
   };
 
   useEffect(() => {
@@ -459,13 +465,13 @@ export default function VoiceAssistantPage() {
     INDIAN_LANGUAGES.find((l) => l.code === selectedLang) || INDIAN_LANGUAGES[0];
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground">
+    <div className="min-h-[100dvh] flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground">
       <AppHeader />
 
       <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
 
-        <main className="flex-1 flex flex-col justify-between p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full relative overflow-y-auto pb-24 md:pb-8">
+        <main className="flex-1 flex flex-col justify-between p-3.5 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full relative overflow-y-auto pb-8">
           {/* Top Bar: Back to Chat + AI Engine + Export/Share + Language Controls + Rate */}
           <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-border">
             <Link

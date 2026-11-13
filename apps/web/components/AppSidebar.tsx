@@ -36,7 +36,7 @@ import {
 import { sound } from "@/lib/sound";
 import { cn } from "@/lib/utils";
 
-interface NavGroup {
+export interface NavGroup {
   id: string;
   title: string;
   items: {
@@ -47,7 +47,7 @@ interface NavGroup {
   }[];
 }
 
-const NAV_GROUPS: NavGroup[] = [
+export const NAV_GROUPS: NavGroup[] = [
   {
     id: "clinical",
     title: "Clinical Workspace",
@@ -112,15 +112,18 @@ export default function AppSidebar() {
     badge?: string;
   } | null>(null);
 
-  // Initialize from localStorage preference
+  // Initialize from localStorage preference or auto-compact on Assistant
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("medipredict_sidebar_collapsed");
-      if (stored !== null) {
+      if (pathname?.startsWith("/assistant")) {
+        // AI Medical Assistant workspace: keep NAVIGATION compact/collapsed so GeneWise Clinical Intelligence has maximum room
+        setIsCollapsed(true);
+      } else if (stored !== null) {
         setIsCollapsed(stored === "true");
       }
     }
-  }, []);
+  }, [pathname]);
 
   // Keyboard shortcut: Ctrl + B or [ to toggle sidebar short / expanded mode
   useEffect(() => {
@@ -162,12 +165,12 @@ export default function AppSidebar() {
   return (
     <aside
       className={cn(
-        "border-r border-border bg-surface-low/50 dark:bg-[#111d24]/70 backdrop-blur-xs flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)] transition-all duration-300 ease-in-out relative select-none",
-        isCollapsed ? "w-16" : "w-64"
+        "border-r border-border bg-surface-low/50 dark:bg-[#111d24]/70 backdrop-blur-xs hidden md:flex flex-col justify-between shrink-0 h-full min-h-0 max-h-full overflow-hidden transition-all duration-300 ease-in-out relative select-none",
+        isCollapsed ? "w-16" : "w-60 xl:w-64"
       )}
     >
       {/* Top Sidebar Header with Shorten / Expand Toggle */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
         <div
           className={cn(
             "flex items-center border-b border-border/80 px-3 py-2.5 bg-surface-container/30 dark:bg-black/10 transition-all",

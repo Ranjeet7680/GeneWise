@@ -212,14 +212,14 @@ export default function ExportPrintShareModal({
           aria-modal="true"
           aria-label="Export, Print Only, Download PDF & Social Share"
           onClick={onClose}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/65 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in"
+          className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-slate-950/65 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in"
+            className="w-full max-w-2xl rounded-t-2xl sm:rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-2xl overflow-hidden flex flex-col max-h-[92dvh] animate-scale-in"
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-border bg-gradient-to-r from-teal-900/5 via-white to-indigo-50/40 dark:from-teal-950/40 dark:via-[#14262f] dark:to-indigo-950/20 flex items-center justify-between gap-3">
+            <div className="px-4 sm:px-5 py-3.5 sm:py-4 border-b border-border bg-gradient-to-r from-teal-900/5 via-white to-indigo-50/40 dark:from-teal-950/40 dark:via-[#14262f] dark:to-indigo-950/20 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
                 <span className="p-2 rounded-xl bg-teal-700 text-white shadow-xs">
                   <Printer className="w-4 h-4" />
@@ -243,7 +243,7 @@ export default function ExportPrintShareModal({
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+            <div className="p-4 sm:p-5 pb-[max(1rem,env(safe-area-inset-bottom))] overflow-y-auto space-y-4 text-xs">
               {/* Scope & Filter Controls */}
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/70">
                 <div className="inline-flex rounded-xl bg-surface-low p-1 border border-border">
@@ -473,7 +473,7 @@ export default function ExportPrintShareModal({
 
               {/* WhatsApp & Social Media Share Strip */}
               <div className="pt-3 border-t border-border space-y-2.5">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-2">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                     <Share2 className="w-3.5 h-3.5 text-primary" /> Share Clean Message Directly
                   </span>

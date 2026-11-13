@@ -4,13 +4,10 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Activity,
-  BookOpen,
+  BrainCircuit,
   Dna,
   HeartPulse,
-  Microscope,
-  Network,
-  Search,
+  MessageSquare,
   User as UserIcon,
 } from "lucide-react";
 import { sound } from "@/lib/sound";
@@ -18,66 +15,73 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: HeartPulse },
-  { href: "/diseases", label: "Explorer", icon: Microscope },
-  { href: "/genetics", label: "Family", icon: Network },
-  { href: "/research", label: "Learn", icon: BookOpen },
+  { href: "/assistant", label: "AI Chat", icon: MessageSquare },
+  { href: "/ml-lab", label: "ML Lab", icon: BrainCircuit },
+  { href: "/genetics", label: "Genetics", icon: Dna },
   { href: "/settings/profile", label: "Profile", icon: UserIcon },
 ];
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
 
-  // Hide on public landing and auth pages
+  // Hide on public landing, auth flows, and full-screen text chat (which has its own bottom composer)
   if (
     pathname === "/" ||
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/forgot-password" ||
-    pathname === "/reset-password"
+    pathname === "/reset-password" ||
+    pathname === "/assistant"
   ) {
     return null;
   }
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#111d24]/95 backdrop-blur-lg border-t border-border shadow-lg px-2 py-1.5 transition-colors duration-200">
-      <div className="flex items-center justify-around max-w-lg mx-auto">
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)) ||
-            (item.href === "/diseases" && pathname === "/diseases") ||
-            (item.href === "/genetics" && pathname === "/genetics") ||
-            (item.href === "/research" && pathname === "/research");
-          const Icon = item.icon;
+    <>
+      {/* Layout spacer so scrolled page content never rests underneath the fixed mobile dock */}
+      <div className="md:hidden h-16 shrink-0 pointer-events-none" aria-hidden="true" />
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => sound.playClick()}
-              className={cn(
-                "flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all duration-200 relative group",
-                isActive
-                  ? "text-primary font-bold scale-105"
-                  : "text-muted-foreground hover:text-foreground hover:scale-102"
-              )}
-            >
-              {/* Active top glow indicator pill */}
-              {isActive && (
-                <span className="absolute -top-1.5 w-6 h-1 rounded-full bg-primary shadow-xs animate-in fade-in" />
-              )}
+      <nav
+        aria-label="Mobile quick navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f1c23]/95 backdrop-blur-xl border-t border-border/90 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-2 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] transition-colors duration-200 select-none"
+      >
+        <div className="grid grid-cols-5 items-center max-w-lg mx-auto gap-0.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+            const Icon = item.icon;
 
-              <Icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => sound.playClick()}
                 className={cn(
-                  "w-5 h-5 transition-transform duration-200",
-                  isActive ? "text-primary scale-110" : "text-muted-foreground group-hover:text-primary"
+                  "flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition-all duration-200 relative group active:scale-95",
+                  isActive
+                    ? "text-primary font-bold bg-primary/8 dark:bg-primary/15"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
-              />
-              <span className="text-[10px] mt-0.5 tracking-tight">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+              >
+                {isActive && (
+                  <span className="absolute -top-1.5 w-6 h-1 rounded-full bg-primary shadow-xs animate-in fade-in" />
+                )}
+
+                <Icon
+                  className={cn(
+                    "w-[19px] h-[19px] transition-transform duration-200",
+                    isActive ? "text-primary scale-105" : "text-muted-foreground group-hover:text-primary"
+                  )}
+                />
+                <span className="text-[10px] mt-0.5 leading-tight tracking-tight truncate max-w-full">
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </>
   );
 }

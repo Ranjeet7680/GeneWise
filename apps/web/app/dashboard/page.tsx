@@ -334,13 +334,13 @@ export default function GeneWiseDashboardPage() {
   }, [dashDataset]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground">
+    <div className="min-h-screen flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground overflow-x-hidden">
       <AppHeader />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-w-0 overflow-hidden">
         <AppSidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto overflow-y-auto animate-fade-in-up pb-24 md:pb-8">
+        <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 max-w-[1440px] w-full mx-auto overflow-y-auto animate-fade-in-up pb-6 md:pb-8">
           {/* Dynamic Personalized Workspace Header Banner */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="flex items-start sm:items-center gap-3.5 min-w-0">
@@ -393,17 +393,17 @@ export default function GeneWiseDashboardPage() {
             </div>
 
             {/* Quick Header Actions */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:flex-wrap w-full lg:w-auto">
               <button
                 type="button"
                 onClick={() => {
                   sound.playClick();
                   setShowAddMemberModal(true);
                 }}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#004d47] hover:bg-[#003833] text-white transition-all shadow-2xs flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold bg-[#004d47] hover:bg-[#003833] text-white transition-all shadow-2xs flex items-center justify-center gap-1.5"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Family Member</span>
+                <Plus className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Add Family Member</span>
               </button>
 
               <button
@@ -412,32 +412,32 @@ export default function GeneWiseDashboardPage() {
                   sound.playClick();
                   setShowPip((v) => !v);
                 }}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold border transition-all shadow-2xs flex items-center gap-1.5 ${
+                className={`px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-bold border transition-all shadow-2xs flex items-center justify-center gap-1.5 ${
                   showPip
                     ? "bg-teal-700 text-white border-teal-700"
                     : "bg-white dark:bg-[#14262f] border-border text-foreground hover:bg-surface-low"
                 }`}
               >
-                <PictureInPicture2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-300" />
-                <span>{showPip ? "Hide PiP Graph" : "Launch PiP Graph"}</span>
+                <PictureInPicture2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-300 shrink-0" />
+                <span className="truncate">{showPip ? "Hide PiP Graph" : "Launch PiP Graph"}</span>
               </button>
 
               <Link
                 href="/analytics"
                 onClick={() => sound.playSoft()}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14262f] border border-border text-foreground hover:bg-surface-low transition-all shadow-2xs flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14262f] border border-border text-foreground hover:bg-surface-low transition-all shadow-2xs flex items-center justify-center gap-1.5"
               >
-                <LineChartIcon className="w-3.5 h-3.5 text-primary" />
-                <span>Analytics Engine</span>
+                <LineChartIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="truncate">Analytics Engine</span>
               </Link>
 
               <button
                 type="button"
                 onClick={handleDownloadPacket}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14262f] border border-border text-foreground hover:bg-surface-low transition-all shadow-2xs flex items-center gap-1.5"
+                className="px-3 sm:px-3.5 py-2.5 sm:py-2 rounded-xl text-xs font-semibold bg-white dark:bg-[#14262f] border border-border text-foreground hover:bg-surface-low transition-all shadow-2xs flex items-center justify-center gap-1.5"
               >
-                <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Checklist</span>
+                <Download className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                <span className="truncate">Checklist</span>
               </button>
             </div>
           </div>
@@ -1191,50 +1191,6 @@ export default function GeneWiseDashboardPage() {
         series={pipLiveHistory}
         analyticsHref="/analytics"
       />
-
-      {/* Mobile Sticky Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#111d24]/95 backdrop-blur-md border-t border-border flex items-center justify-around py-2 px-3 shadow-lg select-none">
-        <Link
-          href="/dashboard"
-          onClick={() => sound.playClick()}
-          className="flex flex-col items-center gap-0.5 text-[#00635e] dark:text-[#7dd5cf]"
-        >
-          <Activity className="w-5 h-5" />
-          <span className="text-[10px] font-bold">Home</span>
-        </Link>
-        <Link
-          href="/analytics"
-          onClick={() => sound.playClick()}
-          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground"
-        >
-          <LineChartIcon className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Analytics</span>
-        </Link>
-        <Link
-          href="/my-family-history"
-          onClick={() => sound.playClick()}
-          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground"
-        >
-          <Network className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Family</span>
-        </Link>
-        <Link
-          href="/risk-education"
-          onClick={() => sound.playClick()}
-          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground"
-        >
-          <BookOpen className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Learn</span>
-        </Link>
-        <Link
-          href="/settings/profile"
-          onClick={() => sound.playClick()}
-          className="flex flex-col items-center gap-0.5 text-muted-foreground hover:text-foreground"
-        >
-          <User className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Profile</span>
-        </Link>
-      </nav>
     </div>
   );
 }
