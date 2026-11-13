@@ -8,6 +8,8 @@ import {
   Bell,
   BookOpen,
   BrainCircuit,
+  ChevronDown,
+  ChevronRight,
   Cpu,
   Dna,
   FileText,
@@ -17,6 +19,8 @@ import {
   LineChart,
   MessageSquare,
   Microscope,
+  PanelLeftClose,
+  PanelLeftOpen,
   Radio,
   Settings,
   ShieldAlert,
@@ -92,6 +96,12 @@ export const NAV_GROUPS: NavGroup[] = [
 export default function AppSidebar() {
   const pathname = usePathname();
 
+  // Sidebar expansion state: allows toggling between compact rail (w-16) and expanded sidebar (w-64)
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
+
+  // Collapsible section accordions state for expanded mode
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+
   // Floating tooltip hover state with viewport top coordinates so it is never clipped
   const [hoveredItem, setHoveredItem] = useState<{
     label: string;
@@ -101,17 +111,52 @@ export default function AppSidebar() {
     top: number;
   } | null>(null);
 
-  // Permanently lock navigation to compact rail (w-16) across the entire application.
-  // Navigation NEVER expands, honoring user requirement: "navgation expend nhi hona chahiya".
+  // Initialize: read user's saved preference from localStorage (defaults to collapsed w-16)
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        localStorage.setItem("medipredict_sidebar_collapsed", "true");
+        const stored = localStorage.getItem("medipredict_sidebar_collapsed");
+        if (stored === "false") {
+          setIsCollapsed(false);
+        } else {
+          setIsCollapsed(true);
+        }
       } catch {
-        // Ignore localStorage quota or private mode issues
+        // Ignore localStorage issues
       }
     }
-  }, [pathname]);
+  }, []);
+
+  // Keyboard shortcut: Ctrl + B or [ to toggle sidebar expand / shorten mode
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey && (e.key === "b" || e.key === "B")) || e.key === "[") {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCollapsed]);
+
+  const toggleSidebar = () => {
+    sound.playPop();
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("medipredict_sidebar_collapsed", next ? "true" : "false");
+      } catch {}
+      return next;
+    });
+  };
+
+  const toggleSection = (sectionId: string) => {
+    sound.playClick();
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionId]: !prev[sectionId],
+    }));
+  };
 
   const isItemActive = (href: string) => {
     const baseHref = href.split("?")[0];
@@ -123,150 +168,267 @@ export default function AppSidebar() {
 
   return (
     <>
-      {/* Fixed Navigation Rail (Locked to w-16, never expands, stays visible when page scrolls down) */}
+      {/* Dynamic Navigation Rail (w-16 compact or w-64 expanded with smooth transition) */}
       <aside
-        aria-label="Clinical Navigation Rail"
-        className="fixed top-16 left-0 bottom-0 w-16 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs"
+        aria-label="Clinical Navigation"
+        className={cn(
+          "fixed top-16 left-0 bottom-0 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-16" : "w-64"
+        )}
       >
-        {/* Top Mini Brand Accent / Pulse Indicator */}
-        <div className="h-12 flex items-center justify-center border-b border-border/70 bg-surface-container/30 dark:bg-black/10 shrink-0">
-          <div
-            title="GeneWise Clinical Rail • Locked Compact"
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-primary bg-primary/10 border border-primary/25 shadow-2xs group cursor-default"
-          >
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          </div>
+        {/* Top Header with Expand / Shorten Toggle Button */}
+        <div className="h-14 flex items-center border-b border-border/70 bg-surface-container/30 dark:bg-black/10 shrink-0 px-3">
+          {isCollapsed ? (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Expand Navigation (Ctrl + B)"
+              aria-label="Expand Navigation"
+              className="w-10 h-10 mx-auto rounded-xl flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 border border-primary/25 shadow-2xs group cursor-pointer transition-all hover:scale-105"
+            >
+              <PanelLeftOpen className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+            </button>
+          ) : (
+            <div className="w-full flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-black tracking-wider uppercase text-foreground">
+                  Navigation
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                title="Shorten Navigation (Ctrl + B)"
+                aria-label="Shorten Navigation"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold text-muted-foreground hover:text-foreground hover:bg-surface-container/80 dark:hover:bg-[#162732] border border-border/70 transition-all cursor-pointer shadow-2xs"
+              >
+                <span>Shorten</span>
+                <PanelLeftClose className="w-3.5 h-3.5 text-primary" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Scrollable Navigation Rail Icons */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden py-2.5 px-2 space-y-3.5 scrollbar-none">
+        {/* Scrollable Navigation Body */}
+        <div
+          className={cn(
+            "flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-3.5 scrollbar-thin scrollbar-thumb-border/60",
+            isCollapsed ? "px-2" : "px-3"
+          )}
+        >
           {NAV_GROUPS.map((group, groupIndex) => {
+            const isSectionCollapsed = collapsedSections[group.id] || false;
+
             return (
               <div key={group.id} className="space-y-1">
-                {/* Subtle Divider between groups */}
-                {groupIndex > 0 && (
+                {/* Group Divider in Collapsed Mode */}
+                {isCollapsed && groupIndex > 0 && (
                   <div className="w-full flex justify-center py-1">
                     <div className="w-6 h-px bg-border/70 dark:bg-border/50" />
                   </div>
                 )}
 
+                {/* Group Header in Expanded Mode */}
+                {!isCollapsed && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(group.id)}
+                    className="w-full flex items-center justify-between px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors cursor-pointer group"
+                  >
+                    <span>{group.title}</span>
+                    <ChevronDown
+                      className={cn(
+                        "w-3.5 h-3.5 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
+                        isSectionCollapsed && "-rotate-90"
+                      )}
+                    />
+                  </button>
+                )}
+
                 {/* Items in this group */}
-                <div className="space-y-1">
-                  {group.items.map((item) => {
-                    const isActive = isItemActive(item.href);
-                    const Icon = item.icon;
+                {(!isSectionCollapsed || isCollapsed) && (
+                  <div className="space-y-1">
+                    {group.items.map((item) => {
+                      const isActive = isItemActive(item.href);
+                      const Icon = item.icon;
 
-                    return (
-                      <div
-                        key={item.href}
-                        className="relative"
-                        onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect();
-                          setHoveredItem({
-                            label: item.label,
-                            category: group.title,
-                            badge: item.badge,
-                            href: item.href,
-                            top: rect.top + rect.height / 2,
-                          });
-                        }}
-                        onMouseLeave={() => setHoveredItem(null)}
-                      >
-                        <Link
-                          href={item.href}
-                          onClick={() => sound.playClick()}
-                          aria-label={item.label}
-                          className={cn(
-                            "flex items-center justify-center rounded-xl p-2.5 w-11 h-11 mx-auto text-xs font-medium transition-all duration-200 group relative overflow-hidden cursor-pointer",
-                            isActive
-                              ? "bg-primary/15 text-primary dark:bg-primary/25 dark:text-primary font-semibold shadow-2xs border border-primary/30"
-                              : "text-muted-foreground hover:text-foreground hover:bg-surface-container/80 dark:hover:bg-[#162732] hover:scale-105"
-                          )}
+                      return (
+                        <div
+                          key={item.href}
+                          className="relative"
+                          onMouseEnter={(e) => {
+                            if (isCollapsed) {
+                              const rect = e.currentTarget.getBoundingClientRect();
+                              setHoveredItem({
+                                label: item.label,
+                                category: group.title,
+                                badge: item.badge,
+                                href: item.href,
+                                top: rect.top + rect.height / 2,
+                              });
+                            }
+                          }}
+                          onMouseLeave={() => isCollapsed && setHoveredItem(null)}
                         >
-                          {/* Active Vertical Pill on Left Edge */}
-                          {isActive && (
-                            <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary" />
-                          )}
-
-                          <Icon
+                          <Link
+                            href={item.href}
+                            onClick={() => sound.playClick()}
+                            aria-label={item.label}
                             className={cn(
-                              "w-4 h-4 transition-transform group-hover:scale-115 shrink-0",
+                              "flex items-center rounded-xl text-xs font-medium transition-all duration-200 group relative overflow-hidden cursor-pointer",
+                              isCollapsed
+                                ? "justify-center p-2.5 w-11 h-11 mx-auto"
+                                : "px-3 py-2 gap-3 w-full",
                               isActive
-                                ? "text-primary"
-                                : "text-muted-foreground group-hover:text-primary"
+                                ? "bg-primary/15 text-primary dark:bg-primary/25 dark:text-primary font-bold shadow-2xs border border-primary/30"
+                                : "text-muted-foreground hover:text-foreground hover:bg-surface-container/80 dark:hover:bg-[#162732]"
                             )}
-                          />
+                          >
+                            {/* Active Vertical Pill on Left Edge */}
+                            {isActive && (
+                              <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-primary" />
+                            )}
 
-                          {/* Status Badge Dots */}
-                          {item.badge && (
-                            <span
+                            <Icon
                               className={cn(
-                                "absolute top-2 right-2 w-1.5 h-1.5 rounded-full",
-                                item.badge === "Live"
-                                  ? "bg-emerald-500 animate-ping"
-                                  : item.badge === "AI"
-                                  ? "bg-primary"
-                                  : "bg-purple-500"
+                                "w-4 h-4 transition-transform group-hover:scale-110 shrink-0",
+                                isActive
+                                  ? "text-primary"
+                                  : "text-muted-foreground group-hover:text-primary"
                               )}
                             />
-                          )}
-                          {item.badge === "Live" && (
-                            <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          )}
-                        </Link>
-                      </div>
-                    );
-                  })}
-                </div>
+
+                            {/* Label & Badges in Expanded Mode */}
+                            {!isCollapsed && (
+                              <div className="flex-1 flex items-center justify-between min-w-0">
+                                <span className="truncate text-xs font-medium">
+                                  {item.label}
+                                </span>
+                                {item.badge && (
+                                  <span
+                                    className={cn(
+                                      "px-1.5 py-0.2 rounded text-[9px] font-bold uppercase shrink-0",
+                                      item.badge === "Live"
+                                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                        : item.badge === "AI"
+                                        ? "bg-primary/15 text-primary border border-primary/30"
+                                        : "bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30"
+                                    )}
+                                  >
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Status Badge Dots in Collapsed Mode */}
+                            {isCollapsed && item.badge && (
+                              <span
+                                className={cn(
+                                  "absolute top-2 right-2 w-1.5 h-1.5 rounded-full",
+                                  item.badge === "Live"
+                                    ? "bg-emerald-500"
+                                    : item.badge === "AI"
+                                    ? "bg-primary"
+                                    : "bg-purple-500"
+                                )}
+                              />
+                            )}
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
 
         {/* Pinned Bottom Status Section */}
-        <div className="p-2 border-t border-border/80 flex flex-col items-center gap-2.5 py-3 bg-surface-container/20 dark:bg-black/15 shrink-0">
-          <div
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setHoveredItem({
-                label: "Clinical Decision Support",
-                category: "Evidence-Grounded Intelligence",
-                badge: "FastAPI",
-                top: rect.top + rect.height / 2,
-              });
-            }}
-            onMouseLeave={() => setHoveredItem(null)}
-            className="w-10 h-10 rounded-xl bg-surface-container/80 dark:bg-[#162732] text-muted-foreground hover:text-primary flex items-center justify-center transition-all cursor-pointer border border-border group"
-          >
-            <Microscope className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-          </div>
+        <div
+          className={cn(
+            "border-t border-border/80 bg-surface-container/20 dark:bg-black/15 shrink-0 transition-all",
+            isCollapsed ? "p-2 flex flex-col items-center gap-2.5 py-3" : "p-3 space-y-2.5"
+          )}
+        >
+          {isCollapsed ? (
+            <>
+              <div
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredItem({
+                    label: "Clinical Decision Support",
+                    category: "Evidence-Grounded Intelligence",
+                    badge: "FastAPI",
+                    top: rect.top + rect.height / 2,
+                  });
+                }}
+                onMouseLeave={() => setHoveredItem(null)}
+                className="w-10 h-10 rounded-xl bg-surface-container/80 dark:bg-[#162732] text-muted-foreground hover:text-primary flex items-center justify-center transition-all cursor-pointer border border-border group"
+              >
+                <Microscope className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+              </div>
 
-          <div
-            onMouseEnter={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              setHoveredItem({
-                label: "API Mesh Active",
-                category: "FastAPI 0.111 • Zero-Trust Enclave",
-                badge: "93.9%",
-                top: rect.top + rect.height / 2,
-              });
-            }}
-            onMouseLeave={() => setHoveredItem(null)}
-            className="relative flex h-2.5 w-2.5 items-center justify-center cursor-pointer"
-            title="FastAPI 0.111 Mesh Online"
-          >
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </div>
+              <div
+                onMouseEnter={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHoveredItem({
+                    label: "API Mesh Active",
+                    category: "FastAPI 0.111 • Zero-Trust Enclave",
+                    badge: "93.9%",
+                    top: rect.top + rect.height / 2,
+                  });
+                }}
+                onMouseLeave={() => setHoveredItem(null)}
+                className="relative flex h-2.5 w-2.5 items-center justify-center cursor-pointer"
+                title="FastAPI 0.111 Mesh Online"
+              >
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <div className="p-2.5 rounded-xl bg-surface-container/60 dark:bg-[#162732] border border-border/70 space-y-1">
+                <div className="flex items-center justify-between text-[10px] font-bold">
+                  <span className="text-foreground flex items-center gap-1.5">
+                    <Microscope className="w-3.5 h-3.5 text-primary" />
+                    Clinical Decision Support
+                  </span>
+                  <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                    AUC 0.967
+                  </span>
+                </div>
+                <p className="text-[10px] text-muted-foreground leading-tight">
+                  Bi-LSTM longitudinal trajectory &amp; ClinVar evidence grounded.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between px-1 text-[10px] text-muted-foreground">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  API Mesh Active
+                </span>
+                <span className="font-mono text-[9px]">FastAPI 0.111</span>
+              </div>
+            </div>
+          )}
         </div>
       </aside>
 
-      {/* Structural Layout Spacer: Exactly 64px width (w-16) reserved in the flex layout */}
-      {/* Ensures page content (<main>) flows alongside the fixed rail without overlapping or clipping */}
-      <div className="w-16 shrink-0 hidden md:block" aria-hidden="true" />
+      {/* Structural Layout Spacer: Synchronized width reserves space for main page content */}
+      <div
+        className={cn(
+          "shrink-0 hidden md:block transition-all duration-300 ease-in-out",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+        aria-hidden="true"
+      />
 
-      {/* Floating Tooltip (Viewport-anchored via fixed coordinates, never clipped by overflow) */}
-      {hoveredItem && (
+      {/* Floating Tooltip in Collapsed Mode (Viewport-anchored, never clipped by container overflow) */}
+      {isCollapsed && hoveredItem && (
         <div
           style={{ top: `${hoveredItem.top}px` }}
           className="fixed left-[4.5rem] -translate-y-1/2 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-100"
