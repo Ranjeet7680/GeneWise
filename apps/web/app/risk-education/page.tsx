@@ -238,13 +238,14 @@ This document is for educational preparation and does not constitute medical adv
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <AppSidebar />
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <AppHeader />
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <AppHeader />
+      <div className="flex-1 flex min-h-[calc(100vh-4rem)]">
+        <AppSidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
           {/* Header Tag */}
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/10 text-teal-800 dark:text-teal-300 text-xs font-bold uppercase tracking-wider border border-teal-500/20">
@@ -549,6 +550,7 @@ This document is for educational preparation and does not constitute medical adv
 
         <SafetyNotice />
       </div>
+    </div>
 
       {/* Guide Details Modal */}
       {selectedUnit && (

@@ -955,10 +955,10 @@ export default function MyFamilyHistoryPage() {
     <div className="min-h-screen flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground">
       <AppHeader />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex min-h-[calc(100vh-4rem)]">
         <AppSidebar />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full overflow-y-auto animate-fade-in-up pb-24 md:pb-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full animate-fade-in-up pb-28 md:pb-16">
           {/* Header Banner */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="space-y-1.5">
