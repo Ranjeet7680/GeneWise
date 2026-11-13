@@ -247,6 +247,18 @@ export default function AppHeader() {
 
           {/* Right: Controls, Emergency SOS & Profile */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Mobile backdrop for notification flyout and profile menu */}
+            {(showNotificationFlyout || showProfileMenu) && (
+              <div
+                onClick={() => {
+                  setShowNotificationFlyout(false);
+                  setShowProfileMenu(false);
+                }}
+                className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs sm:hidden animate-in fade-in"
+                aria-hidden="true"
+              />
+            )}
+
             {/* Notifications Button & Dropdown */}
             <div className="relative">
               <button

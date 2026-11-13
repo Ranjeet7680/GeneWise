@@ -537,7 +537,7 @@ export default function GeneWiseDashboardPage() {
                   </h2>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap py-0.5 max-w-full">
                   <div className="inline-flex rounded-lg bg-surface-low border border-border p-0.5 text-[11px] font-semibold">
                     {(["cardio", "telemetry", "genomics"] as DashDataset[]).map((ds) => (
                       <button

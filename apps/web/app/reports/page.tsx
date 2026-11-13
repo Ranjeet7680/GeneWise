@@ -325,7 +325,7 @@ export default function ReportsPage() {
                   onAction={() => setShowUploader(true)}
                 />
               ) : (
-                <div className="space-y-2 max-h-[700px] overflow-y-auto pr-1">
+                <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-h-none lg:max-h-[700px] pb-2 lg:pb-0 pr-1">
                   {safeReports.map((r) => {
                     const isSelected = selectedReport?.id === r.id;
                     return (
@@ -335,9 +335,9 @@ export default function ReportsPage() {
                           sound.playClick();
                           selectReport(r.id);
                         }}
-                        className={`p-3.5 rounded-xl border text-left cursor-pointer smooth-card transition-all ${
+                        className={`p-3.5 rounded-xl border text-left cursor-pointer smooth-card transition-all min-w-[260px] sm:min-w-[280px] lg:min-w-0 shrink-0 lg:shrink ${
                           isSelected
-                            ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30 translate-x-1"
+                            ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30 lg:translate-x-1"
                             : "bg-surface-low/50 dark:bg-[#111d24]/50 hover:bg-surface-low dark:hover:bg-[#162732] border-border"
                         }`}
                       >
@@ -532,7 +532,7 @@ export default function ReportsPage() {
 
           {/* Add Biomarker Modal */}
           {showAddModal && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in transition-all">
+            <div className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-in fade-in transition-all">
               <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4 animate-scale-in">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <h3 className="text-sm font-bold text-foreground">Add Custom Laboratory Biomarker</h3>

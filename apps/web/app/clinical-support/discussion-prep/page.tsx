@@ -290,7 +290,7 @@ Signature: ___________________________ Date: ____/____/2026
         </div>
 
         {/* Step Progress Pills (Hidden in Print) */}
-        <div className="grid grid-cols-4 gap-2 text-xs print:hidden">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs print:hidden">
           {[
             { num: 1, label: "Primary Goals" },
             { num: 2, label: "Red-Flag Triggers" },

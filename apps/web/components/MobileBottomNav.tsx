@@ -49,7 +49,8 @@ export default function MobileBottomNav() {
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+              (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)) ||
+              (item.href === "/genetics" && pathname.startsWith("/my-family-history"));
             const Icon = item.icon;
 
             return (

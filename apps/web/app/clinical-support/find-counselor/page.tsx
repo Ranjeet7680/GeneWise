@@ -240,8 +240,8 @@ export default function FindCounselorPage() {
           </div>
 
           {/* Specialty Pills */}
-          <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-border/60">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
+          <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap pt-1 border-t border-border/60">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1 shrink-0">
               Subspecialty:
             </span>
             {specialties.map((spec) => (
@@ -251,7 +251,7 @@ export default function FindCounselorPage() {
                   sound.playSoft();
                   setSelectedSpecialty(spec);
                 }}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-medium transition-all shrink-0 ${
                   selectedSpecialty === spec
                     ? "bg-teal-700 text-white shadow-2xs font-semibold"
                     : "bg-surface-low text-muted-foreground hover:text-foreground border border-border"

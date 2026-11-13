@@ -558,9 +558,9 @@ export default function GeneticsExplorerPage() {
             </div>
 
             {/* Chromosome Filter Pills */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-muted-foreground mr-1 uppercase tracking-wider text-[11px] font-semibold">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="text-muted-foreground mr-1 uppercase tracking-wider text-[11px] font-semibold shrink-0">
                   CHROMOSOME:
                 </span>
                 {["All", "Chr 1", "Chr 3", "Chr 4", "Chr 7", "Chr 11", "Chr 12", "Chr 15", "Chr 17", "Chr 19"].map(
@@ -1371,7 +1371,7 @@ export default function GeneticsExplorerPage() {
 
       {/* Multi-Tab Gene Details Modal */}
       {selectedGeneModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
           <div className="bg-background rounded-3xl border border-border shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
@@ -1580,7 +1580,7 @@ export default function GeneticsExplorerPage() {
 
       {/* ClinVar Variant Inspector Modal (gnomAD Population Frequency Chart + ACMG Criteria) */}
       {inspectedVariantModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
           <div className="bg-background rounded-3xl border border-border shadow-2xl max-w-lg w-full p-6 space-y-4 text-xs max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between gap-2 border-b border-border pb-3">
               <div>
@@ -1696,7 +1696,7 @@ export default function GeneticsExplorerPage() {
 
       {/* Submit Variant Inquiry Modal */}
       {inquiryModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md animate-in fade-in">
           <div className="bg-background rounded-3xl border border-border shadow-2xl max-w-md w-full p-6 space-y-5">
             <div className="flex items-start justify-between">
               <div>

@@ -1175,7 +1175,7 @@ export default function MyFamilyHistoryPage() {
                   </span>
 
                   {/* Lineage Trace Pills */}
-                  <div className="flex items-center gap-1 bg-surface-low dark:bg-[#0e1b22] p-1 rounded-xl border border-border text-[11px]">
+                  <div className="flex items-center gap-1 bg-surface-low dark:bg-[#0e1b22] p-1 rounded-xl border border-border text-[11px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap max-w-full">
                     {(
                       [
                         { id: "all", label: "Full Tree" },
@@ -1282,6 +1282,17 @@ export default function MyFamilyHistoryPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+
+              {/* Mobile Swipe Guide Indicator */}
+              <div className="sm:hidden flex items-center justify-between gap-1.5 py-1.5 px-3 rounded-xl bg-teal-500/10 text-teal-800 dark:text-teal-300 text-[11px] font-semibold border border-teal-500/25">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                  <span>Interactive 3-Generation Canvas</span>
+                </span>
+                <span className="text-[10px] text-teal-700 dark:text-teal-400 font-bold flex items-center gap-1">
+                  Swipe horizontal <ArrowRight className="w-3 h-3 animate-pulse" />
+                </span>
               </div>
 
               {/* Interactive Zoomable Multi-Generation Pedigree Canvas */}
