@@ -340,7 +340,7 @@ export default function GeneWiseDashboardPage() {
       <div className="flex-1 flex min-w-0 overflow-hidden">
         <AppSidebar />
 
-        <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 max-w-[1440px] w-full mx-auto overflow-y-auto animate-fade-in-up pb-6 md:pb-8">
+        <main className="flex-1 min-w-0 p-3.5 sm:p-6 lg:p-8 space-y-5 sm:space-y-6 max-w-[1440px] w-full mx-auto overflow-y-auto animate-fade-in-up pb-28 md:pb-8">
           {/* Dynamic Personalized Workspace Header Banner */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="flex items-start sm:items-center gap-3.5 min-w-0">
@@ -456,12 +456,16 @@ export default function GeneWiseDashboardPage() {
 
           {/* 4 Stat Tiles */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-2">
+            <Link
+              href="/my-family-history"
+              onClick={() => sound.playClick()}
+              className="smooth-card p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md hover:border-teal-500/40 active:scale-[0.98] transition-all flex flex-col justify-between space-y-2 animate-fade-in-up stagger-1 group cursor-pointer"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
                   FAMILY HISTORY
                 </span>
-                <Users className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <Users className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-foreground">{relativesCount}</span>
@@ -471,14 +475,18 @@ export default function GeneWiseDashboardPage() {
                 <Lock className="w-3 h-3 text-emerald-600" />
                 <span>3 generations • Encrypted</span>
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-2">
+            <Link
+              href="/health-metrics"
+              onClick={() => sound.playClick()}
+              className="smooth-card p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md hover:border-rose-500/40 active:scale-[0.98] transition-all flex flex-col justify-between space-y-2 animate-fade-in-up stagger-2 group cursor-pointer"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                   LIVE VITALS TELEMETRY
                 </span>
-                <HeartPulse className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+                <HeartPulse className="w-4 h-4 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-foreground">{liveVitals.hr}</span>
@@ -487,30 +495,38 @@ export default function GeneWiseDashboardPage() {
               <div className="pt-1 border-t border-border/60 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
                 BP: {liveVitals.systolic}/{liveVitals.diastolic} mmHg calibrated
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-2">
+            <Link
+              href="/diseases"
+              onClick={() => sound.playClick()}
+              className="smooth-card p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md hover:border-teal-500/40 active:scale-[0.98] transition-all flex flex-col justify-between space-y-2 animate-fade-in-up stagger-3 group cursor-pointer"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-primary transition-colors">
                   CURATED DISEASES
                 </span>
-                <GraduationCap className="w-4 h-4 text-primary" />
+                <GraduationCap className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-foreground">1,428</span>
                 <span className="text-xs text-foreground font-semibold ml-1">Indexed loci</span>
               </div>
               <div className="pt-1 border-t border-border/60 text-[10px] text-teal-700 dark:text-teal-300 font-medium">
-                ClinVar v2.4 & Orphanet
+                ClinVar v2.4 &amp; Orphanet
               </div>
-            </div>
+            </Link>
 
-            <div className="p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-2">
+            <Link
+              href="/clinical-support/discussion-prep"
+              onClick={() => sound.playClick()}
+              className="smooth-card p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md hover:border-emerald-500/40 active:scale-[0.98] transition-all flex flex-col justify-between space-y-2 animate-fade-in-up stagger-4 group cursor-pointer"
+            >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   CONSULTATION PREP
                 </span>
-                <Network className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <Network className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-foreground">{prepProgress}%</span>
@@ -519,7 +535,7 @@ export default function GeneWiseDashboardPage() {
               <div className="pt-1 border-t border-border/60 text-[10px] text-muted-foreground truncate">
                 {completedCount}/{prepTopics.length} clinician questions ready
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Dynamic Healthcare Analytics & PiP Graph Section inside Dashboard */}

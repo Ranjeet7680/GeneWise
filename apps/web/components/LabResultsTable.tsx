@@ -48,7 +48,8 @@ export default function LabResultsTable({
 
   return (
     <div className="w-full overflow-hidden rounded-xl border border-border bg-white dark:bg-[#162732] shadow-2xs">
-      <div className="overflow-x-auto">
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-border bg-surface-low/60 dark:bg-[#111d24]/60 font-semibold text-muted-foreground uppercase text-[10px] tracking-wider">
@@ -106,6 +107,79 @@ export default function LabResultsTable({
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile-Optimized Biomarker Cards View */}
+      <div className="block md:hidden divide-y divide-border/60">
+        {measurements.map((m) => (
+          <div
+            key={m.id}
+            className="p-3.5 space-y-2.5 bg-white dark:bg-[#162732] hover:bg-surface-low/50 dark:hover:bg-[#1c303d]/40 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5 min-w-0">
+                <h4 className="font-bold text-xs text-foreground truncate">
+                  {m.test_name}
+                </h4>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
+                  {m.category}
+                </p>
+              </div>
+              <MedicalStatusBadge flag={m.flag} />
+            </div>
+
+            <div className="flex items-baseline justify-between bg-surface-low/60 dark:bg-[#111d24]/60 px-2.5 py-1.5 rounded-xl border border-border/50">
+              <div>
+                <span className="text-[10px] text-muted-foreground block font-mono">Observed Value:</span>
+                <span className="font-extrabold text-base text-foreground">{m.value}</span>{" "}
+                <span className="text-xs text-muted-foreground font-semibold">{m.unit}</span>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] text-muted-foreground block font-mono">Reference Interval:</span>
+                <span className="text-xs font-mono font-medium text-foreground">
+                  {m.reference_text || (m.reference_low ? `${m.reference_low} - ${m.reference_high} ${m.unit}` : "Standard")}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1 text-xs">
+              <div>
+                {m.user_verified ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <HelpCircle className="w-3.5 h-3.5" /> Auto-Parsed
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {onUpdateMeasurement && !m.user_verified && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onUpdateMeasurement(m.id, { user_verified: true })
+                    }
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 hover:bg-emerald-500/20 active:scale-95 transition-all"
+                  >
+                    <Check className="w-3 h-3" /> Quick Verify
+                  </button>
+                )}
+                {onUpdateMeasurement && (
+                  <button
+                    type="button"
+                    onClick={() => startEdit(m)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-border bg-surface-low dark:bg-[#111d24] text-primary hover:bg-surface-container active:scale-95 transition-all"
+                  >
+                    <Edit2 className="w-3 h-3" /> Edit
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Inline Edit Modal */}

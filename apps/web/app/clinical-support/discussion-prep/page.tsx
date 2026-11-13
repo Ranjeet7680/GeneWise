@@ -634,7 +634,7 @@ Signature: ___________________________ Date: ____/____/2026
             </div>
 
             {/* CLINICAL DOSSIER DOCUMENT (Optimized for Screen & Clean 2-Page Print) */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0f1d24] border border-border shadow-md text-foreground font-sans print:p-0 print:border-none print:shadow-none print:bg-white print:text-black">
+            <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-[#0f1d24] border border-border shadow-md text-foreground font-sans overflow-x-auto print:p-0 print:border-none print:shadow-none print:bg-white print:text-black">
               {/* PAGE 1 CONTAINER: Header + Demographics + Goals + Red Flags + ACMG Matrix Table */}
               <div className="dossier-page-1 space-y-4 print:space-y-2.5">
                 {/* Document Header */}

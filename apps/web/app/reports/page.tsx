@@ -250,7 +250,7 @@ export default function ReportsPage() {
       <AppHeader />
       <div className="flex">
         <AppSidebar />
-        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-fade-in-up">
+        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-fade-in-up pb-28 md:pb-16">
           {/* Page Title & Actions */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-2 border-b border-border">
             <div>

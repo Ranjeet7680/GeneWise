@@ -679,6 +679,81 @@ body {
   -webkit-mask-image: radial-gradient(ellipse 75% 70% at 50% 35%, #000 35%, transparent 100%);
 }
 
+/* ==========================================================================
+   Mobile-First End-to-End High-Polish Touch, Layout & Animation Utilities
+   ========================================================================== */
+@keyframes mobileTapBounce {
+  0% { transform: scale(1); }
+  45% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes mobileSlideUpBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.005);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mobileDockGlow {
+  0%, 100% {
+    box-shadow: 0 -4px 20px rgba(13, 148, 136, 0.18), 0 -1px 4px rgba(13, 148, 136, 0.1);
+  }
+  50% {
+    box-shadow: 0 -6px 30px rgba(13, 148, 136, 0.38), 0 -1px 8px rgba(13, 148, 136, 0.25);
+  }
+}
+
+@keyframes softPulseRing {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(20, 184, 166, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(20, 184, 166, 0);
+  }
+}
+
+.mobile-card-entrance {
+  animation: mobileSlideUpBounce 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mobile-dock-active {
+  animation: mobileDockGlow 3.5s ease-in-out infinite;
+}
+
+.mobile-pulse-ring {
+  animation: softPulseRing 2.2s ease-in-out infinite;
+}
+
+.touch-snap-strip {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.touch-snap-strip::-webkit-scrollbar {
+  display: none;
+}
+.touch-snap-item {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
 .dark .hero-grid-pattern {
   background-image: radial-gradient(rgba(112, 222, 212, 0.14) 1px, transparent 1px);
 }

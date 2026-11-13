@@ -342,12 +342,12 @@ export default function PublicDocShell({
         </div>
 
         {/* Mobile / Tablet Quick Horizontal Documentary Switcher */}
-        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden print:hidden">
+        <div className="lg:hidden flex items-center gap-2 overflow-x-auto px-1 py-1 -mx-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden print:hidden">
           <Link
             href="/documentation"
-            className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors ${
+            className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border active:scale-95 transition-all touch-manipulation ${
               pathname === "/documentation"
-                ? "bg-teal-700 text-white border-teal-700"
+                ? "bg-teal-700 text-white border-teal-700 shadow-2xs"
                 : "bg-white dark:bg-[#13252d] border-border text-muted-foreground"
             }`}
           >
@@ -360,7 +360,7 @@ export default function PublicDocShell({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold border active:scale-95 transition-all touch-manipulation ${
                   isActive
                     ? "bg-gradient-to-r from-[#005a53] to-[#0d9488] text-white border-teal-600 shadow-xs"
                     : "bg-white dark:bg-[#13252d] border-border text-muted-foreground hover:text-foreground"
