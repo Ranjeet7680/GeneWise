@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -141,6 +142,7 @@ const COUNSELORS: Counselor[] = [
 ];
 
 export default function FindCounselorPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState<string>("All");
   const [telehealthOnly, setTelehealthOnly] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -150,6 +152,10 @@ export default function FindCounselorPage() {
     "Review multi-generational family disease patterns"
   );
   const [intakeNotes, setIntakeNotes] = useState<string>("");
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const specialties = [
     "All",
@@ -394,14 +400,14 @@ export default function FindCounselorPage() {
           </p>
         </div>
 
-        {/* Interactive Intake Request Modal with Deep Frosted Glass Background Blur */}
-        {selectedCounselor && (
+        {/* Interactive Intake Request Modal with Deep Frosted Glass Background Blur rendered via Portal to cover full screen */}
+        {isMounted && selectedCounselor && typeof document !== "undefined" && createPortal(
           <div
             onClick={(e) => {
               if (e.target === e.currentTarget) setSelectedCounselor(null);
             }}
-            className="fixed inset-0 z-[100] bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 animate-fade-in transition-all"
-            style={{ backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
+            className="fixed inset-0 z-[99999] bg-slate-950/80 dark:bg-black/90 backdrop-blur-2xl flex items-center justify-center p-4 sm:p-6 animate-fade-in transition-all"
+            style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
           >
             <div className="bg-white/95 dark:bg-[#112128]/95 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-teal-500/30 dark:border-teal-500/40 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] max-w-lg w-full max-h-[88dvh] overflow-y-auto p-4 sm:p-6 space-y-4 animate-scale-in">
               <div className="flex items-center justify-between pb-3 border-b border-border">
@@ -544,7 +550,8 @@ export default function FindCounselorPage() {
                 </div>
               )}
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         <SafetyNotice />

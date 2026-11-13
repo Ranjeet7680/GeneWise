@@ -16,6 +16,7 @@ import {
   FolderHeart,
   HeartPulse,
   LayoutDashboard,
+  LayoutGrid,
   LineChart,
   MessageSquare,
   Microscope,
@@ -56,6 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/reports", label: "Laboratory Reports", icon: FileText },
       { href: "/health-metrics", label: "Health Metrics & Trends", icon: HeartPulse },
       { href: "/clinician", label: "Clinician Queue", icon: Stethoscope, badge: "MD" },
+      { href: "/documentation", label: "All Documentary Portal", icon: LayoutGrid, badge: "Portal" },
     ],
   },
   {
@@ -79,6 +81,16 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/risk-education", label: "Risk Education", icon: ShieldCheck },
       { href: "/research", label: "Evidence Library", icon: BookOpen },
       { href: "/records", label: "Personal Health Records", icon: FolderHeart },
+    ],
+  },
+  {
+    id: "documentary",
+    title: "Public Documentary",
+    items: [
+      { href: "/documentation", label: "All Documentary Portal", icon: LayoutGrid, badge: "Portal" },
+      { href: "/clinical-support/find-counselor", label: "Find Genetic Counselor", icon: Stethoscope },
+      { href: "/clinical-support/discussion-prep", label: "Doctor Discussion Prep", icon: FileText },
+      { href: "/clinical-support/scientific-faq", label: "Scientific & Clinical FAQ", icon: BookOpen },
     ],
   },
   {
@@ -255,7 +267,7 @@ export default function AppSidebar() {
 
                       return (
                         <div
-                          key={item.href}
+                          key={`${group.id}-${item.href}`}
                           className="relative"
                           onMouseEnter={(e) => {
                             if (isCollapsed) {

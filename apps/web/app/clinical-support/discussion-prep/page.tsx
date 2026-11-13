@@ -531,38 +531,56 @@ Signature: ___________________________ Date: ____/____/2026
               @media print {
                 @page {
                   size: letter portrait;
-                  margin: 7mm 10mm 7mm 10mm;
+                  margin: 6mm 8mm 6mm 8mm;
+                }
+                *, *:before, *:after {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                  box-sizing: border-box !important;
                 }
                 html, body {
                   background: #ffffff !important;
                   color: #000000 !important;
-                  font-size: 9.5pt !important;
-                  line-height: 1.28 !important;
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
+                  font-size: 8.5pt !important;
+                  line-height: 1.22 !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
                 }
                 header, nav, aside, footer, [aria-label="Mobile quick navigation"], [aria-label="Breadcrumb"], .print-hidden {
                   display: none !important;
+                  visibility: hidden !important;
+                  height: 0 !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  overflow: hidden !important;
                 }
                 .dossier-page-1 {
                   page-break-after: always !important;
                   break-after: page !important;
-                  margin-bottom: 0 !important;
-                  padding-bottom: 0 !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
                 }
                 .dossier-page-2 {
                   page-break-before: always !important;
                   break-before: page !important;
                   page-break-after: avoid !important;
                   break-after: avoid !important;
-                  margin-top: 0 !important;
-                  padding-top: 4px !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  margin: 0 !important;
+                  padding-top: 2px !important;
                 }
                 .avoid-break {
                   page-break-inside: avoid !important;
                   break-inside: avoid !important;
                 }
-                table, tr, td, th {
+                table {
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                }
+                tr, td, th {
                   page-break-inside: avoid !important;
                   break-inside: avoid !important;
                 }
@@ -800,6 +818,18 @@ Signature: ___________________________ Date: ____/____/2026
                     </table>
                   </div>
                 </div>
+              </div>
+
+              {/* Visual Page 1 / Page 2 Boundary Indicator for Screen View */}
+              <div className="my-6 py-2.5 px-4 rounded-xl bg-teal-500/10 dark:bg-teal-950/40 border border-dashed border-teal-500/30 flex items-center justify-between text-xs font-mono text-teal-800 dark:text-teal-300 print:hidden select-none">
+                <span className="flex items-center gap-2 font-bold">
+                  <FileText className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                  <span>Page 1 of 2: Clinical Dossier Baseline &amp; ACMG Loci Matrix</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground flex items-center gap-1 font-sans">
+                  <span>Page 2 of 2: Inquiries &amp; Attestation Block Below</span>
+                  <ArrowRight className="w-3 h-3 text-teal-600" />
+                </span>
               </div>
 
               {/* PAGE 2 CONTAINER: Discussion Questions + Clinician Notes & Signature + Footer */}

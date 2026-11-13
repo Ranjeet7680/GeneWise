@@ -705,7 +705,7 @@ export default function AppHeader() {
                         (baseHref !== "/dashboard" && pathname.startsWith(`${baseHref}/`));
                       return (
                         <Link
-                          key={item.href}
+                          key={`${group.id}-${item.href}`}
                           href={item.href}
                           onClick={() => {
                             sound.playClick();
