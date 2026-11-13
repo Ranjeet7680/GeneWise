@@ -21,7 +21,6 @@ import {
   Pause,
   Play,
   Plus,
-  Radio,
   ShieldAlert,
   ShieldCheck,
   Sliders,
@@ -726,14 +725,6 @@ export default function LandingPage() {
                 >
                   <span>Get Started Free</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Link>
-                <Link
-                  href="/assistant/voice"
-                  onClick={() => sound.playSoft()}
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-white/80 dark:bg-[#14262f]/80 hover:bg-white dark:hover:bg-[#1a2e38] text-foreground font-bold text-xs sm:text-sm border border-teal-500/25 transition-all shadow-xs active:scale-95 flex-1 sm:flex-none text-center"
-                >
-                  <Radio className="w-4 h-4 text-emerald-500 animate-pulse" />
-                  <span>Voice AI Mode</span>
                 </Link>
               </div>
 
