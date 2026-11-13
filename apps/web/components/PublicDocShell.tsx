@@ -222,7 +222,7 @@ export default function PublicDocShell({
       </div>
 
       {/* Public Documentary Top Navbar (Outside Dashboard) */}
-      <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-white/85 dark:bg-[#0c181d]/90 border-b border-teal-500/15 shadow-xs">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-white/85 dark:bg-[#0c181d]/90 border-b border-teal-500/15 shadow-xs print:hidden">
         <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <MediPredictLogo href="/" size="sm" brand="genewise" showSubtitle={true} />
@@ -320,7 +320,7 @@ export default function PublicDocShell({
       {/* Main Public Documentary Body */}
       <div className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
         {/* Breadcrumb Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/70 text-[11px]">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-border/70 text-[11px] print:hidden">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
             <Link href="/" className="hover:text-teal-700 dark:hover:text-teal-300 font-medium inline-flex items-center gap-1">
               <Home className="w-3 h-3" />
@@ -342,7 +342,7 @@ export default function PublicDocShell({
         </div>
 
         {/* Mobile / Tablet Quick Horizontal Documentary Switcher */}
-        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden print:hidden">
           <Link
             href="/documentation"
             className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold border transition-colors ${
@@ -377,7 +377,7 @@ export default function PublicDocShell({
           {/* Left Sticky Documentary Navigation Rail (NOT Dashboard Sidebar) */}
           <aside
             aria-label="Documentary index navigation"
-            className="hidden lg:block lg:col-span-3 sticky top-22 space-y-4"
+            className="hidden lg:block lg:col-span-3 sticky top-22 space-y-4 print:hidden"
           >
             <div className="rounded-2xl bg-white/90 dark:bg-[#102027]/90 border border-teal-500/20 p-4 shadow-sm space-y-5">
               <div className="flex items-center justify-between pb-2 border-b border-border/60">
@@ -452,12 +452,12 @@ export default function PublicDocShell({
           </aside>
 
           {/* Primary Documentary Content Pane */}
-          <main className="lg:col-span-9 min-w-0 space-y-6 animate-fade-in-up">
+          <main className="lg:col-span-9 min-w-0 space-y-6 animate-fade-in-up print:col-span-12 print:w-full print:p-0 print:m-0">
             {children}
 
             {/* Previous / Next Documentary Navigation Cards */}
             {(prevDoc || nextDoc) && (
-              <div className="pt-4 border-t border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="pt-4 border-t border-border/70 grid grid-cols-1 sm:grid-cols-2 gap-3 print:hidden">
                 {prevDoc ? (
                   <Link
                     href={prevDoc.href}
@@ -502,7 +502,7 @@ export default function PublicDocShell({
       </div>
 
       {/* Institutional Public Footer */}
-      <footer className="relative z-10 mt-12 border-t border-border bg-white/95 dark:bg-[#111f26]/95 backdrop-blur-md text-muted-foreground text-xs">
+      <footer className="relative z-10 mt-12 border-t border-border bg-white/95 dark:bg-[#111f26]/95 backdrop-blur-md text-muted-foreground text-xs print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {PUBLIC_DOC_SECTIONS.map((sec) => (
