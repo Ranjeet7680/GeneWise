@@ -39,11 +39,11 @@ export default function MobileBottomNav() {
   return (
     <>
       {/* Layout spacer so scrolled page content never rests underneath the fixed mobile dock */}
-      <div className="md:hidden h-16 shrink-0 pointer-events-none" aria-hidden="true" />
+      <div className="md:hidden h-16 shrink-0 pointer-events-none print:hidden" aria-hidden="true" />
 
       <nav
         aria-label="Mobile quick navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f1c23]/95 backdrop-blur-xl border-t border-border/90 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-2 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] transition-colors duration-200 select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f1c23]/95 backdrop-blur-xl border-t border-border/90 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-2 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] transition-colors duration-200 select-none print:hidden"
       >
         <div className="grid grid-cols-5 items-center max-w-lg mx-auto gap-0.5">
           {NAV_ITEMS.map((item) => {

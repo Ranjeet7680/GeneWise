@@ -194,7 +194,7 @@ export default function AppHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full shrink-0 bg-white/90 dark:bg-[#111d24]/90 backdrop-blur-md border-b border-border shadow-xs transition-colors duration-200">
+      <header className="sticky top-0 z-40 w-full shrink-0 bg-white/90 dark:bg-[#111d24]/90 backdrop-blur-md border-b border-border shadow-xs transition-colors duration-200 print:hidden">
         <div className="flex h-16 items-center justify-between px-3 sm:px-6 gap-2">
           {/* Left: Mobile Drawer Trigger + Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">

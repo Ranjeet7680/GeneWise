@@ -524,6 +524,53 @@ Signature: ___________________________ Date: ____/____/2026
         {/* STEP 4: Improved Hospital-Grade Print Packet & Clinical Dossier */}
         {currentStep === 4 && (
           <div className="space-y-6 animate-fade-in">
+            {/* Global Print & PDF Stylesheet: Forces exact 2-page pagination and eliminates chrome */}
+            <style
+              dangerouslySetInnerHTML={{
+                __html: `
+              @media print {
+                @page {
+                  size: letter portrait;
+                  margin: 7mm 10mm 7mm 10mm;
+                }
+                html, body {
+                  background: #ffffff !important;
+                  color: #000000 !important;
+                  font-size: 9.5pt !important;
+                  line-height: 1.28 !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                header, nav, aside, footer, [aria-label="Mobile quick navigation"], [aria-label="Breadcrumb"], .print-hidden {
+                  display: none !important;
+                }
+                .dossier-page-1 {
+                  page-break-after: always !important;
+                  break-after: page !important;
+                  margin-bottom: 0 !important;
+                  padding-bottom: 0 !important;
+                }
+                .dossier-page-2 {
+                  page-break-before: always !important;
+                  break-before: page !important;
+                  page-break-after: avoid !important;
+                  break-after: avoid !important;
+                  margin-top: 0 !important;
+                  padding-top: 4px !important;
+                }
+                .avoid-break {
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                }
+                table, tr, td, th {
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                }
+              }
+            `,
+              }}
+            />
+
             {/* Top Toolbar (Hidden when printing) */}
             <div className="p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
               <div className="space-y-0.5">
@@ -568,303 +615,314 @@ Signature: ___________________________ Date: ____/____/2026
               </div>
             </div>
 
-            {/* CLINICAL DOSSIER DOCUMENT (Optimized for Screen & Print) */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0f1d24] border border-border shadow-md space-y-6 text-foreground font-sans print:p-0 print:border-none print:shadow-none print:bg-white print:text-black">
-              {/* Document Header */}
-              <div className="border-b-2 border-teal-700/60 pb-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-teal-700 text-white font-mono font-bold text-xs flex items-center gap-1">
-                      <Dna className="w-4 h-4" />
-                      <span>GeneWise</span>
+            {/* CLINICAL DOSSIER DOCUMENT (Optimized for Screen & Clean 2-Page Print) */}
+            <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#0f1d24] border border-border shadow-md text-foreground font-sans print:p-0 print:border-none print:shadow-none print:bg-white print:text-black">
+              {/* PAGE 1 CONTAINER: Header + Demographics + Goals + Red Flags + ACMG Matrix Table */}
+              <div className="dossier-page-1 space-y-4 print:space-y-2.5">
+                {/* Document Header */}
+                <div className="border-b-2 border-teal-700/60 pb-3 flex flex-col sm:flex-row sm:items-start justify-between gap-3 print:pb-2">
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1 rounded-lg bg-teal-700 text-white font-mono font-bold text-xs flex items-center gap-1">
+                        <Dna className="w-3.5 h-3.5" />
+                        <span>GeneWise</span>
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 font-mono">
+                        Clinical Intelligence System · Precision Genetics
+                      </span>
+                    </div>
+                    <h1 className="text-lg sm:text-xl font-black tracking-tight text-foreground print:text-black print:text-base">
+                      PATIENT CONSULTATION BRIEFING DOSSIER
+                    </h1>
+                    <p className="text-[11px] text-muted-foreground print:text-gray-700">
+                      Prepared for Attending Physician &amp; Board-Certified Genetic Counselor (CGC) Encounter
+                    </p>
+                  </div>
+
+                  {/* Cryptographic Verification Badge */}
+                  <div className="p-2 rounded-xl bg-surface-low border border-border text-right space-y-0.5 print:border print:border-gray-300 print:p-1.5">
+                    <div className="flex items-center justify-end gap-1.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>FIPS 140-3 Zero-Trust Verified</span>
+                    </div>
+                    <p className="text-[9px] font-mono text-muted-foreground print:text-gray-600">
+                      Form: GW-CGC-2026-REV3 · SHA: 0x7F9B...4E12
+                    </p>
+                    <p className="text-[9px] font-mono text-muted-foreground print:text-gray-600">
+                      Timestamp: {new Date().toLocaleDateString()} · 10:45 UTC
+                    </p>
+                  </div>
+                </div>
+
+                {/* Section 1: Patient Demographics & Pedigree Baseline Summary */}
+                <div className="p-3 rounded-xl bg-surface-low border border-border print:bg-gray-50 print:border-gray-300 print:p-2 space-y-2 avoid-break">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+                      Section 1 · Proband Demographics &amp; Pedigree Baseline
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-teal-700 dark:text-teal-400 font-mono">
-                      Clinical Intelligence System · Precision Genetics
+                    <span className="px-2 py-0.2 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+                      Pedigree Fidelity: 87% Verified
                     </span>
                   </div>
-                  <h1 className="text-xl sm:text-2xl font-black tracking-tight text-foreground print:text-black">
-                    PATIENT CONSULTATION BRIEFING DOSSIER
-                  </h1>
-                  <p className="text-xs text-muted-foreground print:text-gray-700">
-                    Prepared for Attending Physician &amp; Board-Certified Genetic Counselor (CGC) Encounter
-                  </p>
-                </div>
 
-                {/* Cryptographic Verification Badge */}
-                <div className="p-3 rounded-xl bg-surface-low border border-border text-right space-y-0.5 print:border print:border-gray-300">
-                  <div className="flex items-center justify-end gap-1.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>FIPS 140-3 Zero-Trust Verified</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs print:text-[9pt]">
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block font-mono">Proband Name:</span>
+                      <strong className="text-foreground font-bold">Dr. E. Vance</strong>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block font-mono">Age / Sex:</span>
+                      <strong className="text-foreground font-bold">29 yrs · Male</strong>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block font-mono">EMR / Vault ID:</span>
+                      <strong className="text-foreground font-mono font-bold">PT-GEN-89412</strong>
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-muted-foreground block font-mono">Pedigree Scope:</span>
+                      <strong className="text-foreground font-bold">3 Gen · 8 Relatives</strong>
+                    </div>
                   </div>
-                  <p className="text-[10px] font-mono text-muted-foreground print:text-gray-600">
-                    Form ID: GW-CGC-2026-REV3
-                  </p>
-                  <p className="text-[10px] font-mono text-muted-foreground print:text-gray-600">
-                    Timestamp: {new Date().toLocaleDateString()} · 10:45 UTC
-                  </p>
-                </div>
-              </div>
 
-              {/* Patient Demographics & Pedigree Baseline Summary */}
-              <div className="p-4 rounded-xl bg-surface-low border border-border print:bg-gray-50 print:border-gray-300 space-y-3">
-                <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
-                    Section 1 · Proband Demographics &amp; Pedigree Baseline
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-                    Pedigree Fidelity: 87% Verified
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block font-mono">Proband Name:</span>
-                    <strong className="text-foreground font-bold">Dr. E. Vance</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block font-mono">Age / Sex:</span>
-                    <strong className="text-foreground font-bold">29 yrs · Biological Male</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block font-mono">EMR / Vault ID:</span>
-                    <strong className="text-foreground font-mono font-bold">PT-GEN-89412</strong>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-muted-foreground block font-mono">Pedigree Scope:</span>
-                    <strong className="text-foreground font-bold">3 Generations · 8 Relatives</strong>
+                  <div className="pt-1.5 border-t border-border/50 text-[11px] print:text-[8.5pt]">
+                    <span className="text-[9px] text-muted-foreground block font-mono">Chief Referral Indication:</span>
+                    <p className="text-foreground font-medium">
+                      Hereditary Early-Onset Cardiovascular Clustering (Paternal GF CAD @ 58, Father HTN @ 45) &amp; Cardiometabolic Screening (Maternal GM T2D @ 62).
+                    </p>
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-border/50 text-xs">
-                  <span className="text-[10px] text-muted-foreground block font-mono">Primary Indication for Clinical Referral:</span>
-                  <p className="text-foreground font-medium pt-0.5">
-                    Hereditary Early-Onset Cardiovascular Risk Clustering (Paternal GF CAD @ 58, Father HTN @ 45) &amp; Multifactorial Cardiometabolic Screening (Maternal GM T2D @ 62).
-                  </p>
-                </div>
-              </div>
+                {/* Section 2: Stated Consultation Goals */}
+                <div className="space-y-1.5 avoid-break">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[11px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
+                      Section 2 · Prioritized Patient Consultation Goals
+                    </h3>
+                    <span className="text-[9px] font-mono text-muted-foreground">
+                      {goals.filter((g) => g.checked).length} Objectives Confirmed
+                    </span>
+                  </div>
 
-              {/* Stated Consultation Goals */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
-                    Section 2 · Prioritized Patient Consultation Goals
-                  </h3>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    {goals.filter((g) => g.checked).length} Objectives Confirmed
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {goals
-                    .filter((g) => g.checked)
-                    .map((g, idx) => (
-                      <div
-                        key={g.id}
-                        className="p-3 rounded-xl bg-surface-low border border-border/80 flex items-start gap-2.5 text-xs print:border-gray-300"
-                      >
-                        <span className="w-5 h-5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
-                          {idx + 1}
-                        </span>
-                        <div>
-                          <p className="font-bold text-foreground print:text-black">{g.label}</p>
-                          <p className="text-[11px] text-muted-foreground print:text-gray-600">{g.description}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 print:gap-1.5">
+                    {goals
+                      .filter((g) => g.checked)
+                      .map((g, idx) => (
+                        <div
+                          key={g.id}
+                          className="p-2.5 rounded-xl bg-surface-low border border-border/80 flex items-start gap-2 text-xs print:text-[8.5pt] print:p-1.5 print:border-gray-300"
+                        >
+                          <span className="w-4 h-4 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 font-bold text-[9px] flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div>
+                            <p className="font-bold text-foreground print:text-black">{g.label}</p>
+                            <p className="text-[10px] print:text-[8pt] text-muted-foreground print:text-gray-600">{g.description}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Identified Hereditary Patterns & Candidate Loci */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 font-mono">
-                  Section 3 · Pedigree Phenotypic Red Flags &amp; Family History
-                </h3>
+                {/* Section 3: Identified Hereditary Patterns & Candidate Loci */}
+                <div className="space-y-1.5 avoid-break">
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300 font-mono">
+                    Section 3 · Pedigree Phenotypic Red Flags &amp; Family History
+                  </h3>
 
-                <div className="space-y-2 text-xs">
-                  {redFlags
-                    .filter((rf) => rf.present)
-                    .map((rf) => (
-                      <div
-                        key={rf.id}
-                        className="p-3.5 rounded-xl bg-amber-500/8 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-2 print:border-gray-300 print:bg-white"
-                      >
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-amber-900 dark:text-amber-200 print:text-black">
-                              {rf.title}
-                            </span>
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300">
-                              {rf.severity} Priority
+                  <div className="space-y-1.5 text-xs print:text-[8.5pt] print:space-y-1">
+                    {redFlags
+                      .filter((rf) => rf.present)
+                      .map((rf) => (
+                        <div
+                          key={rf.id}
+                          className="p-2.5 rounded-xl bg-amber-500/8 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 print:border-gray-300 print:bg-white print:p-1.5"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-amber-900 dark:text-amber-200 print:text-black">
+                                {rf.title}
+                              </span>
+                              <span className="px-1.5 py-0.2 rounded text-[8px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300">
+                                {rf.severity} Priority
+                              </span>
+                            </div>
+                            <p className="text-[10px] print:text-[8pt] text-muted-foreground print:text-gray-700">{rf.prompt}</p>
+                          </div>
+                          <div className="sm:text-right shrink-0">
+                            <span className="text-[9px] text-muted-foreground block font-mono">Loci:</span>
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-surface-low border border-border text-foreground">
+                              {rf.locus}
                             </span>
                           </div>
-                          <p className="text-[11px] text-muted-foreground print:text-gray-700">{rf.prompt}</p>
                         </div>
-                        <div className="sm:text-right shrink-0">
-                          <span className="text-[10px] text-muted-foreground block font-mono">Associated Genomic Loci:</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-surface-low border border-border text-foreground">
-                            {rf.locus}
+                      ))}
+                  </div>
+                </div>
+
+                {/* Section 4: ACMG Candidate Multigene Panels Table */}
+                <div className="space-y-1.5 avoid-break">
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
+                    Section 4 · ACMG / NSGC Candidate Diagnostic Loci Matrix
+                  </h3>
+
+                  <div className="rounded-xl border border-border overflow-hidden print:border-gray-300">
+                    <table className="w-full text-left text-xs print:text-[8pt] border-collapse">
+                      <thead>
+                        <tr className="bg-surface-low border-b border-border print:bg-gray-100 text-[9px] font-mono font-bold uppercase text-muted-foreground">
+                          <th className="p-2 print:p-1">Gene / Loci</th>
+                          <th className="p-2 print:p-1">Clinical Syndrome</th>
+                          <th className="p-2 print:p-1">Transmission</th>
+                          <th className="p-2 print:p-1">ACMG Tier</th>
+                          <th className="p-2 print:p-1">Actionability Guidance</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/60 print:divide-gray-300 text-[10px] print:text-[8pt]">
+                        {GENE_LOCI_TABLE.map((item) => (
+                          <tr key={item.gene} className="hover:bg-surface-low/50">
+                            <td className="p-2 print:p-1 font-mono font-bold text-teal-700 dark:text-teal-300 print:text-black">
+                              {item.gene}
+                            </td>
+                            <td className="p-2 print:p-1 font-medium text-foreground print:text-black">
+                              {item.syndrome}
+                            </td>
+                            <td className="p-2 print:p-1 text-muted-foreground print:text-gray-700">
+                              {item.inheritance}
+                            </td>
+                            <td className="p-2 print:p-1 font-mono font-bold text-emerald-700 dark:text-emerald-400 print:text-black">
+                              {item.acmgTier}
+                            </td>
+                            <td className="p-2 print:p-1 text-muted-foreground print:text-gray-700 leading-snug">
+                              {item.actionability}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* PAGE 2 CONTAINER: Discussion Questions + Clinician Notes & Signature + Footer */}
+              <div className="dossier-page-2 space-y-4 print:space-y-3 pt-6 print:pt-0">
+                {/* Section 5: Prioritized Patient Inquiries Checklist */}
+                <div className="space-y-2 avoid-break">
+                  <div className="border-b border-border/60 pb-1.5 flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
+                      Section 5 · Curated Pre-Consultation Discussion Inquiries
+                    </h3>
+                    <span className="text-[9px] font-mono text-muted-foreground">
+                      Prioritized for 20-minute encounter
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {questionsList.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-xl bg-surface-low border border-border/80 flex items-start gap-2.5 text-xs print:text-[8.5pt] print:p-1.5 print:border-gray-300 print:bg-white"
+                      >
+                        <input
+                          type="checkbox"
+                          className="mt-0.5 rounded border-border text-teal-700 focus:ring-teal-700 print:border-black shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-bold text-teal-700 dark:text-teal-400 font-mono text-[9px] mr-1.5">
+                            Q{idx + 1}.
+                          </span>
+                          <span className="text-foreground print:text-black leading-snug font-medium">
+                            {q}
                           </span>
                         </div>
                       </div>
                     ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* ACMG Candidate Multigene Panels Table */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
-                  Section 4 · ACMG / NSGC Candidate Diagnostic Loci Matrix
-                </h3>
+                {/* Section 6: Clinician Working Space & Attestation Block */}
+                <div className="p-4 rounded-xl bg-surface-low border-2 border-dashed border-border print:border-gray-400 print:bg-white print:p-3 space-y-3 avoid-break">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-1.5">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+                      Section 6 · Clinician Encounter Notes &amp; Formal Attestation
+                    </span>
+                    <span className="text-[9px] font-mono text-muted-foreground">
+                      Required for EHR Charting (CPT 96040 / 99214)
+                    </span>
+                  </div>
 
-                <div className="rounded-xl border border-border overflow-hidden print:border-gray-300">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-surface-low border-b border-border print:bg-gray-100 text-[10px] font-mono font-bold uppercase text-muted-foreground">
-                        <th className="p-2.5">Gene / Loci</th>
-                        <th className="p-2.5">Clinical Syndrome</th>
-                        <th className="p-2.5">Transmission</th>
-                        <th className="p-2.5">ACMG Tier</th>
-                        <th className="p-2.5">Actionability Guidance</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60 print:divide-gray-300 text-[11px]">
-                      {GENE_LOCI_TABLE.map((item) => (
-                        <tr key={item.gene} className="hover:bg-surface-low/50">
-                          <td className="p-2.5 font-mono font-bold text-teal-700 dark:text-teal-300 print:text-black">
-                            {item.gene}
-                          </td>
-                          <td className="p-2.5 font-medium text-foreground print:text-black">
-                            {item.syndrome}
-                          </td>
-                          <td className="p-2.5 text-muted-foreground print:text-gray-700">
-                            {item.inheritance}
-                          </td>
-                          <td className="p-2.5 font-mono font-bold text-emerald-700 dark:text-emerald-400 print:text-black">
-                            {item.acmgTier}
-                          </td>
-                          <td className="p-2.5 text-muted-foreground print:text-gray-700 leading-snug">
-                            {item.actionability}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                  {/* Clinician Action Checkboxes */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[10px] print:text-[8pt] print:gap-1.5">
+                    {[
+                      { id: "c1", text: "Pre-test genetic counseling protocol administered" },
+                      { id: "c2", text: "3-generation pedigree verified with proband" },
+                      { id: "c3", text: "Targeted multigene panel ordered / blood sample drawn" },
+                      { id: "c4", text: "Cascade family notification kit & GINA protections reviewed" },
+                    ].map((item) => (
+                      <label
+                        key={item.id}
+                        className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground select-none"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checkedClinicianItems[item.id] || false}
+                          onChange={(e) =>
+                            setCheckedClinicianItems({
+                              ...checkedClinicianItems,
+                              [item.id]: e.target.checked,
+                            })
+                          }
+                          className="rounded border-border text-teal-700 focus:ring-teal-700 print:border-black shrink-0"
+                        />
+                        <span className="print:text-black leading-tight">{item.text}</span>
+                      </label>
+                    ))}
+                  </div>
 
-              {/* Prioritized Patient Inquiries Checklist */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300 font-mono">
-                  Section 5 · Curated Pre-Consultation Discussion Inquiries
-                </h3>
+                  {/* Hand-written / Reviewer Notes Box */}
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-mono text-muted-foreground uppercase">
+                      Attending Physician / Genetic Counselor Notes:
+                    </span>
+                    <div className="h-16 w-full rounded-lg border border-border/80 bg-white dark:bg-[#14262f] print:bg-white p-2 text-[10px] print:text-[8pt] text-muted-foreground font-mono leading-tight">
+                      Recommend baseline fasting lipid profile, ApoB, Lp(a) test; coordinate with Stanford / Johns Hopkins genetics team for cascade screening if LDLR/APOB positive.
+                    </div>
+                  </div>
 
-                <div className="space-y-2">
-                  {questionsList.map((q, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 rounded-xl bg-surface-low border border-border/80 flex items-start gap-3 text-xs print:border-gray-300 print:bg-white"
-                    >
-                      <input
-                        type="checkbox"
-                        className="mt-0.5 rounded border-border text-teal-700 focus:ring-teal-700 print:border-black"
-                      />
-                      <div className="flex-1">
-                        <span className="font-bold text-teal-700 dark:text-teal-400 font-mono text-[10px] mr-1.5">
-                          Q{idx + 1}.
-                        </span>
-                        <span className="text-foreground print:text-black leading-relaxed font-medium">
-                          {q}
-                        </span>
+                  {/* Formal Signature Strip */}
+                  <div className="pt-2 border-t border-border/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs print:text-[8.5pt]">
+                    <div>
+                      <span className="text-[9px] font-mono text-muted-foreground block">
+                        Attending Clinician Signature:
+                      </span>
+                      <div className="border-b border-foreground/60 h-6 print:border-black" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] font-mono text-muted-foreground block">
+                        Printed Name &amp; Credentials:
+                      </span>
+                      <div className="border-b border-foreground/60 h-6 print:border-black flex items-end text-[10px] print:text-[8.5pt] font-bold">
+                        Dr. Aaron Vance, MS, CGC
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Clinician Working Space & Attestation Block */}
-              <div className="p-5 rounded-xl bg-surface-low border-2 border-dashed border-border print:border-gray-400 print:bg-white space-y-4">
-                <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
-                    Section 6 · Clinician Encounter Notes &amp; Formal Attestation
-                  </span>
-                  <span className="text-[10px] font-mono text-muted-foreground">
-                    Required for EHR Charting (CPT 96040 / 99214)
-                  </span>
-                </div>
-
-                {/* Clinician Action Checkboxes */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                  {[
-                    { id: "c1", text: "Pre-test genetic counseling protocol administered" },
-                    { id: "c2", text: "3-generation pedigree verified with proband" },
-                    { id: "c3", text: "Targeted multigene panel ordered / blood sample drawn" },
-                    { id: "c4", text: "Cascade family notification kit and GINA legal protections reviewed" },
-                  ].map((item) => (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-foreground select-none"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checkedClinicianItems[item.id] || false}
-                        onChange={(e) =>
-                          setCheckedClinicianItems({
-                            ...checkedClinicianItems,
-                            [item.id]: e.target.checked,
-                          })
-                        }
-                        className="rounded border-border text-teal-700 focus:ring-teal-700 print:border-black"
-                      />
-                      <span className="print:text-black">{item.text}</span>
-                    </label>
-                  ))}
-                </div>
-
-                {/* Hand-written / Reviewer Notes Box */}
-                <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
-                    Attending Physician / Genetic Counselor Notes:
-                  </span>
-                  <div className="h-16 w-full rounded-lg border border-border/80 bg-white dark:bg-[#14262f] print:bg-white p-2 text-xs text-muted-foreground font-mono">
-                    Recommend baseline fasting lipid profile, ApoB, Lp(a) test; coordinate with Stanford / Johns Hopkins genetics team for cascade screening if LDLR/APOB positive.
-                  </div>
-                </div>
-
-                {/* Formal Signature Strip */}
-                <div className="pt-3 border-t border-border/60 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                  <div>
-                    <span className="text-[10px] font-mono text-muted-foreground block">
-                      Attending Clinician Signature:
-                    </span>
-                    <div className="border-b border-foreground/60 h-7 print:border-black" />
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-muted-foreground block">
-                      Printed Name &amp; Credentials:
-                    </span>
-                    <div className="border-b border-foreground/60 h-7 print:border-black flex items-end text-[11px] font-bold">
-                      Dr. Aaron Vance, MS, CGC
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-muted-foreground block">
-                      ABGC Lic / NPI # &amp; Date:
-                    </span>
-                    <div className="border-b border-foreground/60 h-7 print:border-black flex items-end text-[11px] font-mono">
-                      #GC-38291 · {new Date().toLocaleDateString()}
+                    <div>
+                      <span className="text-[9px] font-mono text-muted-foreground block">
+                        ABGC Lic / NPI # &amp; Date:
+                      </span>
+                      <div className="border-b border-foreground/60 h-6 print:border-black flex items-end text-[10px] print:text-[8.5pt] font-mono">
+                        #GC-38291 · {new Date().toLocaleDateString()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Dossier Footer Notice */}
-              <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-muted-foreground print:text-gray-600">
-                <p>
-                  GeneWise Clinical Decision Support · Grounded in ACMG, NSGC, and ClinVar v2.4 Guidelines.
-                </p>
-                <p className="font-mono">
-                  HL7 FHIR Release 4 Compatibility · Zero Raw Genomic Data Disclosed
-                </p>
+                {/* Dossier Footer Notice */}
+                <div className="pt-2 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-muted-foreground print:text-gray-600 avoid-break">
+                  <p>
+                    GeneWise Clinical Decision Support · Grounded in ACMG, NSGC, and ClinVar v2.4 Guidelines.
+                  </p>
+                  <p className="font-mono">
+                    HL7 FHIR Release 4 Compatibility · Zero Raw Genomic Data Disclosed
+                  </p>
+                </div>
               </div>
             </div>
 

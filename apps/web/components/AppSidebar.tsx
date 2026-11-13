@@ -172,7 +172,7 @@ export default function AppSidebar() {
       <aside
         aria-label="Clinical Navigation"
         className={cn(
-          "fixed top-16 left-0 bottom-0 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs transition-all duration-300 ease-in-out",
+          "fixed top-16 left-0 bottom-0 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs transition-all duration-300 ease-in-out print:hidden",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
@@ -421,7 +421,7 @@ export default function AppSidebar() {
       {/* Structural Layout Spacer: Synchronized width reserves space for main page content */}
       <div
         className={cn(
-          "shrink-0 hidden md:block transition-all duration-300 ease-in-out",
+          "shrink-0 hidden md:block transition-all duration-300 ease-in-out print:hidden",
           isCollapsed ? "w-16" : "w-64"
         )}
         aria-hidden="true"
@@ -431,7 +431,7 @@ export default function AppSidebar() {
       {isCollapsed && hoveredItem && (
         <div
           style={{ top: `${hoveredItem.top}px` }}
-          className="fixed left-[4.5rem] -translate-y-1/2 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-100"
+          className="fixed left-[4.5rem] -translate-y-1/2 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-100 print:hidden"
         >
           <div className="rounded-xl bg-slate-900/95 dark:bg-[#162732]/95 backdrop-blur-md text-white border border-slate-700/60 dark:border-border/80 shadow-2xl p-2.5 whitespace-nowrap min-w-[130px]">
             <div className="flex items-center justify-between gap-2">
