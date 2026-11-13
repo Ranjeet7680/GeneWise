@@ -2131,12 +2131,12 @@ export default function MyFamilyHistoryPage() {
       {/* MODAL 1: CLINICAL DOSSIER INSPECTOR & BIOMARKER EDITOR */}
       {selectedMember && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-end animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-end animate-fade-in"
           onClick={() => setSelectedMemberId(null)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg h-full bg-white dark:bg-[#111d24] border-l border-border shadow-2xl p-6 overflow-y-auto flex flex-col justify-between space-y-6 animate-fade-in-up text-xs"
+            className="w-full max-w-lg h-full bg-white dark:bg-[#111d24] border-l border-border shadow-2xl p-4 sm:p-6 overflow-y-auto flex flex-col justify-between space-y-6 animate-fade-in-up text-xs"
           >
             <div className="space-y-5">
               {/* Top Bar */}
@@ -2470,7 +2470,7 @@ export default function MyFamilyHistoryPage() {
 
       {/* MODAL 2: ADD FAMILY MEMBER WITH CLINICAL PRESETS */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
           <form
             onSubmit={handleAddMember}
             className="bg-white dark:bg-[#14262f] rounded-3xl border border-border shadow-2xl max-w-lg w-full p-6 space-y-4 animate-fade-in-up text-xs max-h-[90vh] overflow-y-auto"
@@ -2709,7 +2709,7 @@ export default function MyFamilyHistoryPage() {
       {/* MODAL 3: AES-256 ENCRYPTION VAULT INSPECTOR */}
       {showVaultModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
           onClick={() => setShowVaultModal(false)}
         >
           <div
@@ -2776,7 +2776,7 @@ export default function MyFamilyHistoryPage() {
       {/* MODAL 4: PRINTABLE NSGC CLINICAL REPORT / EXPORT PEDIGREE PDF */}
       {showExportModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in"
           onClick={() => setShowExportModal(false)}
         >
           <div

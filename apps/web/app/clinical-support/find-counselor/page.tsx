@@ -403,7 +403,7 @@ export default function FindCounselorPage() {
             className="fixed inset-0 z-[100] bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 sm:p-6 animate-fade-in transition-all"
             style={{ backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}
           >
-            <div className="bg-white/95 dark:bg-[#112128]/95 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-teal-500/30 dark:border-teal-500/40 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] max-w-lg w-full p-6 space-y-4 animate-scale-in">
+            <div className="bg-white/95 dark:bg-[#112128]/95 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-teal-500/30 dark:border-teal-500/40 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] max-w-lg w-full max-h-[88dvh] overflow-y-auto p-4 sm:p-6 space-y-4 animate-scale-in">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-primary">

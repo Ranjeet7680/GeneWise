@@ -569,7 +569,7 @@ export default function VoiceAssistantPage() {
               <span>Back to Text Assistant</span>
             </Link>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 max-w-full">
               {/* Bi-LSTM Temporal Toggle Pill */}
               <button
                 type="button"
@@ -713,7 +713,7 @@ export default function VoiceAssistantPage() {
           </div>
 
           {/* 13 Indian Languages Clean Wrapping Ribbon (zero clipped pills or raw scrollbar) */}
-          <div className="py-2.5 flex flex-wrap items-center gap-1.5 border-b border-border/60">
+          <div className="py-2.5 flex items-center gap-1.5 border-b border-border/60 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
               <Languages className="w-3.5 h-3.5 text-teal-600" /> Dialect (13):
             </span>
@@ -1043,7 +1043,13 @@ export default function VoiceAssistantPage() {
 
           {/* Conversation History Drawer Modal */}
           {showHistory && (
-            <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-[#14262f] border-l border-border shadow-2xl p-6 flex flex-col justify-between animate-slide-in">
+            <div className="fixed inset-0 z-50 flex justify-end">
+              <div
+                onClick={() => setShowHistory(false)}
+                className="fixed inset-0 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md animate-fade-in"
+                aria-hidden="true"
+              />
+              <div className="relative z-10 w-full max-w-md h-full bg-white dark:bg-[#14262f] border-l border-border shadow-2xl p-4 sm:p-6 flex flex-col justify-between animate-slide-in">
               <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center gap-2">
@@ -1160,7 +1166,8 @@ export default function VoiceAssistantPage() {
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
           {/* Message-Only Print, PDF Download & WhatsApp / Social Share Modal */}
           <ExportPrintShareModal

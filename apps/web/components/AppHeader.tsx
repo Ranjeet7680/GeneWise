@@ -563,12 +563,12 @@ export default function AppHeader() {
         <div className="fixed inset-0 z-50 md:hidden flex">
           <div
             onClick={() => setShowMobileNav(false)}
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs animate-in fade-in"
+            className="fixed inset-0 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-in fade-in transition-all"
             aria-hidden="true"
           />
           <aside
             aria-label="Mobile workspace navigation"
-            className="relative z-10 w-[85vw] max-w-[310px] h-[100dvh] bg-white dark:bg-[#101c24] border-r border-border shadow-2xl flex flex-col overflow-hidden"
+            className="relative z-10 w-[88vw] max-w-[320px] h-[100dvh] bg-white/95 dark:bg-[#0c181f]/95 backdrop-blur-2xl border-r border-teal-500/20 dark:border-teal-500/30 shadow-2xl flex flex-col overflow-hidden rounded-r-3xl"
           >
             {/* Drawer Header */}
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-surface-low/50 dark:bg-black/20 shrink-0">
@@ -584,11 +584,80 @@ export default function AppHeader() {
                 type="button"
                 onClick={() => setShowMobileNav(false)}
                 aria-label="Close navigation menu"
-                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-surface-container"
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-surface-container active:scale-95 transition-transform"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Authenticated Clinician / User Profile Card */}
+            {isAuthenticated && user && (
+              <div className="p-3 mx-3 mt-3 rounded-2xl bg-gradient-to-br from-teal-500/10 via-emerald-500/5 to-transparent border border-teal-500/25 space-y-2.5 shrink-0">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <UserAvatar
+                    name={user.full_name}
+                    avatarUrl={user.avatar_url}
+                    avatarColor={user.avatar_color}
+                    size="md"
+                    showOnlineDot={true}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-extrabold text-foreground truncate leading-tight">
+                      {user.full_name}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                      {user.specialty || user.role.toUpperCase()} • {user.organization || "GeneWise Health"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Quick Persona Switcher in Mobile Drawer */}
+                <div className="grid grid-cols-3 gap-1 pt-1 border-t border-teal-500/20">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playPop();
+                      switchRole("clinician");
+                    }}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all text-center ${
+                      user.role === "clinician"
+                        ? "bg-teal-700 text-white shadow-2xs"
+                        : "bg-surface-low/80 dark:bg-black/30 text-foreground hover:bg-teal-500/10"
+                    }`}
+                  >
+                    MD
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playPop();
+                      switchRole("patient");
+                    }}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all text-center ${
+                      user.role === "patient"
+                        ? "bg-teal-700 text-white shadow-2xs"
+                        : "bg-surface-low/80 dark:bg-black/30 text-foreground hover:bg-teal-500/10"
+                    }`}
+                  >
+                    Patient
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playPop();
+                      switchRole("admin");
+                    }}
+                    className={`py-1 text-[10px] font-bold rounded-lg transition-all text-center ${
+                      user.role === "admin"
+                        ? "bg-teal-700 text-white shadow-2xs"
+                        : "bg-surface-low/80 dark:bg-black/30 text-foreground hover:bg-teal-500/10"
+                    }`}
+                  >
+                    Admin
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Live Telemetry Quick Card */}
             <div className="px-3 pt-3 shrink-0">
@@ -598,7 +667,7 @@ export default function AppHeader() {
                   setShowMobileNav(false);
                   handleOpenTelemetryModal();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-semibold"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 dark:text-emerald-300 text-xs font-semibold active:scale-98 transition-transform"
               >
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -630,22 +699,28 @@ export default function AppHeader() {
                             sound.playClick();
                             setShowMobileNav(false);
                           }}
-                          className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                          className={`flex items-center justify-between gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all touch-manipulation ${
                             active
-                              ? "bg-primary/12 text-primary border border-primary/25 shadow-2xs"
+                              ? "bg-teal-700 text-white font-bold shadow-2xs"
                               : "text-foreground/85 hover:bg-surface-low dark:hover:bg-[#1a2c38]"
                           }`}
                         >
                           <span className="flex items-center gap-2.5 min-w-0">
                             <Icon
                               className={`w-4 h-4 shrink-0 ${
-                                active ? "text-primary" : "text-muted-foreground"
+                                active ? "text-white" : "text-muted-foreground"
                               }`}
                             />
                             <span className="truncate">{item.label}</span>
                           </span>
                           {item.badge && (
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-primary/10 text-primary shrink-0">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${
+                                active
+                                  ? "bg-white/20 text-white"
+                                  : "bg-primary/10 text-primary"
+                              }`}
+                            >
                               {item.badge}
                             </span>
                           )}
@@ -658,31 +733,48 @@ export default function AppHeader() {
             </div>
 
             {/* Mobile Quick Controls Footer */}
-            <div className="shrink-0 p-3 border-t border-border bg-surface-low/50 dark:bg-black/20 grid grid-cols-2 gap-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-              <button
-                type="button"
-                onClick={handleToggleSound}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground"
-              >
-                {isAudioMuted ? (
-                  <VolumeX className="w-3.5 h-3.5 text-muted-foreground" />
-                ) : (
-                  <Volume2 className="w-3.5 h-3.5 text-primary" />
-                )}
-                <span>{isAudioMuted ? "Unmute FX" : "Sound On"}</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleToggleTheme}
-                className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground"
-              >
-                {isDark ? (
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                ) : (
-                  <Moon className="w-3.5 h-3.5 text-slate-700" />
-                )}
-                <span>{isDark ? "Light Mode" : "Night Mode"}</span>
-              </button>
+            <div className="shrink-0 p-3 border-t border-border bg-surface-low/50 dark:bg-black/20 space-y-2 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleToggleSound}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground active:scale-98 transition-transform"
+                >
+                  {isAudioMuted ? (
+                    <VolumeX className="w-3.5 h-3.5 text-muted-foreground" />
+                  ) : (
+                    <Volume2 className="w-3.5 h-3.5 text-primary" />
+                  )}
+                  <span>{isAudioMuted ? "Unmute FX" : "Sound On"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleTheme}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-white dark:bg-[#162732] text-xs font-semibold text-foreground active:scale-98 transition-transform"
+                >
+                  {isDark ? (
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                  ) : (
+                    <Moon className="w-3.5 h-3.5 text-slate-700" />
+                  )}
+                  <span>{isDark ? "Light Mode" : "Night Mode"}</span>
+                </button>
+              </div>
+
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    sound.playClick();
+                    setShowMobileNav(false);
+                    logout();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-red-500/20 bg-red-500/10 text-xs font-bold text-red-600 dark:text-red-400 active:scale-98 transition-transform"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Sign Out of GeneWise</span>
+                </button>
+              )}
             </div>
           </aside>
         </div>

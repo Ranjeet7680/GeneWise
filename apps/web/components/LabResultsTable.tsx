@@ -110,7 +110,7 @@ export default function LabResultsTable({
 
       {/* Inline Edit Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 dark:bg-black/85 backdrop-blur-md p-4 animate-in fade-in">
           <div className="w-full max-w-md p-6 rounded-2xl bg-white dark:bg-[#162732] border border-border shadow-2xl space-y-4">
             <h3 className="text-base font-bold text-foreground">
               Verify / Edit {editingItem.test_name}

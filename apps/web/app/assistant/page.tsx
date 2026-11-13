@@ -800,7 +800,7 @@ export default function AssistantPage() {
         {showMobileThreads && (
           <div
             onClick={() => setShowMobileThreads(false)}
-            className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-[1px] lg:hidden"
+            className="fixed inset-0 z-30 bg-slate-950/75 dark:bg-black/85 backdrop-blur-xl animate-in fade-in transition-all lg:hidden"
             aria-hidden="true"
           />
         )}
@@ -1042,10 +1042,10 @@ export default function AssistantPage() {
               </div>
 
               {/* Provider, Voice, Lab Report & Print/Share Controls */}
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 max-w-full">
                 <Link
                   href="/assistant/voice"
-                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs transition-all shrink-0"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
                   <Radio className="w-3.5 h-3.5" />
@@ -1057,7 +1057,7 @@ export default function AssistantPage() {
                 </Link>
 
                 {reports.length > 0 && (
-                  <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
+                  <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border shrink-0">
                     <Paperclip className="w-3 h-3 text-muted-foreground shrink-0" />
                     <select
                       aria-label="Attach medical lab report"
@@ -1077,7 +1077,7 @@ export default function AssistantPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border">
+                <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border shrink-0">
                   <Sparkles className="w-3 h-3 text-primary shrink-0" />
                   <select
                     aria-label="Select AI Model Engine"
@@ -1098,7 +1098,7 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => openExportModal(messages.length === 1 ? "single" : "all")}
                   title="Print Message Only, Download PDF, or Share via WhatsApp"
-                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all shrink-0"
                 >
                   <Printer className="w-3.5 h-3.5" />
                   <span>Print / Share / PDF</span>
@@ -1107,7 +1107,7 @@ export default function AssistantPage() {
             </div>
 
             {/* Interactive Quick AI Engine Pills Strip */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 max-w-full">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1">
                 AI Model:
               </span>
@@ -1782,7 +1782,7 @@ export default function AssistantPage() {
           <div className="shrink-0 p-2.5 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white dark:bg-[#1a2e38] space-y-1.5 sm:space-y-2">
             {/* Active Follow-Up Prompt Strip (when conversation is underway) */}
             {messages.length > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 w-full max-w-5xl mx-auto max-h-[4.25rem] overflow-y-auto sm:max-h-none sm:overflow-visible">
+              <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap">
                 <span className="text-[10px] font-bold text-primary shrink-0 uppercase tracking-wider">
                   Quick Ask:
                 </span>
@@ -1796,7 +1796,7 @@ export default function AssistantPage() {
                         qText.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
                       )
                     }
-                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground max-w-[260px] sm:max-w-xs truncate transition-colors"
+                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 max-w-[260px] sm:max-w-xs truncate transition-colors"
                     title={qText}
                   >
                     {qText}
@@ -1806,7 +1806,7 @@ export default function AssistantPage() {
             )}
 
             {/* Quick Action Clinical Toolbar */}
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap">
               {reports.length > 0 && (
                 <button
                   type="button"
@@ -1885,7 +1885,7 @@ export default function AssistantPage() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about laboratory findings, symptoms, or medical literature..."
-                className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 text-[15px] sm:text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 text-base sm:text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary touch-manipulation"
               />
 
               <button

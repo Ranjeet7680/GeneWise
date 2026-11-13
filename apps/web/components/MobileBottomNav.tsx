@@ -39,13 +39,13 @@ export default function MobileBottomNav() {
   return (
     <>
       {/* Layout spacer so scrolled page content never rests underneath the fixed mobile dock */}
-      <div className="md:hidden h-16 shrink-0 pointer-events-none print:hidden" aria-hidden="true" />
+      <div className="md:hidden h-20 shrink-0 pointer-events-none print:hidden" aria-hidden="true" />
 
       <nav
         aria-label="Mobile quick navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0f1c23]/95 backdrop-blur-xl border-t border-border/90 shadow-[0_-4px_24px_rgba(0,0,0,0.08)] px-2 pt-1.5 pb-[max(0.45rem,env(safe-area-inset-bottom))] transition-colors duration-200 select-none print:hidden"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 dark:bg-[#0c181f]/90 backdrop-blur-2xl border-t border-teal-500/20 dark:border-teal-500/30 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] px-2 pt-1.5 pb-[max(0.6rem,env(safe-area-inset-bottom))] transition-colors duration-200 select-none print:hidden"
       >
-        <div className="grid grid-cols-5 items-center max-w-lg mx-auto gap-0.5">
+        <div className="grid grid-cols-5 items-center max-w-lg mx-auto gap-1">
           {NAV_ITEMS.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -58,23 +58,23 @@ export default function MobileBottomNav() {
                 href={item.href}
                 onClick={() => sound.playClick()}
                 className={cn(
-                  "flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition-all duration-200 relative group active:scale-95",
+                  "flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-2xl transition-all duration-200 relative group active:scale-95 touch-manipulation",
                   isActive
-                    ? "text-primary font-bold bg-primary/8 dark:bg-primary/15"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-teal-700 dark:text-teal-300 font-bold bg-teal-500/10 dark:bg-teal-400/15"
+                    : "text-muted-foreground hover:text-foreground hover:bg-surface-low/60"
                 )}
               >
                 {isActive && (
-                  <span className="absolute -top-1.5 w-6 h-1 rounded-full bg-primary shadow-xs animate-in fade-in" />
+                  <span className="absolute -top-1.5 w-7 h-1 rounded-full bg-gradient-to-r from-teal-500 to-emerald-400 shadow-[0_0_8px_rgba(20,184,166,0.8)] animate-in fade-in" />
                 )}
 
                 <Icon
                   className={cn(
-                    "w-[19px] h-[19px] transition-transform duration-200",
-                    isActive ? "text-primary scale-105" : "text-muted-foreground group-hover:text-primary"
+                    "w-[20px] h-[20px] transition-transform duration-200",
+                    isActive ? "text-teal-700 dark:text-teal-300 scale-110" : "text-muted-foreground group-hover:text-primary"
                   )}
                 />
-                <span className="text-[10px] mt-0.5 leading-tight tracking-tight truncate max-w-full">
+                <span className="text-[10.5px] mt-0.5 leading-tight tracking-tight truncate max-w-full font-medium">
                   {item.label}
                 </span>
               </Link>

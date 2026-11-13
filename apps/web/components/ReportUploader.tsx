@@ -167,7 +167,7 @@ export default function ReportUploader({ onSuccess }: ReportUploaderProps) {
         {activeTab === "file" ? (
           <div className="relative overflow-hidden border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-xl p-8 text-center bg-surface-low/30 dark:bg-[#111d24]/40">
             {isUploading && (
-              <div className="absolute inset-0 bg-surface-low/95 dark:bg-[#162732]/95 backdrop-blur-xs flex flex-col items-center justify-center p-4 z-10 animate-in fade-in">
+              <div className="absolute inset-0 bg-surface-low/95 dark:bg-[#162732]/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-10 animate-in fade-in">
                 <div className="w-full h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent absolute top-0 animate-laser-scan shadow-[0_0_15px_#00e5ff]" />
                 <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
                 <span className="text-xs font-bold text-foreground">Multi-Pass OCR & Biomarker Parsing...</span>

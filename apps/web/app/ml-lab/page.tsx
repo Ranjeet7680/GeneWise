@@ -1821,7 +1821,7 @@ export default function MLLabPage() {
 
           {/* New Experiment Modal */}
           {showExpModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 dark:bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in">
               <div className="w-full max-w-md rounded-2xl border border-border bg-surface-container p-6 space-y-4 shadow-xl animate-scale-in">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-bold text-foreground">Log Machine Learning Experiment</h3>
@@ -1920,7 +1920,7 @@ export default function MLLabPage() {
             const isDeployed = inspectedExperiment.status === "deployed";
 
             return (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 dark:bg-black/85 backdrop-blur-md p-3 sm:p-4 animate-in fade-in">
                 <div className="w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-surface-container p-6 space-y-4 shadow-xl animate-scale-in text-xs">
                   <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
                     <div className="space-y-1">

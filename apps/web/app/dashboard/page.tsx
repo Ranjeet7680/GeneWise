@@ -1042,7 +1042,7 @@ export default function GeneWiseDashboardPage() {
 
           {/* Interactive Modal: Active Guide (Hemophilia F8/F9) */}
           {showModuleModal && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+            <div className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
               <div className="bg-white dark:bg-[#14262f] rounded-2xl border border-border shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-in">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div>
@@ -1096,7 +1096,7 @@ export default function GeneWiseDashboardPage() {
 
           {/* Interactive Modal: Add Family Member */}
           {showAddMemberModal && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+            <div className="fixed inset-0 z-50 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
               <div className="bg-white dark:bg-[#14262f] rounded-2xl border border-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-in">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div>
