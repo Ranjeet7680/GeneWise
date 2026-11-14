@@ -790,7 +790,7 @@ export default function AssistantPage() {
   }, [messages]);
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-surface text-foreground overflow-hidden h-screen max-h-screen">
+    <div className="fixed inset-0 flex flex-col bg-surface text-foreground overflow-hidden h-[100dvh] max-h-[100dvh]">
       <AppHeader />
 
       <div className="flex-1 min-h-0 flex overflow-hidden relative">
@@ -1149,7 +1149,7 @@ export default function AssistantPage() {
           <div
             ref={messagesContainerRef}
             onScroll={handleMessagesScroll}
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 sm:p-6 space-y-4"
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-6 space-y-3.5 sm:space-y-4 touch-pan-y"
             style={{ overflowAnchor: "none" }}
           >
             {isLoading && messages.length === 0 ? (
@@ -1654,17 +1654,17 @@ export default function AssistantPage() {
                             : "border-border/50 text-muted-foreground"
                         }`}
                       >
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 font-medium">
                           <ShieldCheck className="w-3 h-3" />
                           {isUser ? "Query Message" : "Grounded Evidence"}
                         </span>
 
-                        <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5">
                           {!isUser && (
                             <button
                               type="button"
                               onClick={() => toggleSpeakMessage(m.id, m.content)}
-                              className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md hover:text-foreground hover:bg-surface-low transition-all touch-manipulation active:scale-95"
                               title="Text-to-speech audio readout"
                             >
                               {speakingId === m.id ? (
@@ -1684,8 +1684,8 @@ export default function AssistantPage() {
                           <button
                             type="button"
                             onClick={() => copyToClipboard(m.content, m.id)}
-                            className={`inline-flex items-center gap-1 transition-colors ${
-                              isUser ? "hover:text-white" : "hover:text-foreground"
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-all touch-manipulation active:scale-95 ${
+                              isUser ? "hover:text-white" : "hover:text-foreground hover:bg-surface-low"
                             }`}
                           >
                             {copiedId === m.id ? (
@@ -1704,10 +1704,10 @@ export default function AssistantPage() {
                           <button
                             type="button"
                             onClick={() => openExportModal("single", m)}
-                            className={`inline-flex items-center gap-1 font-semibold transition-colors ${
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md font-semibold transition-all touch-manipulation active:scale-95 ${
                               isUser
                                 ? "hover:text-white"
-                                : "text-teal-700 dark:text-teal-300 hover:underline"
+                                : "text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/40"
                             }`}
                             title="Print this single message only, download PDF, or share on WhatsApp/Social"
                           >
@@ -1718,10 +1718,10 @@ export default function AssistantPage() {
                           <button
                             type="button"
                             onClick={() => openExportModal("single", m)}
-                            className={`inline-flex items-center gap-1 font-semibold transition-colors ${
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md font-semibold transition-all touch-manipulation active:scale-95 ${
                               isUser
                                 ? "hover:text-white"
-                                : "text-indigo-700 dark:text-indigo-300 hover:underline"
+                                : "text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40"
                             }`}
                             title="Download single message PDF or share to WhatsApp & social media"
                           >
@@ -1782,7 +1782,7 @@ export default function AssistantPage() {
           <div className="shrink-0 p-2.5 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white dark:bg-[#1a2e38] space-y-1.5 sm:space-y-2">
             {/* Active Follow-Up Prompt Strip (when conversation is underway) */}
             {messages.length > 0 && (
-              <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap">
+              <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
                 <span className="text-[10px] font-bold text-primary shrink-0 uppercase tracking-wider">
                   Quick Ask:
                 </span>
@@ -1796,7 +1796,7 @@ export default function AssistantPage() {
                         qText.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
                       )
                     }
-                    className="px-2.5 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 max-w-[260px] sm:max-w-xs truncate transition-colors"
+                    className="px-3 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 max-w-[260px] sm:max-w-xs truncate transition-all touch-manipulation active:scale-95"
                     title={qText}
                   >
                     {qText}
@@ -1806,12 +1806,12 @@ export default function AssistantPage() {
             )}
 
             {/* Quick Action Clinical Toolbar */}
-            <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap">
+            <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
               {reports.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setSelectedReportId(reports[0]?.id)}
-                  className={`px-2.5 py-1 rounded-full border transition-all inline-flex items-center gap-1.5 shrink-0 ${
+                  className={`px-2.5 py-1 rounded-full border transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 ${
                     selectedReportId
                       ? "bg-primary/10 text-primary border-primary/30 font-semibold"
                       : "bg-surface-low border-border text-muted-foreground hover:text-foreground"
@@ -1827,7 +1827,7 @@ export default function AssistantPage() {
               )}
               <Link
                 href="/assistant/voice"
-                className="px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+                className="px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
               >
                 <Radio className="w-3 h-3 animate-pulse" />
                 <span>13 Indian Languages Voice Mode</span>
@@ -1838,7 +1838,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowLstmModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
               >
                 <BrainCircuit className="w-3 h-3" />
                 <span>Bi-LSTM Forecaster (AUC 0.958)</span>
@@ -1846,7 +1846,7 @@ export default function AssistantPage() {
               <button
                 type="button"
                 onClick={() => setShowMlModal(true)}
-                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0"
+                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
               >
                 <Microscope className="w-3 h-3 text-primary" />
                 <span>ML Celiac Risk Model (AUC 0.94)</span>
@@ -1854,7 +1854,7 @@ export default function AssistantPage() {
               <button
                 type="button"
                 onClick={() => openExportModal("single")}
-                className="px-2.5 py-1 rounded-full border border-border bg-surface-low text-foreground font-semibold hover:border-teal-600/40 transition-all inline-flex items-center gap-1.5 shrink-0"
+                className="px-2.5 py-1 rounded-full border border-border bg-surface-low text-foreground font-semibold hover:border-teal-600/40 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
               >
                 <Download className="w-3 h-3 text-primary" />
                 <span>Export PDF / Share</span>
@@ -1885,7 +1885,7 @@ export default function AssistantPage() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about laboratory findings, symptoms, or medical literature..."
-                className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 text-base sm:text-xs rounded-xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary touch-manipulation"
+                className="flex-1 min-w-0 px-3.5 sm:px-4 py-2.5 sm:py-3 text-base sm:text-xs rounded-2xl border border-border bg-surface-low dark:bg-surface-variant/20 text-foreground focus:outline-none focus:ring-1 focus:ring-primary touch-manipulation shadow-xs"
               />
 
               <button
@@ -1896,9 +1896,9 @@ export default function AssistantPage() {
                     ? "Listening... click to stop recording"
                     : "Voice dictation (Speech-to-Text)"
                 }
-                className={`smooth-button p-3 sm:p-2.5 rounded-xl border transition-all shrink-0 ${
+                className={`smooth-button p-3 sm:p-2.5 rounded-2xl border transition-all shrink-0 touch-manipulation active:scale-95 ${
                   isListening
-                    ? "bg-red-500 text-white border-red-600 animate-pulse shadow-sm"
+                    ? "bg-red-500 text-white border-red-600 animate-pulse shadow-md"
                     : "bg-surface-low border-border text-muted-foreground hover:text-foreground hover:bg-surface-container"
                 }`}
               >
@@ -1908,7 +1908,7 @@ export default function AssistantPage() {
               <button
                 type="submit"
                 disabled={isSending || !inputText.trim()}
-                className="smooth-button p-3 sm:p-2.5 rounded-xl bg-primary text-white hover:bg-primary-container transition-all shadow-xs disabled:opacity-50 shrink-0"
+                className="smooth-button p-3 sm:p-2.5 rounded-2xl bg-primary text-white hover:bg-primary-container transition-all shadow-xs disabled:opacity-50 shrink-0 touch-manipulation active:scale-95"
               >
                 {isSending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

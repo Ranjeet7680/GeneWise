@@ -165,6 +165,7 @@ export default function VoiceAssistantPage() {
   const [isEmergency, setIsEmergency] = useState<boolean>(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [audioVolume, setAudioVolume] = useState<number>(15);
+  const [copiedSubtitle, setCopiedSubtitle] = useState<boolean>(false);
   const [showHistory, setShowHistory] = useState<boolean>(false);
   const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [exportFocusMsg, setExportFocusMsg] = useState<ExportableMessageItem | null>(null);
@@ -557,7 +558,7 @@ export default function VoiceAssistantPage() {
       <div className="flex-1 flex overflow-hidden">
         <AppSidebar />
 
-        <main className="flex-1 flex flex-col justify-between p-3.5 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full relative overflow-y-auto pb-8">
+        <main className="flex-1 flex flex-col justify-between p-3 sm:p-5 lg:p-8 max-w-5xl mx-auto w-full relative overflow-y-auto pb-24 md:pb-8 touch-pan-y">
           {/* Top Bar: Back to Chat + AI Engine + Export/Share + Language Controls + Rate */}
           <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-border">
             <Link
@@ -712,8 +713,8 @@ export default function VoiceAssistantPage() {
             </div>
           </div>
 
-          {/* 13 Indian Languages Clean Wrapping Ribbon (zero clipped pills or raw scrollbar) */}
-          <div className="py-2.5 flex items-center gap-1.5 border-b border-border/60 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap">
+          {/* 13 Indian Languages Clean Wrapping Ribbon (touch snapping with zero clipped pills) */}
+          <div className="py-2 sm:py-2.5 flex items-center gap-1.5 border-b border-border/60 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap touch-pan-x">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1 flex items-center gap-1">
               <Languages className="w-3.5 h-3.5 text-teal-600" /> Dialect (13):
             </span>
@@ -725,7 +726,7 @@ export default function VoiceAssistantPage() {
                   setSelectedLang(l.code);
                   speakText(l.greeting, l.code);
                 }}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium shrink-0 transition-all ${
+                className={`px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium shrink-0 transition-all touch-manipulation active:scale-95 ${
                   selectedLang === l.code
                     ? "bg-teal-700 text-white font-bold shadow-2xs scale-[1.03]"
                     : "bg-white dark:bg-[#14262f] text-muted-foreground hover:text-foreground hover:border-teal-600/40 border border-border"
@@ -790,23 +791,23 @@ export default function VoiceAssistantPage() {
             </div>
 
             {/* Concentric Ambient Audio Rings & Central Glowing Orb */}
-            <div className="relative z-10 flex items-center justify-center">
+            <div className="relative z-10 flex items-center justify-center py-2 sm:py-4">
               {/* Outer Energy Pulse Ring 1 */}
               <div
-                className={`absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full transition-all duration-700 pointer-events-none ${
+                className={`absolute w-56 h-56 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full transition-all duration-700 pointer-events-none ${
                   voiceState === "listening"
-                    ? "bg-emerald-500/20 animate-ping scale-110"
+                    ? "bg-emerald-500/20 animate-voice-orb-listen scale-110"
                     : voiceState === "speaking"
-                    ? "bg-teal-400/20 animate-pulse scale-105"
+                    ? "bg-teal-400/20 animate-voice-orb-speak scale-105"
                     : voiceState === "thinking"
                     ? "bg-purple-500/20 animate-pulse scale-100"
-                    : "bg-teal-500/10 scale-95 opacity-50"
+                    : "bg-teal-500/10 animate-voice-ring-slow scale-95 opacity-50"
                 }`}
               />
 
               {/* Mid Energy Pulse Ring 2 */}
               <div
-                className={`absolute w-60 h-60 sm:w-68 sm:h-68 rounded-full border transition-all duration-500 pointer-events-none ${
+                className={`absolute w-44 h-44 sm:w-56 sm:h-56 md:w-68 md:h-68 rounded-full border transition-all duration-500 pointer-events-none ${
                   voiceState === "listening"
                     ? "border-emerald-500/40 animate-pulse scale-105"
                     : voiceState === "speaking"
@@ -826,14 +827,14 @@ export default function VoiceAssistantPage() {
                     startListening();
                   }
                 }}
-                className={`relative cursor-pointer group flex flex-col items-center justify-center w-44 h-44 sm:w-52 sm:h-52 rounded-full text-white shadow-2xl transition-all duration-300 transform select-none ${
+                className={`relative cursor-pointer group flex flex-col items-center justify-center w-36 h-36 sm:w-48 sm:h-48 md:w-52 md:h-52 rounded-full text-white shadow-2xl transition-all duration-300 transform select-none touch-manipulation active:scale-95 ${
                   voiceState === "listening"
-                    ? "bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-[0_0_60px_rgba(16,185,129,0.5)] scale-105"
+                    ? "bg-gradient-to-tr from-emerald-600 to-teal-500 shadow-[0_0_60px_rgba(16,185,129,0.5)] animate-voice-orb-listen scale-105"
                     : voiceState === "speaking"
-                    ? "bg-gradient-to-tr from-teal-600 to-cyan-500 shadow-[0_0_60px_rgba(20,184,166,0.5)] scale-105"
+                    ? "bg-gradient-to-tr from-teal-600 to-cyan-500 shadow-[0_0_60px_rgba(20,184,166,0.5)] animate-voice-orb-speak scale-105"
                     : voiceState === "thinking"
                     ? "bg-gradient-to-tr from-indigo-600 to-purple-600 shadow-[0_0_50px_rgba(124,58,237,0.4)] animate-pulse"
-                    : "bg-gradient-to-tr from-teal-800 to-teal-600 hover:scale-105 shadow-xl"
+                    : "bg-gradient-to-tr from-teal-800 to-teal-600 hover:scale-105 shadow-xl animate-voice-orb-breathe"
                 }`}
               >
                 {voiceState === "speaking" ? (
@@ -885,10 +886,42 @@ export default function VoiceAssistantPage() {
             </div>
 
             {/* Subtitles & Multilingual Translation Card */}
-            <div className="relative z-10 w-full max-w-2xl p-5 rounded-2xl border border-border bg-white dark:bg-[#14262f] shadow-xs space-y-2 text-center transition-all">
-              <div className="flex items-center justify-center gap-1.5 text-[10px] uppercase font-bold text-teal-700 dark:text-teal-400 tracking-wider">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span>Live Multilingual Subtitles & Transliteration</span>
+            <div className="relative z-10 w-full max-w-2xl p-4 sm:p-5 rounded-2xl border border-border bg-white/95 dark:bg-[#14262f]/95 backdrop-blur-md shadow-xs space-y-2 text-center transition-all">
+              <div className="flex items-center justify-between gap-1.5 text-[10px] uppercase font-bold text-teal-700 dark:text-teal-400 tracking-wider">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-primary" />
+                  <span>Live Multilingual Subtitles & Transliteration</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (subtitles.native) {
+                        sound.playClick();
+                        speakText(subtitles.native, selectedLang);
+                      }
+                    }}
+                    className="p-1.5 rounded-lg border border-border hover:bg-surface-low text-muted-foreground hover:text-foreground transition-all touch-manipulation active:scale-95"
+                    title="Listen again"
+                  >
+                    <Volume2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (subtitles.native) {
+                        navigator.clipboard.writeText(subtitles.native);
+                        setCopiedSubtitle(true);
+                        sound.playSuccess();
+                        setTimeout(() => setCopiedSubtitle(false), 2000);
+                      }
+                    }}
+                    className="p-1.5 rounded-lg border border-border hover:bg-surface-low text-muted-foreground hover:text-foreground transition-all touch-manipulation active:scale-95"
+                    title="Copy subtitles"
+                  >
+                    {copiedSubtitle ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
               </div>
 
               {/* Native Script */}
@@ -1016,7 +1049,7 @@ export default function VoiceAssistantPage() {
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
               One-Tap Clinical Voice Scenarios
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
               {CLINICAL_VOICE_SCENARIOS.map((sc) => (
                 <button
                   key={sc.title}
@@ -1026,7 +1059,7 @@ export default function VoiceAssistantPage() {
                     setTranscript(sc.native);
                     handleProcessVoiceQuery(sc.native);
                   }}
-                  className="p-2.5 rounded-xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1"
+                  className="p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">
@@ -1049,7 +1082,7 @@ export default function VoiceAssistantPage() {
                 className="fixed inset-0 bg-slate-950/75 dark:bg-black/85 backdrop-blur-md animate-fade-in"
                 aria-hidden="true"
               />
-              <div className="relative z-10 w-full max-w-md h-full bg-white dark:bg-[#14262f] border-l border-border shadow-2xl p-4 sm:p-6 flex flex-col justify-between animate-slide-in">
+              <div className="relative z-10 w-full max-w-md h-full bg-white dark:bg-[#14262f] border-l border-border shadow-2xl p-4 sm:p-6 flex flex-col justify-between animate-sheet-slide-up sm:animate-slide-in">
               <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center gap-2">
