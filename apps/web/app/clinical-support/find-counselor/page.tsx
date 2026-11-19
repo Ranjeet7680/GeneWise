@@ -469,7 +469,13 @@ export default function FindCounselorPage() {
                         <img
                           src={c.avatar || "/images/counselors/maya-lin.jpg"}
                           alt={c.name}
-                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-2 ring-teal-500/30 shadow-md group-hover:scale-102 transition-transform duration-300"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            if (!target.src.includes("maya-lin.jpg")) {
+                              target.src = "/images/counselors/maya-lin.jpg";
+                            }
+                          }}
+                          className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover ring-2 ring-teal-500/30 shadow-md group-hover:scale-102 transition-transform duration-300 bg-slate-100 dark:bg-slate-800"
                         />
                         {c.telehealth && (
                           <span

@@ -885,7 +885,13 @@ ${generatedBrief.disclaimer}
                               <img
                                 src={c.avatar || "/images/counselors/maya-lin.jpg"}
                                 alt={c.name}
-                                className="w-12 h-12 rounded-xl object-cover ring-1 ring-teal-500/30 shrink-0"
+                                onError={(e) => {
+                                  const target = e.currentTarget as HTMLImageElement;
+                                  if (!target.src.includes("maya-lin.jpg")) {
+                                    target.src = "/images/counselors/maya-lin.jpg";
+                                  }
+                                }}
+                                className="w-12 h-12 rounded-xl object-cover ring-1 ring-teal-500/30 shrink-0 bg-slate-100 dark:bg-slate-800"
                               />
                               <div className="min-w-0 flex-1 space-y-0.5">
                                 <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300">
