@@ -60,7 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/family-genetics?tab=carrier", label: "Carrier Screening", icon: FlaskConical, badge: "ClinVar" },
       { href: "/family-genetics?tab=tree", label: "Pedigree Visualizer", icon: Network, badge: "3-Gen" },
       { href: "/risk-education", label: "Genetic Education Center", icon: GraduationCap, badge: "Interactive" },
-      { href: "/family-genetics", label: "Clinical Decision Support", icon: BrainCircuit, badge: "AI" },
+      { href: "/family-genetics?tab=cds", label: "Clinical Decision Support", icon: BrainCircuit, badge: "AI" },
       { href: "/clinical-support/find-counselor", label: "Genetic Counseling", icon: Stethoscope, badge: "Telehealth" },
       { href: "/research", label: "Research & Insights", icon: BookOpen, badge: "PubMed" },
       { href: "/settings/privacy", label: "Privacy & Consent Center", icon: ShieldCheck, badge: "GINA" },
@@ -195,20 +195,21 @@ export default function AppSidebar() {
 
   // Active link detection based on path matching without forcing CSR bailout across pages
   const isItemActive = (href: string) => {
-    if (href.includes("?")) {
-      return false; // Specific sub-tabs are highlighted within the page tab bar
+    const baseHref = href.split("?")[0];
+    if (baseHref === "/dashboard") {
+      return pathname === "/dashboard" || pathname === "/";
     }
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return pathname === baseHref || pathname.startsWith(`${baseHref}/`);
   };
 
   return (
     <>
-      {/* Dynamic Navigation Rail (w-16 compact or w-64 expanded with smooth transition) */}
+      {/* Dynamic Navigation Rail (w-16 compact or w-[18.5rem] expanded with smooth transition) */}
       <aside
         aria-label="Clinical Navigation"
         className={cn(
           "fixed top-16 left-0 bottom-0 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs transition-all duration-300 ease-in-out print:hidden",
-          isCollapsed ? "w-16" : "w-64"
+          isCollapsed ? "w-16" : "w-[18.5rem]"
         )}
       >
         {/* Top Header with Expand / Shorten Toggle Button */}
@@ -336,19 +337,19 @@ export default function AppSidebar() {
 
                             {/* Label & Badges in Expanded Mode */}
                             {!isCollapsed && (
-                              <div className="flex-1 flex items-center justify-between min-w-0">
-                                <span className="truncate text-xs font-medium">
+                              <div className="flex-1 flex items-center justify-between gap-2 min-w-0">
+                                <span className="text-[12.5px] font-medium leading-tight whitespace-nowrap text-foreground/90 group-hover:text-foreground">
                                   {item.label}
                                 </span>
                                 {item.badge && (
                                   <span
                                     className={cn(
-                                      "px-1.5 py-0.2 rounded text-[9px] font-bold uppercase shrink-0",
+                                      "px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 transition-colors",
                                       item.badge === "Live"
                                         ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
                                         : item.badge === "AI"
-                                        ? "bg-primary/15 text-primary border border-primary/30"
-                                        : "bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30"
+                                        ? "bg-teal-500/15 text-teal-700 dark:text-teal-300 border border-teal-500/30"
+                                        : "bg-teal-500/10 text-teal-800 dark:text-teal-300 border border-teal-500/25"
                                     )}
                                   >
                                     {item.badge}
@@ -457,7 +458,7 @@ export default function AppSidebar() {
       <div
         className={cn(
           "shrink-0 hidden md:block transition-all duration-300 ease-in-out print:hidden",
-          isCollapsed ? "w-16" : "w-64"
+          isCollapsed ? "w-16" : "w-[18.5rem]"
         )}
         aria-hidden="true"
       />
