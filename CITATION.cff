@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use GeneWise or MediPredict AI in your academic research, medical clinical trial, or publication, please cite it as below."
+authors:
+  - family-names: "Kumar"
+    given-names: "Ranjeet"
+    affiliation: "GeneWise AI Clinical Research Team"
+title: "GeneWise: Clinical-Grade Genetics Literacy, Longitudinal Biomarker Forecaster & Explainable Healthcare AI Platform"
+version: 2.4.0
+date-released: 2026-11-19
+url: "https://medipredict-ai-seven.vercel.app"
+repository-code: "https://github.com/Ranjeet7680/GeneWise"
+keywords:
+  - "clinical genetics"
+  - "genomics academy"
+  - "decision support"
+  - "acmg 5-tier classification"
+  - "clinvar"
+  - "lstm trajectory forecasting"
+  - "explainable ai"
+  - "treeshap"
+  - "hipaa"
+  - "dpdp 2023"
+license: "Apache-2.0"
