@@ -75,6 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "academy",
     title: "Genomics Academy & Labs",
     items: [
+      { href: "/genetics", label: "Genes & Genetics Explorer", icon: Dna, badge: "Catalog", keywords: "genes genetics variants clinvar omim dna mutations" },
       { href: "/academy", label: "Academy Hub", icon: GraduationCap, badge: "Curriculum", keywords: "academy courses lessons learning" },
       { href: "/academy/labs", label: "Virtual Genetics Labs", icon: FlaskConical, badge: "10 Labs", keywords: "labs simulation punnett karyotype pedigree" },
       { href: "/academy/my-courses", label: "My Certificates & Progress", icon: Award, badge: "Certs", keywords: "certificates credentials exams my courses" },
