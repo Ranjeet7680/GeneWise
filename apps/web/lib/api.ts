@@ -82,6 +82,25 @@ const API_BASE =
     ? `${process.env.BACKEND_URL.replace(/\/$/, "")}/api/v1`
     : "http://127.0.0.1:8000/api/v1");
 
+export function getActiveLearnerName(defaultName = "Priya Sharma"): string {
+  if (typeof window === "undefined") return defaultName;
+  try {
+    const custom = localStorage.getItem("academy_custom_learner_name");
+    if (custom && custom.trim()) return custom.trim();
+    const storedUser = localStorage.getItem("medipredict_user");
+    if (storedUser) {
+      const u = JSON.parse(storedUser);
+      if (u.full_name && u.full_name.trim()) return u.full_name.trim();
+    }
+    const overrides = localStorage.getItem("medipredict_profile_overrides");
+    if (overrides) {
+      const o = JSON.parse(overrides);
+      if (o.full_name && o.full_name.trim()) return o.full_name.trim();
+    }
+  } catch {}
+  return defaultName;
+}
+
 class ApiClient {
   private getToken(): string | null {
     if (typeof window === "undefined") return null;
@@ -2458,7 +2477,7 @@ class ApiClient {
       return {
         certificate_id: certId,
         status: "valid",
-        learner_name: "Priya Sharma",
+        learner_name: getActiveLearnerName("Priya Sharma"),
         course_title: "Dominant vs. Recessive: How Traits Traverse Generations",
         completion_date: "November 18, 2026",
         issuer_name: "GeneWise AI Learning Academy Board",
@@ -2469,7 +2488,11 @@ class ApiClient {
 
     if (endpoint.startsWith("/academy/certificates/")) {
       const certId = endpoint.split("/")[3];
-      return (DEMO_CERTIFICATES.find((c) => c.certificate_id === certId) || DEMO_CERTIFICATES[0]) as unknown as T;
+      const match = DEMO_CERTIFICATES.find((c) => c.certificate_id === certId) || DEMO_CERTIFICATES[0];
+      return {
+        ...match,
+        learner_name: getActiveLearnerName(match.learner_name),
+      } as unknown as T;
     }
 
     if (endpoint.startsWith("/academy/labs") && endpoint.includes("/submit")) {
@@ -2485,7 +2508,14 @@ class ApiClient {
     }
 
     if (endpoint === "/academy/dashboard") {
-      return DEMO_DASHBOARD as unknown as T;
+      const activeLearner = getActiveLearnerName("Priya Sharma");
+      return {
+        ...DEMO_DASHBOARD,
+        certificates: (DEMO_DASHBOARD.certificates || DEMO_CERTIFICATES).map((c) => ({
+          ...c,
+          learner_name: activeLearner,
+        })),
+      } as unknown as T;
     }
 
     // Default empty array or object
@@ -3849,36 +3879,56 @@ class ApiClient {
   async getAcademyCertificate(certificateId: string): Promise<AcademyCertificate> {
     try {
       const res = await this.request<AcademyCertificate>(`/academy/certificates/${encodeURIComponent(certificateId)}`);
-      if (res && res.certificate_id) return res;
+      if (res && res.certificate_id) {
+        return {
+          ...res,
+          learner_name: getActiveLearnerName(res.learner_name),
+        };
+      }
     } catch {
       // fallback
     }
-    return (
-      DEMO_CERTIFICATES.find((c) => c.certificate_id === certificateId) || {
-        ...DEMO_CERTIFICATES[0],
-        certificate_id: certificateId,
-      }
-    );
+    const found = DEMO_CERTIFICATES.find((c) => c.certificate_id === certificateId) || {
+      ...DEMO_CERTIFICATES[0],
+      certificate_id: certificateId,
+    };
+    return {
+      ...found,
+      learner_name: getActiveLearnerName(found.learner_name),
+    };
   }
 
   async verifyAcademyCertificate(certificateId: string): Promise<CertificateVerificationResult> {
+    const trimmedId = (certificateId || "").trim();
+
+    if (trimmedId.toUpperCase() === "GW-INVALID-999") {
+      return {
+        certificate_id: trimmedId,
+        status: "invalid",
+        verified: false,
+        message: "No certificate matching this ID was found in the GeneWise AI Registry.",
+      };
+    }
+
     try {
-      return await this.request<CertificateVerificationResult>(
-        `/academy/certificates/verify/${encodeURIComponent(certificateId)}`
+      const res = await this.request<CertificateVerificationResult>(
+        `/academy/certificates/verify/${encodeURIComponent(trimmedId)}`
       );
-    } catch {
-      if (certificateId === "GW-INVALID-999") {
+      if (res && res.verified) {
         return {
-          certificate_id: certificateId,
-          status: "invalid",
-          verified: false,
-          message: "No certificate matching this ID was found in the GeneWise AI Registry.",
+          ...res,
+          learner_name: getActiveLearnerName(res.learner_name || "Priya Sharma"),
         };
       }
+    } catch {
+      // fallback
+    }
+
+    if (trimmedId.toUpperCase() === "GW-CERT-2026-MENDEL02") {
       return {
-        certificate_id: certificateId,
+        certificate_id: "GW-CERT-2026-MENDEL02",
         status: "valid",
-        learner_name: "Priya Sharma",
+        learner_name: getActiveLearnerName("Priya Sharma"),
         course_title: "Dominant vs. Recessive: How Traits Traverse Generations",
         completion_date: "November 18, 2026",
         issuer_name: "GeneWise AI Learning Academy Board",
@@ -3886,6 +3936,29 @@ class ApiClient {
         message: "Official GeneWise AI Certificate of Completion verified and authentic.",
       };
     }
+
+    if (typeof window !== "undefined") {
+      const customLearner = localStorage.getItem(`academy_custom_learner_name_${trimmedId}`);
+      if (customLearner) {
+        return {
+          certificate_id: trimmedId,
+          status: "valid",
+          learner_name: customLearner,
+          course_title: "Dominant vs. Recessive: How Traits Traverse Generations",
+          completion_date: "November 18, 2026",
+          issuer_name: "GeneWise AI Learning Academy Board",
+          verified: true,
+          message: "Official GeneWise AI Certificate of Completion verified and authentic.",
+        };
+      }
+    }
+
+    return {
+      certificate_id: trimmedId,
+      status: "invalid",
+      verified: false,
+      message: "No certificate matching this ID was found in the GeneWise AI Registry.",
+    };
   }
 
   async revokeAcademyCertificate(

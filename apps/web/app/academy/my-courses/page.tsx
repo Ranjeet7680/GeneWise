@@ -19,8 +19,10 @@ import {
 import { api } from "@/lib/api";
 import { AcademyDashboard, AcademyCertificate } from "@/types/academy";
 import { sound } from "@/lib/sound";
+import { useOptionalAuth } from "@/lib/auth";
 
 export default function MyCoursesAndCertificatesPage() {
+  const auth = useOptionalAuth();
   const [dashboard, setDashboard] = useState<AcademyDashboard | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -154,7 +156,11 @@ export default function MyCoursesAndCertificatesPage() {
 
                     <h3 className="text-base font-bold text-gray-900 leading-snug">{cert.course_title}</h3>
                     <p className="text-xs text-gray-500">
-                      Awarded to {cert.learner_name} · Score: {cert.final_score_pct}% · {cert.completion_date}
+                      Awarded to{" "}
+                      <span className="font-semibold text-gray-800">
+                        {cert.learner_name || auth?.user?.full_name || "Learner"}
+                      </span>{" "}
+                      · Score: {cert.final_score_pct}% · {cert.completion_date}
                     </p>
                   </div>
 

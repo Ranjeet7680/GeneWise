@@ -20,10 +20,20 @@ import {
   ChevronRight,
   Users,
   Compass,
+  Pencil,
+  User,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { AcademyCourseSummary, AcademyDashboard, AcademyCategory, AcademyDifficulty } from "@/types/academy";
 import { sound } from "@/lib/sound";
+import { useOptionalAuth } from "@/lib/auth";
+
+function getInstructorInitials(name: string): string {
+  const clean = name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "").trim();
+  const parts = clean.split(" ");
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return (clean[0] || "D").toUpperCase();
+}
 
 const CATEGORIES: { label: string; value: string }[] = [
   { label: "All Courses", value: "All" },
@@ -43,12 +53,15 @@ const DIFFICULTIES: { label: string; value: string }[] = [
 ];
 
 export default function AcademyHubPage() {
+  const auth = useOptionalAuth();
   const [courses, setCourses] = useState<AcademyCourseSummary[]>([]);
   const [dashboard, setDashboard] = useState<AcademyDashboard | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
+  const [editingLearnerName, setEditingLearnerName] = useState<boolean>(false);
+  const [customNameInput, setCustomNameInput] = useState<string>("");
 
   useEffect(() => {
     async function loadData() {
@@ -231,6 +244,106 @@ export default function AcademyHubPage() {
           </div>
         )}
 
+        {/* Learner Profile & Credentials Section */}
+        {(() => {
+          const activeLearnerName = typeof window !== "undefined"
+            ? localStorage.getItem("academy_custom_learner_name") || auth?.user?.full_name || "Priya Sharma"
+            : auth?.user?.full_name || "Priya Sharma";
+          return (
+            <div className="bg-white border border-[#00837b]/20 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#00837b] to-[#005f59] text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    {activeLearnerName.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-gray-900">{activeLearnerName}</h3>
+                      <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200 uppercase">
+                        {auth?.user?.role ? auth.user.role : "Level II Scholar"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {auth?.user?.email || "Enrolled Scholar"} · Clinical Genomics Education Board Credential Candidate
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {editingLearnerName ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={customNameInput}
+                        onChange={(e) => setCustomNameInput(e.target.value)}
+                        placeholder="Enter full name"
+                        className="px-3 py-1.5 border border-[#00837b] rounded-xl text-xs font-semibold text-gray-900 focus:outline-none"
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => {
+                          if (customNameInput.trim()) {
+                            localStorage.setItem("academy_custom_learner_name", customNameInput.trim());
+                            sound.playSuccess();
+                          }
+                          setEditingLearnerName(false);
+                        }}
+                        className="px-3.5 py-1.5 bg-[#00837b] hover:bg-[#006e67] text-white rounded-xl text-xs font-bold"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingLearnerName(false)}
+                        className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setCustomNameInput(activeLearnerName);
+                        setEditingLearnerName(true);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-2 rounded-xl transition-all shadow-2xs"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-[#00837b]" />
+                      <span>Edit Profile Name</span>
+                    </button>
+                  )}
+
+                  <Link
+                    href="/settings/profile"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 px-3.5 py-2 rounded-xl transition-all shadow-2xs"
+                  >
+                    <span>Full Profile</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-gray-100 text-xs">
+                <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-100/60">
+                  <span className="text-[10px] text-teal-800 font-bold block uppercase tracking-wider">Credential Status</span>
+                  <span className="font-extrabold text-teal-950 mt-0.5 block">Verified Candidate</span>
+                </div>
+                <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/60">
+                  <span className="text-[10px] text-emerald-800 font-bold block uppercase tracking-wider">Certificates</span>
+                  <span className="font-extrabold text-emerald-950 mt-0.5 block">{dashboard?.certificates_count || 1} Issued (GW-CERT)</span>
+                </div>
+                <div className="p-3 bg-amber-50/50 rounded-xl border border-amber-100/60">
+                  <span className="text-[10px] text-amber-800 font-bold block uppercase tracking-wider">Virtual Labs</span>
+                  <span className="font-extrabold text-amber-950 mt-0.5 block">10 Interactive Simulations</span>
+                </div>
+                <div className="p-3 bg-purple-50/50 rounded-xl border border-purple-100/60">
+                  <span className="text-[10px] text-purple-800 font-bold block uppercase tracking-wider">Framework</span>
+                  <span className="font-extrabold text-purple-950 mt-0.5 block">ACMG / NSGC 2026</span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Filter and Search Bar */}
         <div className="bg-white border border-gray-200/80 rounded-2xl p-4 shadow-sm space-y-4">
           <div className="flex flex-col md:flex-row items-center gap-4">
@@ -361,8 +474,8 @@ export default function AcademyHubPage() {
 
                     {/* Instructor Info */}
                     <div className="flex items-center gap-2.5 pt-1">
-                      <div className="w-8 h-8 rounded-full bg-[#00837b]/10 text-[#00837b] font-bold text-xs flex items-center justify-center border border-[#00837b]/20">
-                        {course.instructor_name.charAt(3) || "D"}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-xs flex items-center justify-center border border-[#00837b]/30 shadow-2xs">
+                        {getInstructorInitials(course.instructor_name)}
                       </div>
                       <div className="truncate">
                         <p className="text-xs font-semibold text-gray-900 truncate">{course.instructor_name}</p>

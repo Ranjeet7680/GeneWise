@@ -23,6 +23,13 @@ import { api } from "@/lib/api";
 import { AcademyCourseDetail } from "@/types/academy";
 import { sound } from "@/lib/sound";
 
+function getInstructorInitials(name: string): string {
+  const clean = name.replace(/^(Dr\.|Prof\.|Mr\.|Ms\.)\s*/i, "").trim();
+  const parts = clean.split(" ");
+  if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  return (clean[0] || "D").toUpperCase();
+}
+
 export default function CourseOverviewPage() {
   const params = useParams();
   const router = useRouter();
@@ -147,8 +154,8 @@ export default function CourseOverviewPage() {
           {/* Instructor & Framework */}
           <div className="pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#00837b]/10 text-[#00837b] font-bold text-base flex items-center justify-center border border-[#00837b]/20">
-                {course.instructor_name.charAt(3) || "I"}
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-base flex items-center justify-center border border-[#00837b]/30 shadow-sm">
+                {getInstructorInitials(course.instructor_name)}
               </div>
               <div>
                 <p className="text-xs text-gray-500">Lead Course Instructor</p>
