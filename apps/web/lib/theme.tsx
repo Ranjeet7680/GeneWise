@@ -23,13 +23,20 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Apply theme to DOM
+  // Apply theme to DOM with smooth viewport transition class
   const applyTheme = (resolvedDark: boolean) => {
     setIsDark(resolvedDark);
-    if (resolvedDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      root.classList.add("theme-transitioning");
+      if (resolvedDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+      setTimeout(() => {
+        root.classList.remove("theme-transitioning");
+      }, 480);
     }
   };
 

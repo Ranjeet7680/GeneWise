@@ -919,6 +919,71 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* ==========================================================================
+   Smooth Day <-> Night Viewport Color & Ripple Transition
+   ========================================================================== */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *:before,
+html.theme-transitioning *:after {
+  transition: background-color 450ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow !important;
+}
+
+/* Celestial Switcher Orbital Keyframes */
+@keyframes celestialSunSpin {
+  0% {
+    transform: rotate(0deg) scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(200deg) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(180deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes celestialMoonSpin {
+  0% {
+    transform: rotate(180deg) scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-20deg) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes celestialRayPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+  }
+}
+
+.animate-sun-enter {
+  animation: celestialSunSpin 420ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-moon-enter {
+  animation: celestialMoonSpin 420ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-ray-pulse {
+  animation: celestialRayPulse 2s ease-in-out infinite;
+}
+
 @media (max-width: 768px) {
   button,
   a,

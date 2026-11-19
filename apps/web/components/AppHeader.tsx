@@ -416,17 +416,24 @@ export default function AppHeader() {
               )}
             </div>
 
-            {/* Theme Switcher (Night / Clinical Calm) */}
+            {/* Enhanced Day / Night Celestial Morphing Switcher */}
             <button
               onClick={handleToggleTheme}
-              title={isDark ? "Switch to Clinical Calm (Light) [Alt+N]" : "Switch to Night Mode (Dark) [Alt+N]"}
-              className="p-2 rounded-lg text-muted-foreground hover:bg-surface-low dark:hover:bg-[#1a2c38] hover:text-foreground transition-all group relative cursor-pointer"
+              title={isDark ? "Switch to Clinical Calm (Day Mode) [Alt+N]" : "Switch to Nocturnal Slate (Night Mode) [Alt+N]"}
+              className="p-2 sm:p-2.5 rounded-xl border border-border/80 bg-surface-low/80 dark:bg-[#162732]/80 hover:bg-surface-container text-foreground transition-all duration-300 group relative cursor-pointer active:scale-90 shadow-2xs overflow-hidden"
+              aria-label="Toggle Day and Night Theme"
             >
-              {isDark ? (
-                <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-45 transition-transform" />
-              ) : (
-                <Moon className="w-4 h-4 text-slate-700 dark:text-slate-200 group-hover:-rotate-12 transition-transform" />
-              )}
+              <div className="relative w-4 h-4 flex items-center justify-center">
+                {isDark ? (
+                  <div className="animate-sun-enter flex items-center justify-center">
+                    <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-90 transition-transform duration-500 ease-out drop-shadow-[0_0_6px_rgba(251,191,36,0.5)]" />
+                  </div>
+                ) : (
+                  <div className="animate-moon-enter flex items-center justify-center">
+                    <Moon className="w-4 h-4 text-teal-800 dark:text-teal-200 group-hover:-rotate-45 transition-transform duration-500 ease-out" />
+                  </div>
+                )}
+              </div>
             </button>
 
             {/* Interactive Emergency Helpline Pill Button */}
