@@ -17,10 +17,14 @@ import {
   CheckCircle,
   Clock,
   Cpu,
+  Download,
+  FileSpreadsheet,
   HeartPulse,
   LogOut,
   Menu,
   Moon,
+  Pause,
+  Play,
   PhoneCall,
   Radio,
   RefreshCw,
@@ -28,6 +32,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Sliders,
   Sparkles,
   Sun,
   User as UserIcon,
@@ -100,6 +105,12 @@ export default function AppHeader() {
   const [telemetrySimSpike, setTelemetrySimSpike] = useState(false);
   const [heartRate, setHeartRate] = useState(72);
   const [spo2, setSpo2] = useState(98.4);
+  const [arterialBp, setArterialBp] = useState("122/78");
+  const [selectedLead, setSelectedLead] = useState<"lead2" | "v1" | "pleth" | "resp">("lead2");
+  const [telemetryPaused, setTelemetryPaused] = useState(false);
+  const [activeSimulationMode, setActiveSimulationMode] = useState<"normal" | "tachy" | "brady" | "afib">("normal");
+  const [showAnnotationModal, setShowAnnotationModal] = useState(false);
+  const [snapshotToast, setSnapshotToast] = useState<string | null>(null);
 
   // Emergency Modal State
   const [isDispatchingBeacon, setIsDispatchingBeacon] = useState(false);
@@ -162,15 +173,51 @@ export default function AppHeader() {
   const handleSimulateSpike = () => {
     sound.playAlert();
     setTelemetrySimSpike(true);
-    setHeartRate(118);
+    setActiveSimulationMode("tachy");
+    setHeartRate(124);
     setSpo2(91.2);
+    setArterialBp("148/94");
 
     setTimeout(() => {
       sound.playChime();
-      setHeartRate(74);
-      setSpo2(98.2);
+      setHeartRate(72);
+      setSpo2(98.4);
+      setArterialBp("122/78");
       setTelemetrySimSpike(false);
+      setActiveSimulationMode("normal");
     }, 4500);
+  };
+
+  const handleSetSimulationRhythm = (mode: "normal" | "tachy" | "brady" | "afib") => {
+    sound.playClick();
+    setActiveSimulationMode(mode);
+    if (mode === "tachy") {
+      setHeartRate(128);
+      setSpo2(92.4);
+      setArterialBp("146/92");
+      setTelemetrySimSpike(true);
+    } else if (mode === "brady") {
+      setHeartRate(44);
+      setSpo2(96.8);
+      setArterialBp("98/62");
+      setTelemetrySimSpike(false);
+    } else if (mode === "afib") {
+      setHeartRate(114);
+      setSpo2(94.1);
+      setArterialBp("135/86");
+      setTelemetrySimSpike(true);
+    } else {
+      setHeartRate(72);
+      setSpo2(98.4);
+      setArterialBp("122/78");
+      setTelemetrySimSpike(false);
+    }
+  };
+
+  const handleCaptureSnapshot = () => {
+    sound.playSuccess();
+    setSnapshotToast("Waveform & vitals telemetry strip exported (PDF/CSV ready)");
+    setTimeout(() => setSnapshotToast(null), 3000);
   };
 
   const handleDispatchEmergencyBeacon = () => {
@@ -842,7 +889,15 @@ export default function AppHeader() {
                   </span>
                   <span className="text-xs text-muted-foreground">bpm</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground">Normal Sinus Rhythm</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {activeSimulationMode === "tachy"
+                    ? "Sinus Tachycardia"
+                    : activeSimulationMode === "brady"
+                    ? "Sinus Bradycardia"
+                    : activeSimulationMode === "afib"
+                    ? "Atrial Fibrillation"
+                    : "Normal Sinus Rhythm"}
+                </span>
               </div>
 
               <div className="p-3 rounded-xl bg-surface-low dark:bg-black/30 border border-border">
@@ -868,11 +923,13 @@ export default function AppHeader() {
                 </span>
                 <div className="flex items-baseline gap-1 mt-1">
                   <span className="text-2xl font-bold font-mono text-foreground">
-                    122/78
+                    {arterialBp}
                   </span>
                   <span className="text-xs text-muted-foreground">mmHg</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground">MAP: 92.7 mmHg</span>
+                <span className="text-[10px] text-muted-foreground">
+                  MAP: {activeSimulationMode === "tachy" ? "112.0" : activeSimulationMode === "brady" ? "74.0" : "92.7"} mmHg
+                </span>
               </div>
 
               <div className="p-3 rounded-xl bg-surface-low dark:bg-black/30 border border-border">
@@ -889,26 +946,139 @@ export default function AppHeader() {
               </div>
             </div>
 
+            {/* Lead & Signal Channel Selector Tabs */}
+            <div className="flex items-center justify-between gap-2 px-1 text-xs">
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-surface-low dark:bg-black/40 border border-border">
+                <button
+                  onClick={() => setSelectedLead("lead2")}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold transition-all cursor-pointer ${
+                    selectedLead === "lead2"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Lead II (ECG)
+                </button>
+                <button
+                  onClick={() => setSelectedLead("v1")}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold transition-all cursor-pointer ${
+                    selectedLead === "v1"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Precordial V1
+                </button>
+                <button
+                  onClick={() => setSelectedLead("pleth")}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold transition-all cursor-pointer ${
+                    selectedLead === "pleth"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Pleth (SpO2)
+                </button>
+                <button
+                  onClick={() => setSelectedLead("resp")}
+                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold transition-all cursor-pointer ${
+                    selectedLead === "resp"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Resp (Thoracic)
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setTelemetryPaused(!telemetryPaused)}
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-border hover:bg-surface-low text-foreground flex items-center gap-1 transition-all cursor-pointer"
+                  title={telemetryPaused ? "Resume Live Feed" : "Freeze Telemetry Stream"}
+                >
+                  {telemetryPaused ? (
+                    <>
+                      <Play className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Resume</span>
+                    </>
+                  ) : (
+                    <>
+                      <Pause className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Freeze</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleCaptureSnapshot}
+                  className="px-2.5 py-1 rounded-lg text-xs font-semibold border border-border hover:bg-surface-low text-foreground flex items-center gap-1 transition-all cursor-pointer"
+                  title="Export telemetry reading strip"
+                >
+                  <Download className="w-3.5 h-3.5 text-primary" />
+                  <span>Export</span>
+                </button>
+              </div>
+            </div>
+
             {/* Continuous SVG ECG Waveform Canvas */}
             <div className="p-4 rounded-xl bg-black/90 dark:bg-black/80 border border-emerald-900/60 relative overflow-hidden">
               <div className="flex items-center justify-between pb-2 border-b border-emerald-900/40 text-[11px] font-mono text-emerald-400">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  LEAD-II CONTINUOUS TELEMETRY STREAM
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      telemetryPaused ? "bg-amber-400" : "bg-emerald-400 animate-ping"
+                    }`}
+                  />
+                  {selectedLead === "lead2"
+                    ? "LEAD-II CONTINUOUS TELEMETRY STREAM"
+                    : selectedLead === "v1"
+                    ? "PRECORDIAL V1 BIPOLAR VECTOR"
+                    : selectedLead === "pleth"
+                    ? "PHOTOPLETHYSMOGRAPHIC INFRARED WAVE"
+                    : "IMPEDANCE PNEUMOGRAPHY (RESPIRATORY)"}
                 </span>
-                <span>25 mm/s · 10 mm/mV</span>
+                <span>
+                  {telemetryPaused
+                    ? "STREAM FROZEN (INSPECTION MODE)"
+                    : selectedLead === "resp"
+                    ? "12.5 mm/s · 5 mm/L"
+                    : "25 mm/s · 10 mm/mV"}
+                </span>
               </div>
 
               <div className="py-4 relative">
                 {/* SVG ECG Oscilloscope Line */}
                 <svg
                   viewBox="0 0 600 80"
-                  className="w-full h-24 stroke-emerald-400 fill-none"
-                  style={{ filter: "drop-shadow(0 0 4px rgba(52, 211, 153, 0.6))" }}
+                  className={`w-full h-24 fill-none transition-all ${
+                    selectedLead === "pleth"
+                      ? "stroke-cyan-400"
+                      : selectedLead === "resp"
+                      ? "stroke-sky-300"
+                      : "stroke-emerald-400"
+                  }`}
+                  style={{
+                    filter:
+                      selectedLead === "pleth"
+                        ? "drop-shadow(0 0 4px rgba(34, 211, 238, 0.6))"
+                        : selectedLead === "resp"
+                        ? "drop-shadow(0 0 4px rgba(125, 211, 252, 0.5))"
+                        : "drop-shadow(0 0 4px rgba(52, 211, 153, 0.6))",
+                  }}
                 >
                   <path
                     d={
-                      telemetrySimSpike
+                      selectedLead === "pleth"
+                        ? "M0,45 Q20,15 40,45 T80,45 T120,45 Q140,15 160,45 T200,45 T240,45 Q260,15 280,45 T320,45 T360,45 Q380,15 400,45 T440,45 T480,45 Q500,15 520,45 T560,45 T600,45"
+                        : selectedLead === "resp"
+                        ? "M0,40 Q50,15 100,40 T200,40 T300,40 T400,40 T500,40 T600,40"
+                        : selectedLead === "v1"
+                        ? "M0,40 L40,40 L55,36 L70,40 L100,40 L110,32 L115,62 L130,40 L165,40 L180,34 L195,40 L240,40 L250,32 L255,62 L270,40 L305,40 L320,34 L335,40 L380,40 L390,32 L395,62 L410,40 L445,40 L460,34 L475,40 L520,40 L530,32 L535,62 L550,40 L600,40"
+                        : activeSimulationMode === "afib"
+                        ? "M0,40 Q10,36 20,42 T40,38 L50,12 L60,68 L70,40 Q85,36 100,42 T120,39 L130,10 L140,70 L150,40 Q170,36 190,44 T220,38 L230,14 L240,66 L250,40 Q280,38 310,43 L320,8 L330,72 L340,40 Q370,37 400,42 L410,12 L420,68 L430,40 Q470,38 510,43 L520,10 L530,70 L540,40 L600,40"
+                        : activeSimulationMode === "brady"
+                        ? "M0,40 L70,40 L85,34 L100,40 L140,40 L150,12 L160,68 L175,40 L210,40 L225,32 L240,40 L320,40 L335,34 L350,40 L390,40 L400,12 L410,68 L425,40 L460,40 L475,32 L490,40 L600,40"
+                        : telemetrySimSpike || activeSimulationMode === "tachy"
                         ? "M0,40 L30,40 L45,30 L60,40 L80,40 L90,10 L100,70 L115,40 L130,40 L160,20 L180,65 L195,40 L240,40 L250,5 L260,75 L275,40 L310,40 L325,32 L340,40 L380,40 L390,8 L400,74 L415,40 L460,40 L475,30 L490,40 L530,40 L540,12 L550,70 L565,40 L600,40"
                         : "M0,40 L40,40 L55,34 L70,40 L100,40 L110,12 L120,68 L135,40 L165,40 L180,32 L195,40 L240,40 L250,12 L260,68 L275,40 L305,40 L320,32 L335,40 L380,40 L390,12 L400,68 L415,40 L445,40 L460,32 L475,40 L520,40 L530,12 L540,68 L555,40 L600,40"
                     }
@@ -919,17 +1089,82 @@ export default function AppHeader() {
                 </svg>
 
                 {telemetrySimSpike && (
-                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-bold animate-pulse">
-                    ⚠️ ARRHYTHMIA ANOMALY INJECTED
+                  <div className="absolute top-2 right-2 px-2 py-0.5 rounded bg-red-600 text-white font-mono text-[10px] font-bold animate-pulse shadow-md">
+                    ⚠️ {activeSimulationMode === "afib" ? "ATRIAL FIBRILLATION DETECTED" : "ARRHYTHMIA ANOMALY INJECTED"}
+                  </div>
+                )}
+                {snapshotToast && (
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg bg-emerald-700/90 text-white font-mono text-[11px] font-semibold backdrop-blur-sm shadow-lg">
+                    ✓ {snapshotToast}
                   </div>
                 )}
               </div>
 
               <div className="flex items-center justify-between text-[10px] font-mono text-emerald-400/70 pt-2 border-t border-emerald-900/40">
-                <span>QRS Duration: 86 ms</span>
-                <span>QT Interval: 390 ms</span>
-                <span>PR Interval: 142 ms</span>
-                <span>Signal SNR: 38 dB</span>
+                <span>
+                  QRS: {activeSimulationMode === "tachy" ? "74 ms" : activeSimulationMode === "afib" ? "92 ms" : "86 ms"}
+                </span>
+                <span>
+                  QT: {activeSimulationMode === "brady" ? "440 ms" : activeSimulationMode === "tachy" ? "320 ms" : "390 ms"}
+                </span>
+                <span>PR: {activeSimulationMode === "afib" ? "Variable" : "142 ms"}</span>
+                <span>Signal SNR: {telemetrySimSpike ? "32 dB" : "38 dB"}</span>
+              </div>
+            </div>
+
+            {/* Rhythm Simulation Scenario Presets */}
+            <div className="p-3 rounded-xl bg-surface-low dark:bg-black/30 border border-border space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-semibold text-foreground flex items-center gap-1.5">
+                  <Sliders className="w-3.5 h-3.5 text-primary" />
+                  Clinical Rhythm Simulation Scenarios:
+                </span>
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  ACLS Education Grounded
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  onClick={() => handleSetSimulationRhythm("normal")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                    activeSimulationMode === "normal"
+                      ? "bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold"
+                      : "bg-surface-container/60 border-border text-foreground hover:bg-surface-low"
+                  }`}
+                >
+                  ✓ Normal Sinus (72)
+                </button>
+                <button
+                  onClick={() => handleSetSimulationRhythm("tachy")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                    activeSimulationMode === "tachy"
+                      ? "bg-amber-500/20 border-amber-500 text-amber-700 dark:text-amber-400 font-bold"
+                      : "bg-surface-container/60 border-border text-foreground hover:bg-surface-low"
+                  }`}
+                >
+                  ⚡ Tachycardia (128)
+                </button>
+                <button
+                  onClick={() => handleSetSimulationRhythm("brady")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                    activeSimulationMode === "brady"
+                      ? "bg-blue-500/20 border-blue-500 text-blue-700 dark:text-blue-400 font-bold"
+                      : "bg-surface-container/60 border-border text-foreground hover:bg-surface-low"
+                  }`}
+                >
+                  ❄️ Bradycardia (44)
+                </button>
+                <button
+                  onClick={() => handleSetSimulationRhythm("afib")}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                    activeSimulationMode === "afib"
+                      ? "bg-red-500/20 border-red-500 text-red-700 dark:text-red-400 font-bold"
+                      : "bg-surface-container/60 border-border text-foreground hover:bg-surface-low"
+                  }`}
+                >
+                  ⚠️ A-Fib Irregular (114)
+                </button>
               </div>
             </div>
 
@@ -941,7 +1176,7 @@ export default function AppHeader() {
                 className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1.5 transition-all cursor-pointer"
               >
                 <Activity className="w-3.5 h-3.5" />
-                {telemetrySimSpike ? "Normalizing..." : "Simulate Cardiac Spike"}
+                {telemetrySimSpike ? "Anomaly Injected..." : "Simulate Cardiac Spike"}
               </button>
 
               <div className="flex items-center gap-2">
