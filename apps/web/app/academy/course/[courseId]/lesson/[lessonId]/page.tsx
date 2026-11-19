@@ -502,12 +502,14 @@ export default function LessonPlayerPage() {
               {/* Lesson Text Presentation */}
               <div className="bg-white border border-gray-200/80 rounded-2xl p-6 md:p-10 shadow-sm space-y-6 max-w-none">
                 <div className="space-y-4">
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
-                    {lesson.title}
-                  </h1>
-
                   <div className="text-sm text-gray-800 leading-relaxed font-sans">
-                    <ClinicalMarkdown content={lesson.content_markdown} />
+                    <ClinicalMarkdown
+                      content={
+                        lesson.content_markdown?.startsWith(`# ${lesson.title}`)
+                          ? lesson.content_markdown
+                          : `# ${lesson.title}\n\n${lesson.content_markdown?.replace(/^#\s+[^\n]+\n+/, "")}`
+                      }
+                    />
                   </div>
                 </div>
 
