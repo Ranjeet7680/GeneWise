@@ -74,6 +74,47 @@ export default function ClinicalMarkdown({
 
   const elements: React.ReactNode[] = [];
   let currentList: { type: "bullet" | "number"; items: React.ReactNode[] } | null = null;
+  let currentTable: { headers: string[]; rows: string[][] } | null = null;
+
+  const flushTable = () => {
+    if (currentTable) {
+      const { headers, rows } = currentTable;
+      elements.push(
+        <div key={`table-${elements.length}`} className="my-4 overflow-x-auto rounded-2xl border border-border/80 shadow-2xs">
+          <table className="w-full text-left text-xs border-collapse">
+            {headers.length > 0 && (
+              <thead>
+                <tr className="bg-surface-container-low dark:bg-slate-800/80 border-b border-border/80 text-foreground font-extrabold">
+                  {headers.map((h, hIdx) => (
+                    <th key={hIdx} className="p-3 font-bold border-r last:border-r-0 border-border/50">
+                      {parseInline(h)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {rows.map((row, rIdx) => (
+                <tr
+                  key={rIdx}
+                  className={`border-b last:border-b-0 border-border/40 transition-colors ${
+                    rIdx % 2 === 0 ? "bg-surface-lowest dark:bg-slate-900/60" : "bg-surface-container-low/40 dark:bg-slate-800/30"
+                  }`}
+                >
+                  {row.map((cell, cIdx) => (
+                    <td key={cIdx} className="p-3 border-r last:border-r-0 border-border/40 text-foreground/90 font-medium">
+                      {parseInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+      currentTable = null;
+    }
+  };
 
   const flushList = () => {
     if (currentList) {
@@ -132,13 +173,39 @@ export default function ClinicalMarkdown({
 
     if (!trimmed) {
       flushList();
+      flushTable();
       elements.push(<div key={`spacer-${index}`} className="h-1.5" />);
       return;
+    }
+
+    // Markdown Table: | col1 | col2 |
+    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      flushList();
+      const cells = trimmed
+        .slice(1, -1)
+        .split("|")
+        .map((c) => c.trim());
+
+      // Check if separator line e.g. |:---|:---| or |---|---|
+      const isSeparator = cells.every((c) => /^:?-+:?$/.test(c));
+      if (isSeparator) {
+        return;
+      }
+
+      if (!currentTable) {
+        currentTable = { headers: cells, rows: [] };
+      } else {
+        currentTable.rows.push(cells);
+      }
+      return;
+    } else {
+      flushTable();
     }
 
     // Header 3: ### Title
     if (trimmed.startsWith("### ")) {
       flushList();
+      flushTable();
       const title = trimmed.slice(4);
       elements.push(
         <div
@@ -268,6 +335,7 @@ export default function ClinicalMarkdown({
   });
 
   flushList();
+  flushTable();
 
   return <div className={`space-y-0.5 ${className}`}>{elements}</div>;
 }
