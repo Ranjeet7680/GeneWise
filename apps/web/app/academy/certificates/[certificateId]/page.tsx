@@ -147,7 +147,7 @@ export default function CertificatePage() {
       {/* Precision PDF & Landscape Print Styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         @page {
-          size: 297mm 210mm;
+          size: A4 landscape;
           margin: 0;
         }
         @media print {
@@ -159,41 +159,35 @@ export default function CertificatePage() {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
-            width: 297mm !important;
-            height: 210mm !important;
-            max-width: 297mm !important;
-            max-height: 210mm !important;
+            width: 100% !important;
+            height: 100% !important;
             background: #ffffff !important;
-            overflow: hidden !important;
+            overflow: visible !important;
           }
-          /* Hide everything outside the certificate */
-          body > *:not(#__next),
+          /* Hide app chrome, navigation and non-certificate elements */
           header, nav, footer,
-          .print-hide {
+          .print-hide,
+          .print\\:hidden {
             display: none !important;
           }
+          /* Print container styling */
           .print-certificate-container {
-            width: 297mm !important;
-            height: 210mm !important;
-            max-width: 297mm !important;
-            max-height: 210mm !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 98vh !important;
             box-sizing: border-box !important;
-            margin: 0 !important;
-            padding: 7mm 10mm 5mm 10mm !important;
+            margin: 0 auto !important;
+            padding: 8mm 12mm !important;
             box-shadow: none !important;
             border: 4px double #00837b !important;
             border-radius: 0 !important;
             page-break-after: avoid !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
-            overflow: hidden !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            z-index: 99999 !important;
+            position: relative !important;
             background: #ffffff !important;
           }
         }
