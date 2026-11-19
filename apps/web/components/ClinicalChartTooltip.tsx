@@ -78,17 +78,17 @@ export default function ClinicalChartTooltip({
 
   return (
     <div
-      className={`rounded-2xl bg-[#0b1920]/95 border border-teal-400/35 shadow-2xl backdrop-blur-md text-white ${
+      className={`rounded-2xl bg-white/95 dark:bg-[#0b1920]/95 border border-teal-500/25 dark:border-teal-400/35 shadow-xl dark:shadow-2xl backdrop-blur-md text-foreground dark:text-white transition-colors ${
         compact ? "px-2.5 py-2 text-[10px] min-w-[140px]" : "px-3.5 py-2.5 text-xs min-w-[190px]"
       }`}
     >
       {headerText && (
         <div
-          className={`font-extrabold text-teal-200 border-b border-white/10 flex items-center gap-1.5 ${
+          className={`font-extrabold text-teal-800 dark:text-teal-200 border-b border-teal-500/15 dark:border-white/10 flex items-center gap-1.5 ${
             compact ? "pb-1 mb-1 text-[10px]" : "pb-1.5 mb-2 text-[11px]"
           }`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shrink-0" />
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-600 dark:bg-teal-400 shrink-0" />
           <span className="truncate">{headerText}</span>
         </div>
       )}
@@ -115,14 +115,14 @@ export default function ClinicalChartTooltip({
             >
               <div className="flex items-center gap-2 min-w-0">
                 <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white/20"
+                  className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-teal-500/20 dark:ring-white/20"
                   style={{ backgroundColor: swatchColor }}
                 />
-                <span className="text-slate-200 font-medium truncate">
+                <span className="text-gray-700 dark:text-slate-200 font-medium truncate">
                   {itemLabel}
                 </span>
               </div>
-              <span className="font-mono font-extrabold text-white shrink-0 tabular-nums">
+              <span className="font-mono font-extrabold text-gray-900 dark:text-white shrink-0 tabular-nums">
                 {formattedVal}
                 {unit ? ` ${unit}` : ""}
               </span>
