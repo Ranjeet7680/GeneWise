@@ -555,6 +555,8 @@ export function buildClinicalPdfBlob(
     const headerLabel =
       opts.scope === "single"
         ? "GeneWise  |  Clinical Message Export"
+        : opts.title && opts.title.toLowerCase().includes("prep")
+        ? "GeneWise  |  Clinical Genetics Consultation Kit"
         : "GeneWise  |  Consultation Brief";
 
     const chromeOps: string[] = [

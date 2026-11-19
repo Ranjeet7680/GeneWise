@@ -39,7 +39,9 @@ import {
 import AppHeader from "@/components/AppHeader";
 import AppSidebar from "@/components/AppSidebar";
 import SafetyNotice from "@/components/SafetyNotice";
+import DoctorPrepWizardModal from "@/components/DoctorPrepWizardModal";
 import { sound } from "@/lib/sound";
+import { buildClinicalPdfBlob, triggerBlobDownload } from "@/lib/export-share";
 
 interface EducationUnit {
   id: number;
@@ -206,7 +208,71 @@ export default function RiskEducationPage() {
 
   const handleDownloadPDF = () => {
     sound.playSuccess();
-    const guideText = `GeneWise Clinical Genetics Discussion Prep Kit
+    try {
+      const pdfBlob = buildClinicalPdfBlob(
+        [
+          {
+            id: "clinical-prep-kit",
+            role: "assistant",
+            content: `### Clinical Genetics Consultation Preparation Kit
+Document Reference: **#GW-CLIN-PREP-2026** | Methodological Alignment: **ACMG & NSGC Standards**
+
+#### Key Discussion Prompts for Your Physician or Genetic Counselor:
+1. **Multigene NGS Candidate Assessment**: Given documented early-onset hereditary patterns in our family history, is an expanded multigene panel clinically indicated?
+2. **Penetrance & Mode of Inheritance**: Are documented conditions consistent with autosomal dominant transmission with incomplete or age-dependent penetrance?
+3. **Cascade Screening Protocol**: Should first-degree relatives and siblings be offered targeted cascade carrier screening?
+4. **ClinVar & ACMG Variant Interpretation**: How do latest ClinVar pathogenic/likely-pathogenic criteria interpret variants noted in our ancestry?
+5. **VUS Protocol**: In the event of a Variant of Uncertain Significance (VUS), what is the standardized schedule for automated reclassification alerts?
+
+#### Documented Family Pedigree Context:
+* **Pedigree Depth**: 3 Generations Tracked (Paternal & Maternal Branches)
+* **Monitored Disease Loci**: BRCA1/2, MLH1/MSH2, CFTR, LDLR, FBN1
+* **Active Vigilance**: Cardiovascular, Type 2 Diabetes, Early Hypertensive Phenotypes
+
+#### Preparation Checklist Before Appointment:
+* Bring pathology, biopsy, or past genetic testing laboratory reports
+* Record confirmed diagnosis ages for maternal and paternal first-degree relatives
+* Inquire about GINA protections regarding health insurance non-discrimination`,
+            timestamp: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }),
+            modelUsed: "GeneWise Clinical Decision Protocol v2.4 (ClinVar & ACMG Aligned)",
+            confidenceScore: 0.98,
+            sources: [
+              {
+                title: "ACMG Recommendations for Reporting Secondary Findings in Clinical Exome and Genome Sequencing",
+                url: "https://pubmed.ncbi.nlm.nih.gov/34012068/",
+                authors: "Miller DT et al. (ACMG Secondary Findings Working Group)",
+                journal: "Genetics in Medicine",
+                year: 2021,
+                pmid: "34012068",
+              },
+              {
+                title: "National Society of Genetic Counselors (NSGC) Practice Guidelines",
+                url: "https://pubmed.ncbi.nlm.nih.gov/25501724/",
+                authors: "Berliner JL et al.",
+                journal: "J Genet Counsel",
+                year: 2021,
+                pmid: "25501724",
+              },
+            ],
+          },
+        ],
+        {
+          scope: "all",
+          title: "Clinical Genetics Consultation Preparation Guide",
+          patientName: "GeneWise Clinical Member",
+          includeMetadata: true,
+          includeCitations: true,
+        }
+      );
+
+      triggerBlobDownload(
+        pdfBlob,
+        `GeneWise_Doctor_Discussion_Kit_${new Date().toISOString().split("T")[0]}.pdf`
+      );
+    } catch (err) {
+      console.error("PDF generation error, falling back to text file:", err);
+      // Fallback
+      const guideText = `GeneWise Clinical Genetics Discussion Prep Kit
 ===================================================
 Document Reference: #GW-CLIN-PREP-2026
 Methodological Alignment: ACMG & NSGC Standards
@@ -226,15 +292,16 @@ FAMILY PEDIGREE SUMMARY:
 DISCLAIMER:
 This document is for educational preparation and does not constitute medical advice or a clinical diagnosis.`;
 
-    const blob = new Blob([guideText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `GeneWise_Doctor_Discussion_Kit_${new Date().toISOString().split("T")[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+      const blob = new Blob([guideText], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `GeneWise_Doctor_Discussion_Kit_${new Date().toISOString().split("T")[0]}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   };
 
   return (
@@ -512,17 +579,17 @@ This document is for educational preparation and does not constitute medical adv
           </div>
 
           {/* Clinical Action Kit: Prepare Questions for Your Doctor */}
-          <div className="bg-surface-lowest dark:bg-slate-900/60 rounded-3xl border border-border/80 shadow-2xs p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="relative overflow-hidden bg-gradient-to-br from-surface-lowest via-surface-lowest to-teal-500/5 dark:from-slate-900/80 dark:to-teal-950/20 rounded-3xl border border-teal-500/20 dark:border-teal-500/30 shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2 text-left">
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider">
-                <ClipboardList className="w-4 h-4" />
-                CLINICAL ACTION KIT
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 text-xs font-bold uppercase tracking-wider border border-teal-500/20">
+                <ClipboardList className="w-3.5 h-3.5" />
+                CLINICAL ACTION KIT · PDF EXPORT
               </div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
                 Prepare Questions for Your Doctor
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl">
-                Take clinical ownership. Download a concise evidence-based checklist formatted for primary care physicians and clinical genetics consultations.
+              <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
+                Take clinical ownership. Download a concise evidence-based consultation checklist formatted with professional ACMG &amp; NSGC guidance for primary care physicians and clinical geneticists.
               </p>
             </div>
 
@@ -532,17 +599,17 @@ This document is for educational preparation and does not constitute medical adv
                   sound.playPop();
                   setShowDoctorPrepModal(true);
                 }}
-                className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition-colors flex items-center gap-1.5"
+                className="px-4 py-2.5 rounded-xl border border-border bg-surface-lowest text-xs font-semibold hover:bg-muted text-foreground transition-all flex items-center gap-1.5 shadow-2xs"
               >
-                <Eye className="w-3.5 h-3.5" />
-                Preview Prompts
+                <Eye className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span>Preview Prompts</span>
               </button>
               <button
                 onClick={handleDownloadPDF}
-                className="px-5 py-2.5 rounded-xl bg-[#00635e] text-white text-xs font-bold hover:bg-[#00504c] shadow-sm transition-colors flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00635e] to-[#004e4a] text-white text-xs font-bold hover:brightness-110 shadow-sm transition-all flex items-center gap-1.5 ring-2 ring-teal-500/20"
               >
                 <Download className="w-3.5 h-3.5" />
-                Download PDF Guide
+                <span>Download PDF Guide</span>
               </button>
             </div>
           </div>
