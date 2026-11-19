@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
   GraduationCap,
@@ -154,9 +155,21 @@ export default function CourseOverviewPage() {
           {/* Instructor & Framework */}
           <div className="pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-base flex items-center justify-center border border-[#00837b]/30 shadow-sm">
-                {getInstructorInitials(course.instructor_name)}
-              </div>
+              {course.instructor_avatar ? (
+                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-[#00837b]/30 shadow-sm flex-shrink-0">
+                  <Image
+                    src={course.instructor_avatar}
+                    alt={course.instructor_name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-base flex items-center justify-center border border-[#00837b]/30 shadow-sm flex-shrink-0">
+                  {getInstructorInitials(course.instructor_name)}
+                </div>
+              )}
               <div>
                 <p className="text-xs text-gray-500">Lead Course Instructor</p>
                 <p className="text-sm font-bold text-gray-900">{course.instructor_name}</p>

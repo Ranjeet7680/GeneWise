@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   GraduationCap,
   BookOpen,
@@ -139,6 +140,18 @@ export default function AcademyHubPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
         {/* Hero Header */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#112128] via-[#162e38] to-[#005f59] p-8 md:p-12 text-white shadow-xl">
+          {/* Subtle DNA background texture */}
+          <div className="absolute right-0 top-0 bottom-0 w-full md:w-1/2 opacity-15 pointer-events-none overflow-hidden">
+            <Image
+              src="/images/dna-protein.jpg"
+              alt="DNA illustration background"
+              fill
+              className="object-cover object-right"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#112128] via-[#112128]/70 to-transparent" />
+          </div>
+
           <div className="relative z-10 max-w-3xl space-y-4">
             <div className="inline-flex items-center gap-2 bg-[#00837b]/30 backdrop-blur-sm border border-teal-300/20 px-3 py-1 rounded-full text-xs font-semibold text-teal-200 uppercase tracking-wider">
               <GraduationCap className="w-4 h-4 text-teal-300" />
@@ -433,25 +446,35 @@ export default function AcademyHubPage() {
                   key={course.id}
                   className="bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col justify-between group hover:border-[#00837b]/40"
                 >
-                  <div className="p-6 space-y-4">
-                    {/* Top Badges */}
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200/60">
+                  {/* Course Banner Cover Image */}
+                  <div className="relative h-36 w-full overflow-hidden bg-slate-900 border-b border-gray-100">
+                    <Image
+                      src={`/images/courses/${course.id}.jpg`}
+                      alt={course.title}
+                      fill
+                      className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
+                      <span className="text-[11px] font-mono font-bold text-white bg-black/60 backdrop-blur-md px-2.5 py-0.5 rounded border border-white/20">
                         {course.code}
                       </span>
                       <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                        className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-sm ${
                           course.difficulty === "Beginner"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            ? "bg-emerald-500/90 text-white"
                             : course.difficulty === "Intermediate"
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-purple-50 text-purple-700 border border-purple-200"
+                            ? "bg-amber-500/90 text-white"
+                            : "bg-purple-500/90 text-white"
                         }`}
                       >
                         {course.difficulty}
                       </span>
                     </div>
+                  </div>
 
+                  <div className="p-6 space-y-4">
                     {/* Title & Subtitle */}
                     <div className="space-y-1">
                       <h3 className="text-base font-bold text-gray-900 group-hover:text-[#00837b] transition-colors leading-snug">
@@ -474,9 +497,21 @@ export default function AcademyHubPage() {
 
                     {/* Instructor Info */}
                     <div className="flex items-center gap-2.5 pt-1">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-xs flex items-center justify-center border border-[#00837b]/30 shadow-2xs">
-                        {getInstructorInitials(course.instructor_name)}
-                      </div>
+                      {course.instructor_avatar ? (
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden border border-[#00837b]/30 shadow-2xs flex-shrink-0">
+                          <Image
+                            src={course.instructor_avatar}
+                            alt={course.instructor_name}
+                            fill
+                            className="object-cover"
+                            sizes="32px"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00837b]/20 to-[#00837b]/10 text-[#00837b] font-bold text-xs flex items-center justify-center border border-[#00837b]/30 shadow-2xs flex-shrink-0">
+                          {getInstructorInitials(course.instructor_name)}
+                        </div>
+                      )}
                       <div className="truncate">
                         <p className="text-xs font-semibold text-gray-900 truncate">{course.instructor_name}</p>
                         <p className="text-[10px] text-gray-500 truncate">{course.instructor_title}</p>
