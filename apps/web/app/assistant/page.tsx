@@ -1166,7 +1166,7 @@ export default function AssistantPage() {
               <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 max-w-full">
                 <Link
                   href="/assistant/voice"
-                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-primary-container text-white text-[11px] font-semibold hover:opacity-90 shadow-2xs transition-all shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-700 via-teal-600 to-emerald-600 text-white text-[11px] font-bold shadow-xs hover:opacity-95 transition-all shrink-0"
                 >
                   <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
                   <Radio className="w-3.5 h-3.5" />
@@ -1178,7 +1178,7 @@ export default function AssistantPage() {
                 </Link>
 
                 {reports.length > 0 && (
-                  <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border shrink-0">
+                  <div className="flex items-center gap-1.5 bg-surface-low dark:bg-[#14262f] px-2.5 py-1.5 rounded-xl border border-border shrink-0">
                     <Paperclip className="w-3 h-3 text-muted-foreground shrink-0" />
                     <select
                       aria-label="Attach medical lab report"
@@ -1186,7 +1186,7 @@ export default function AssistantPage() {
                       onChange={(e) =>
                         setSelectedReportId(e.target.value ? Number(e.target.value) : undefined)
                       }
-                      className="bg-transparent text-[11px] font-medium text-foreground focus:outline-none max-w-[165px] sm:max-w-none"
+                      className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none max-w-[165px] sm:max-w-none cursor-pointer"
                     >
                       <option value="">Attach Lab Report (Optional)</option>
                       {reports.map((r) => (
@@ -1198,13 +1198,13 @@ export default function AssistantPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-1.5 bg-surface-low px-2.5 py-1.5 rounded-lg border border-border shrink-0">
-                  <Sparkles className="w-3 h-3 text-primary shrink-0" />
+                <div className="flex items-center gap-1.5 bg-surface-low dark:bg-[#14262f] px-2.5 py-1.5 rounded-xl border border-border shrink-0">
+                  <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400 shrink-0" />
                   <select
                     aria-label="Select AI Model Engine"
                     value={selectedProvider}
                     onChange={(e) => setSelectedProvider(e.target.value)}
-                    className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none max-w-[175px] sm:max-w-none"
+                    className="bg-transparent text-[11px] font-semibold text-foreground focus:outline-none max-w-[175px] sm:max-w-none cursor-pointer"
                   >
                     {AI_ENGINE_PROFILES.map((eng) => (
                       <option key={eng.id} value={eng.id}>
@@ -1219,9 +1219,9 @@ export default function AssistantPage() {
                   type="button"
                   onClick={() => openExportModal(messages.length === 1 ? "single" : "all")}
                   title="Print Message Only, Download PDF, or Share via WhatsApp"
-                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-teal-600/30 bg-teal-50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-950/50 transition-all shrink-0"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-teal-600/30 bg-teal-50 dark:bg-teal-950/40 text-[11px] font-bold text-teal-800 dark:text-teal-200 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-all shrink-0 cursor-pointer shadow-2xs"
                 >
-                  <Printer className="w-3.5 h-3.5" />
+                  <Printer className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
                   <span>Print / Share / PDF</span>
                 </button>
               </div>
@@ -1230,7 +1230,7 @@ export default function AssistantPage() {
             {/* Interactive Quick AI Engine Pills Strip */}
             <div className="flex items-center gap-1.5 pt-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 max-w-full">
               <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0 mr-1">
-                AI Model:
+                AI MODEL:
               </span>
               {AI_ENGINE_PROFILES.map((eng) => {
                 const isSelected = selectedProvider === eng.id;
@@ -1245,16 +1245,16 @@ export default function AssistantPage() {
                       sound.playSoft();
                       setSelectedProvider(eng.id);
                     }}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 border transition-all ${
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold shrink-0 border transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-teal-700 text-white border-teal-700 shadow-2xs scale-[1.02]"
-                        : "bg-surface-low/80 border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                        ? "bg-teal-700 text-white border-teal-700 shadow-xs font-bold"
+                        : "bg-surface-low/80 dark:bg-[#14262f] border-border text-muted-foreground hover:text-foreground hover:border-teal-500/50"
                     }`}
                   >
                     {eng.isLstm ? (
-                      <BrainCircuit className="w-3 h-3" />
+                      <BrainCircuit className="w-3 h-3 text-indigo-400" />
                     ) : (
-                      <Sparkles className="w-3 h-3" />
+                      <Sparkles className="w-3 h-3 text-teal-400" />
                     )}
                     <span>{eng.shortName}</span>
                     {!isConfigured && (
@@ -1953,11 +1953,11 @@ export default function AssistantPage() {
           </div>
 
           {/* Chat Input Bar */}
-          <div className="shrink-0 p-2.5 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white dark:bg-[#1a2e38] space-y-1.5 sm:space-y-2">
+          <div className="shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border bg-white/95 dark:bg-[#1a2e38]/95 backdrop-blur-md space-y-2">
             {/* Active Follow-Up Prompt Strip (when conversation is underway) */}
             {messages.length > 0 && (
               <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
-                <span className="text-[10px] font-bold text-primary shrink-0 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400 shrink-0 uppercase tracking-wider">
                   Quick Ask:
                 </span>
                 {latestFollowUps.map((qText) => (
@@ -1970,7 +1970,7 @@ export default function AssistantPage() {
                         qText.toLowerCase().includes("lstm") ? "hybrid_rag_lstm" : undefined
                       )
                     }
-                    className="px-3 py-1 rounded-full bg-surface-low hover:bg-teal-50 dark:hover:bg-teal-950/30 border border-border text-[10px] font-semibold text-foreground shrink-0 max-w-[260px] sm:max-w-xs truncate transition-all touch-manipulation active:scale-95"
+                    className="px-3 py-1 rounded-full bg-surface-low dark:bg-[#14262f] hover:bg-teal-50 dark:hover:bg-teal-950/40 border border-border hover:border-teal-500/40 text-[10px] font-semibold text-foreground shrink-0 max-w-[260px] sm:max-w-xs truncate transition-all touch-manipulation active:scale-95 shadow-2xs"
                     title={qText}
                   >
                     {qText}
@@ -1979,38 +1979,38 @@ export default function AssistantPage() {
               </div>
             )}
 
-            {/* Active Clinical Context Bar */}
-            <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-1 text-[10px] font-mono whitespace-nowrap">
-              <span className="text-teal-700 dark:text-teal-400 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
-                <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
-                <span>Active Context:</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-800 dark:text-teal-200 border border-teal-500/25 shrink-0 flex items-center gap-1 font-semibold">
-                <FileText className="w-2.5 h-2.5" />
-                <span>Reports: Attached (CMP)</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-800 dark:text-indigo-200 border border-indigo-500/25 shrink-0 flex items-center gap-1 font-semibold">
-                <Users className="w-2.5 h-2.5" />
-                <span>Pedigree: 7 Members (3-Gen)</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-500/25 shrink-0 flex items-center gap-1 font-semibold">
-                <Activity className="w-2.5 h-2.5" />
-                <span>Vitals: Connected</span>
-              </span>
-              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-200 border border-amber-500/25 shrink-0 flex items-center gap-1 font-semibold">
-                <BrainCircuit className="w-2.5 h-2.5" />
-                <span>XAI: 6D Explainer Ready</span>
-              </span>
-            </div>
+            {/* Active Clinical Context & Modality Dock */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 w-full max-w-5xl mx-auto py-1 px-3 rounded-2xl bg-surface-low/80 dark:bg-[#14262f]/80 border border-border/80 text-[10px] font-mono shadow-2xs">
+              <div className="flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap">
+                <span className="text-teal-800 dark:text-teal-300 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
+                  <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                  <span>Active Context:</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-900 dark:text-teal-200 border border-teal-500/30 shrink-0 flex items-center gap-1 font-semibold">
+                  <FileText className="w-2.5 h-2.5" />
+                  <span>Reports: Attached (CMP)</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-900 dark:text-indigo-200 border border-indigo-500/30 shrink-0 flex items-center gap-1 font-semibold">
+                  <Users className="w-2.5 h-2.5" />
+                  <span>Pedigree: 7 Members (3-Gen)</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-900 dark:text-emerald-200 border border-emerald-500/30 shrink-0 flex items-center gap-1 font-semibold">
+                  <Activity className="w-2.5 h-2.5" />
+                  <span>Vitals: Connected</span>
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 shrink-0 flex items-center gap-1 font-semibold">
+                  <BrainCircuit className="w-2.5 h-2.5" />
+                  <span>XAI: 6D Explainer Ready</span>
+                </span>
+              </div>
 
-            {/* Quick Action Clinical Toolbar */}
-            <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
-              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-50 dark:bg-teal-950/40 text-[11px] text-teal-800 dark:text-teal-200 shrink-0">
-                <span className="font-bold text-[10px] uppercase tracking-wider">Language:</span>
+              {/* Language Selector in Context Dock */}
+              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-teal-500/30 bg-white dark:bg-[#1a2e38] text-[10px] text-teal-800 dark:text-teal-200 shrink-0">
+                <span className="font-bold uppercase tracking-wider text-[9px]">Language:</span>
                 <select
                   value={selectedLanguage}
                   onChange={(e) => setSelectedLanguage(e.target.value)}
-                  className="bg-transparent border-none text-[11px] font-semibold text-teal-900 dark:text-teal-100 outline-none cursor-pointer"
+                  className="bg-transparent border-none text-[10px] font-bold text-teal-900 dark:text-teal-100 outline-none cursor-pointer"
                 >
                   {SUPPORTED_LANGUAGES.map((lang) => (
                     <option key={lang.code} value={lang.code} className="bg-white dark:bg-[#162732] text-foreground">
@@ -2019,14 +2019,18 @@ export default function AssistantPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            {/* Quick Action Clinical Toolbar */}
+            <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
               {reports.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setSelectedReportId(reports[0]?.id)}
-                  className={`px-2.5 py-1 rounded-full border transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 ${
+                  className={`px-3 py-1.5 rounded-xl border transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs ${
                     selectedReportId
-                      ? "bg-primary/10 text-primary border-primary/30 font-semibold"
-                      : "bg-surface-low border-border text-muted-foreground hover:text-foreground"
+                      ? "bg-teal-700 text-white border-teal-700 font-bold"
+                      : "bg-surface-low dark:bg-[#14262f] border-border text-foreground hover:bg-surface-container"
                   }`}
                 >
                   <Paperclip className="w-3 h-3" />
@@ -2039,9 +2043,9 @@ export default function AssistantPage() {
               )}
               <Link
                 href="/assistant/voice"
-                className="px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-medium hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-semibold hover:bg-emerald-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
-                <Radio className="w-3 h-3 animate-pulse" />
+                <Radio className="w-3 h-3 animate-pulse text-emerald-600 dark:text-emerald-400" />
                 <span>13 Indian Languages Voice Mode</span>
               </Link>
               <button
@@ -2050,9 +2054,9 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowLstmModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
-                <BrainCircuit className="w-3 h-3" />
+                <BrainCircuit className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                 <span>Bi-LSTM Forecaster (AUC 0.958)</span>
               </button>
               <button
@@ -2061,7 +2065,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowSymptomModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-semibold hover:bg-rose-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-800 dark:text-rose-300 font-semibold hover:bg-rose-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <Stethoscope className="w-3 h-3 text-rose-600 dark:text-rose-400" />
                 <span>Symptom Checker</span>
@@ -2072,7 +2076,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowMedicationModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold hover:bg-amber-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-300 font-semibold hover:bg-amber-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <Pill className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                 <span>Medication Reference</span>
@@ -2083,7 +2087,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowHealthContextModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-teal-500/40 bg-teal-500/10 text-teal-800 dark:text-teal-300 font-semibold hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <ShieldCheck className="w-3 h-3 text-teal-600 dark:text-teal-400" />
                 <span>Health Context</span>
@@ -2094,7 +2098,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowBiomarkerCorrectionModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-semibold hover:bg-cyan-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 font-semibold hover:bg-cyan-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <FileText className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
                 <span>Verify Biomarkers</span>
@@ -2105,7 +2109,7 @@ export default function AssistantPage() {
                   sound.playClick();
                   setShowReferralModal(true);
                 }}
-                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <UserCheck className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
                 <span>Specialist Referral</span>
@@ -2113,15 +2117,15 @@ export default function AssistantPage() {
               <button
                 type="button"
                 onClick={() => setShowMlModal(true)}
-                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-teal-500/40 bg-teal-500/10 text-teal-800 dark:text-teal-300 font-semibold hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
-                <Microscope className="w-3 h-3 text-primary" />
-                <span>ML Celiac Risk Model (AUC 0.94)</span>
+                <Microscope className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                <span>ML Celiac Risk (AUC 0.94)</span>
               </button>
               <button
                 type="button"
                 onClick={() => openExportModal("single")}
-                className="px-2.5 py-1 rounded-full border border-border bg-surface-low text-foreground font-semibold hover:border-teal-600/40 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+                className="px-3 py-1.5 rounded-xl border border-border bg-surface-low dark:bg-[#14262f] text-foreground font-semibold hover:border-teal-600/40 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95 shadow-2xs"
               >
                 <Download className="w-3 h-3 text-primary" />
                 <span>Export PDF / Share</span>
