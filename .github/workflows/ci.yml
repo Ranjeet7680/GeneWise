@@ -1,0 +1,37 @@
+name: CI / Verification
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  web-build:
+    name: Next.js Production Build Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: apps/web/package.json
+
+      - name: Install Dependencies
+        working-directory: apps/web
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+      - name: Next.js Production Build
+        working-directory: apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
+          NODE_ENV: production
+        run: npm run build
