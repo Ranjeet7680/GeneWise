@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Activity,
   Award,
@@ -130,6 +130,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
 export default function AppSidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Sidebar expansion state: allows toggling between compact rail (w-16) and expanded sidebar (w-64)
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true);
@@ -194,11 +195,21 @@ export default function AppSidebar() {
   };
 
   const isItemActive = (href: string) => {
-    const baseHref = href.split("?")[0];
     if (href.includes("?")) {
-      return pathname === baseHref;
+      const [baseHref, queryString] = href.split("?");
+      if (pathname !== baseHref) return false;
+      const targetParams = new URLSearchParams(queryString);
+      for (const [key, value] of Array.from(targetParams.entries())) {
+        if (searchParams.get(key) !== value) return false;
+      }
+      return true;
     }
-    return pathname === href || pathname.startsWith(`${href}/`);
+    // If href has no query param, check if the current URL has a tab param that would match a more specific link
+    if (pathname === href) {
+      const currentTab = searchParams.get("tab");
+      return !currentTab;
+    }
+    return pathname.startsWith(`${href}/`);
   };
 
   return (

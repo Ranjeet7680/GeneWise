@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
   Activity,
   AlertCircle,
@@ -77,9 +78,17 @@ import {
   SpecialistReferral,
 } from "./types";
 
-export default function FamilyGeneticsPage() {
-  const [activeTab, setActiveTab] = useState<string>("overview");
+function FamilyGeneticsContent() {
+  const searchParams = useSearchParams();
+  const urlTab = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<string>(urlTab || "overview");
   const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+    }
+  }, [urlTab]);
 
   // Core Data States
   const [overview, setOverview] = useState<FamilyGeneticsOverview>(INITIAL_OVERVIEW);
@@ -669,5 +678,19 @@ export default function FamilyGeneticsPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function FamilyGeneticsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center text-xs text-muted-foreground">
+          Loading Clinical Genetics Hub...
+        </div>
+      }
+    >
+      <FamilyGeneticsContent />
+    </Suspense>
   );
 }
