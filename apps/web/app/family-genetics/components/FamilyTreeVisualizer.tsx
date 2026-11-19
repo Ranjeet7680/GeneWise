@@ -816,97 +816,154 @@ export default function FamilyTreeVisualizer({
 
       {/* Add Condition Modal */}
       {isConditionModalOpen && selectedMember && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#162732] rounded-2xl border border-border shadow-xl max-w-md w-full p-6 space-y-4 animate-scale-in">
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                <Heart className="w-5 h-5 text-rose-500" />
-                <span>Add Health Condition to {selectedMember.relationship}</span>
-              </h3>
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#162732] rounded-3xl border border-teal-500/30 dark:border-teal-500/40 shadow-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 animate-scale-in">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-border/80 pb-4">
+              <div className="flex items-center gap-3">
+                <span className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+                  <Heart className="w-5 h-5" />
+                </span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
+                    Clinical Pedigree Annotation
+                  </span>
+                  <h3 className="text-base sm:text-lg font-extrabold text-foreground">
+                    Add Health Condition
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    Relative: <strong className="text-foreground">{selectedMember.relationship}</strong> ({selectedMember.first_name || "Record"})
+                  </p>
+                </div>
+              </div>
               <button
                 onClick={() => setIsConditionModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground"
+                className="p-1.5 rounded-xl hover:bg-surface-low text-muted-foreground hover:text-foreground transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            {/* Quick Clinical Presets */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                Quick Clinical Presets:
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { name: "Beta Thalassemia Minor", icd: "D56.1", confirmed: true },
+                  { name: "Coronary Artery Disease", icd: "I25.1", confirmed: false },
+                  { name: "Type 2 Diabetes Mellitus", icd: "E11.9", confirmed: false },
+                  { name: "Hypertension", icd: "I10", confirmed: false },
+                  { name: "BRCA1 Carrier", icd: "Z15.01", confirmed: true },
+                ].map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => {
+                      setNewCondition({
+                        ...newCondition,
+                        condition_name: preset.name,
+                        icd10_code: preset.icd,
+                        is_genetic_confirmed: preset.confirmed,
+                      });
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-surface-low dark:bg-[#1a2d39] border border-border/80 text-[11px] font-medium text-foreground hover:border-teal-500/60 hover:text-teal-700 dark:hover:text-teal-400 transition-all cursor-pointer"
+                  >
+                    + {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Form Fields */}
+            <div className="space-y-3.5 text-xs">
               <div>
-                <label className="font-semibold block mb-1">Condition Name</label>
+                <label className="font-bold text-foreground block mb-1">
+                  Condition / Phenotype Name <span className="text-rose-500">*</span>
+                </label>
                 <input
                   type="text"
                   value={newCondition.condition_name}
                   onChange={(e) => setNewCondition({ ...newCondition, condition_name: e.target.value })}
-                  placeholder="e.g. Beta Thalassemia Minor, Hypertension..."
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground outline-none"
+                  placeholder="e.g. Beta Thalassemia Minor, Early CAD, Lynch Syndrome..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground font-medium outline-hidden focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500 transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold block mb-1">ICD-10 Code (Optional)</label>
+                  <label className="font-bold text-foreground block mb-1">ICD-10 Code (Optional)</label>
                   <input
                     type="text"
                     value={newCondition.icd10_code}
                     onChange={(e) => setNewCondition({ ...newCondition, icd10_code: e.target.value })}
-                    placeholder="e.g. D56.1"
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground outline-none"
+                    placeholder="e.g. D56.1, I25.1"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground font-mono font-medium outline-hidden focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500 transition-all placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold block mb-1">Age at Diagnosis</label>
+                  <label className="font-bold text-foreground block mb-1">Age at Onset / Diagnosis</label>
                   <input
                     type="number"
-                    value={newCondition.age_of_diagnosis}
+                    min={0}
+                    max={120}
+                    value={newCondition.age_of_diagnosis || ""}
                     onChange={(e) => setNewCondition({ ...newCondition, age_of_diagnosis: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground outline-none"
+                    placeholder="e.g. 54"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground font-mono font-medium outline-hidden focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500 transition-all placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 pt-1">
+              {/* Genetic Confirmation Switch */}
+              <div className="p-3 rounded-xl bg-teal-50/70 dark:bg-teal-950/20 border border-teal-500/20 flex items-start gap-2.5">
                 <input
                   type="checkbox"
                   id="genConfirmed"
                   checked={newCondition.is_genetic_confirmed}
                   onChange={(e) => setNewCondition({ ...newCondition, is_genetic_confirmed: e.target.checked })}
-                  className="rounded text-teal-600 focus:ring-teal-500"
+                  className="rounded text-teal-600 focus:ring-teal-500 mt-0.5 cursor-pointer"
                 />
-                <label htmlFor="genConfirmed" className="text-xs font-semibold cursor-pointer">
-                  Confirmed by Genetic / Molecular Testing
+                <label htmlFor="genConfirmed" className="text-xs text-foreground cursor-pointer leading-tight">
+                  <strong className="block text-teal-800 dark:text-teal-300">Confirmed by Genetic / Molecular Testing</strong>
+                  <span className="text-[11px] text-muted-foreground font-normal">
+                    Verified via CLIA/CAP accredited Sanger, NGS panel, or karyotype analysis.
+                  </span>
                 </label>
               </div>
 
               <div>
-                <label className="font-semibold block mb-1">Clinical Notes</label>
+                <label className="font-bold text-foreground block mb-1">Clinical Notes &amp; Severity</label>
                 <textarea
                   rows={2}
                   value={newCondition.notes}
                   onChange={(e) => setNewCondition({ ...newCondition, notes: e.target.value })}
-                  placeholder="Additional context, diagnostic method, severity..."
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground outline-none"
+                  placeholder="Additional context, diagnostic hospital, treatments received..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-border bg-surface-low dark:bg-[#1a2d39] text-foreground outline-hidden focus:ring-2 focus:ring-teal-500/40 focus:border-teal-500 transition-all placeholder:text-muted-foreground/60"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-border/80">
               <button
                 type="button"
                 onClick={() => setIsConditionModalOpen(false)}
-                className="px-4 py-2 rounded-lg border border-border text-xs font-semibold hover:bg-surface-low"
+                className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-surface-low text-foreground transition-all"
               >
                 Cancel
               </button>
               <button
                 type="button"
+                disabled={!newCondition.condition_name?.trim()}
                 onClick={() => {
-                  if (newCondition.condition_name) {
+                  if (newCondition.condition_name?.trim()) {
                     onAddCondition(selectedMember.id, newCondition);
                     setIsConditionModalOpen(false);
                   }
                 }}
-                className="px-4 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-sm"
+                className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 disabled:opacity-50 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
               >
                 Record Condition
               </button>
