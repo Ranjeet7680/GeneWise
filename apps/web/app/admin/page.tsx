@@ -36,7 +36,8 @@ import MetricCard from "@/components/MetricCard";
 import SafetyNotice from "@/components/SafetyNotice";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { AdminStatsItem, AuditLogItem, User } from "@/types";
+import { DEMO_COUNSELORS } from "@/lib/counselor-demo-data";
+import { AdminStatsItem, AuditLogItem, GeneticCounselor, User } from "@/types";
 
 const FALLBACK_STATS: AdminStatsItem = {
   total_users: 148,
@@ -272,10 +273,12 @@ export default function AdminPortalPage() {
   const [stats, setStats] = useState<AdminStatsItem>(FALLBACK_STATS);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>(FALLBACK_AUDIT_LOGS);
   const [userList, setUserList] = useState<User[]>(FALLBACK_USERS);
-  const [activeTab, setActiveTab] = useState<"telemetry" | "audit" | "users">("audit");
+  const [counselorList, setCounselorList] = useState<GeneticCounselor[]>(DEMO_COUNSELORS);
+  const [activeTab, setActiveTab] = useState<"telemetry" | "audit" | "users" | "counselors" | "academy">("audit");
   const [isLoading, setIsLoading] = useState(false);
   const [auditActionFilter, setAuditActionFilter] = useState<string>("");
   const [updatingUserId, setUpdatingUserId] = useState<number | null>(null);
+  const [updatingCounselorId, setUpdatingCounselorId] = useState<string | null>(null);
   const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLogItem | null>(null);
 
   useEffect(() => {
@@ -285,11 +288,16 @@ export default function AdminPortalPage() {
   const loadAdminData = async () => {
     setIsLoading(true);
     try {
-      const [s, logs, users] = await Promise.all([
+      const [s, logs, users, counselors] = await Promise.all([
         api.getAdminStats().catch(() => null),
         api.getAdminAuditLogs(50, auditActionFilter || undefined).catch(() => []),
         api.getAdminUsers().catch(() => []),
+        api.getCounselorDirectory().catch(() => DEMO_COUNSELORS),
       ]);
+
+      if (counselors && counselors.length > 0) {
+        setCounselorList(counselors);
+      }
 
       if (s && s.total_reports > 0) {
         setStats(s);
@@ -352,6 +360,26 @@ export default function AdminPortalPage() {
       );
     } finally {
       setUpdatingUserId(null);
+    }
+  };
+
+  const handleCounselorStatusChange = async (counselorId: string, newStatus: string) => {
+    setUpdatingCounselorId(counselorId);
+    try {
+      await api.adminVerifyCounselor(counselorId, {
+        new_status: newStatus,
+        reviewer_name: user?.full_name || "Chief Administrator",
+        notes: `Administrative status updated to ${newStatus} via Governance Console.`,
+      });
+      setCounselorList((prev) =>
+        prev.map((c) => (c.id === counselorId ? { ...c, verification_status: newStatus as any } : c))
+      );
+    } catch (err) {
+      setCounselorList((prev) =>
+        prev.map((c) => (c.id === counselorId ? { ...c, verification_status: newStatus as any } : c))
+      );
+    } finally {
+      setUpdatingCounselorId(null);
     }
   };
 
@@ -502,11 +530,13 @@ export default function AdminPortalPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-2 border-b border-border pb-2">
+          <div className="flex items-center gap-2 border-b border-border pb-2 overflow-x-auto">
             {[
               { id: "audit", label: `Audit Log Trail (${filteredLogs.length})`, icon: Terminal },
               { id: "telemetry", label: "System Health & ML Engine", icon: HardDrive },
               { id: "users", label: `User Directory & RBAC (${userList.length})`, icon: Users },
+              { id: "counselors", label: `Genetic Counselors & Credentials (${counselorList.length})`, icon: UserCheck },
+              { id: "academy", label: "Genetics Academy LMS (12 Courses)", icon: Award },
             ].map((t) => {
               const Icon = t.icon;
               return (
@@ -718,6 +748,8 @@ export default function AdminPortalPage() {
             </div>
           )}
 
+          
+
           {/* TAB 3: User Directory & RBAC */}
           {activeTab === "users" && (
             <div className="space-y-4">
@@ -771,6 +803,208 @@ export default function AdminPortalPage() {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          
+
+          {/* TAB 4: Genetic Counselors & Credential Governance */}
+          {activeTab === "counselors" && (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-surface-low border border-border text-xs">
+                <div>
+                  <h3 className="font-extrabold text-foreground">
+                    Genetic Counselor Credential &amp; Verification Registry
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Inspect national registry affiliations (ABGC, BGCI, GCRB, EBMG), review active licenses, and update verification standing.
+                  </p>
+                </div>
+                <span className="font-mono text-[10px] text-teal-700 dark:text-teal-400 font-bold bg-teal-500/10 px-2.5 py-1 rounded-lg border border-teal-500/20">
+                  {counselorList.filter((c) => c.verification_status === "verified").length} / {counselorList.length} Verified
+                </span>
+              </div>
+
+              <div className="border border-border rounded-xl overflow-hidden bg-white dark:bg-[#162730]/60 shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left border-collapse">
+                    <thead className="bg-surface-low text-muted-foreground uppercase text-[10px] font-bold border-b border-border">
+                      <tr>
+                        <th className="py-2.5 px-3">Counselor</th>
+                        <th className="py-2.5 px-3">Specialty &amp; Loci</th>
+                        <th className="py-2.5 px-3">Institution &amp; Location</th>
+                        <th className="py-2.5 px-3">Licensing Board &amp; Reg #</th>
+                        <th className="py-2.5 px-3">Current Standing</th>
+                        <th className="py-2.5 px-3 text-right">Verification Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {counselorList.map((c) => (
+                        <tr key={c.id} className="hover:bg-surface-low/50">
+                          <td className="py-2.5 px-3">
+                            <div className="font-bold text-foreground">{c.name}</div>
+                            <div className="text-[11px] text-muted-foreground">{c.professional_title || c.title}</div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300">
+                              {c.specialty}
+                            </span>
+                            <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                              {c.target_loci.slice(0, 3).join(", ")}
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="text-foreground font-medium truncate max-w-[180px]">{c.institution}</div>
+                            <div className="text-[10px] text-muted-foreground">{c.city}, {c.country}</div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <div className="text-foreground">{c.certification_org}</div>
+                            <div className="text-[10px] font-mono text-muted-foreground">{c.registration_number}</div>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+                                c.verification_status === "verified"
+                                  ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-500/20"
+                                  : c.verification_status === "pending"
+                                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-500/20"
+                                  : c.verification_status === "expired"
+                                  ? "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-500/20"
+                                  : "bg-surface-container text-foreground"
+                              }`}
+                            >
+                              {c.verification_status}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <select
+                              value={c.verification_status}
+                              disabled={updatingCounselorId === c.id}
+                              onChange={(e) => handleCounselorStatusChange(c.id, e.target.value)}
+                              className="px-2 py-1 text-xs rounded border border-border bg-surface-low focus:ring-1 focus:ring-teal-700 focus:outline-none"
+                            >
+                              <option value="verified">Verified</option>
+                              <option value="pending">Pending</option>
+                              <option value="unverified">Unverified</option>
+                              <option value="expired">Expired</option>
+                            </select>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: Academy LMS Governance */}
+          {activeTab === "academy" && (
+            <div className="space-y-6">
+              {/* LMS Summary Banner */}
+              <div className="bg-surface-low rounded-2xl p-6 border border-border space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">
+                      Genetics Learning Academy LMS Governance & Accreditation
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Curriculum configuration, ACMG alignment oversight, 10 virtual laboratories, and cryptographic certificate revocation.
+                    </p>
+                  </div>
+                  <a
+                    href="/academy"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-semibold hover:bg-teal-700 shadow"
+                  >
+                    Open Student Academy <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  <div className="bg-white dark:bg-surface-dim/40 p-3 rounded-xl border border-border">
+                    <span className="text-xs text-muted-foreground">Accredited Courses</span>
+                    <p className="text-lg font-bold text-foreground mt-0.5">12 Courses</p>
+                  </div>
+                  <div className="bg-white dark:bg-surface-dim/40 p-3 rounded-xl border border-border">
+                    <span className="text-xs text-muted-foreground">Chapters / Lessons</span>
+                    <p className="text-lg font-bold text-foreground mt-0.5">60 Ch / 180 Lessons</p>
+                  </div>
+                  <div className="bg-white dark:bg-surface-dim/40 p-3 rounded-xl border border-border">
+                    <span className="text-xs text-muted-foreground">Virtual Laboratories</span>
+                    <p className="text-lg font-bold text-teal-600 dark:text-teal-400 mt-0.5">10 Active Labs</p>
+                  </div>
+                  <div className="bg-white dark:bg-surface-dim/40 p-3 rounded-xl border border-border">
+                    <span className="text-xs text-muted-foreground">Passing Threshold</span>
+                    <p className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5">70.0% Minimum</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Certificates Registry & Revocation Table */}
+              <div className="rounded-2xl border border-border bg-white dark:bg-surface-dim/20 overflow-hidden shadow-2xs">
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-bold text-foreground">
+                      Issued Certificates Registry & Immutable Audit Ledger
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-mono">
+                    SHA-256 HMAC Signatures Active
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-surface-low border-b border-border text-muted-foreground">
+                      <tr>
+                        <th className="p-3">Certificate ID</th>
+                        <th className="p-3">Learner Name</th>
+                        <th className="p-3">Course Title</th>
+                        <th className="p-3">Score</th>
+                        <th className="p-3">Completion Date</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3 text-right">Governance Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      <tr className="hover:bg-surface-low/50 transition-colors">
+                        <td className="p-3 font-mono font-bold text-teal-700 dark:text-teal-400">
+                          GW-CERT-2026-MENDEL02
+                        </td>
+                        <td className="p-3 font-semibold text-foreground">Priya Sharma</td>
+                        <td className="p-3 text-foreground">
+                          Dominant vs. Recessive: How Traits Traverse Generations
+                        </td>
+                        <td className="p-3 font-bold text-emerald-600">94.5%</td>
+                        <td className="p-3 text-muted-foreground">November 18, 2026</td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Valid & Verified
+                          </span>
+                        </td>
+                        <td className="p-3 text-right">
+                          <button
+                            onClick={() => {
+                              const reason = prompt("Enter administrative reason for certificate revocation:");
+                              if (reason) {
+                                api.revokeAcademyCertificate("GW-CERT-2026-MENDEL02", reason).then(() => {
+                                  alert("Certificate revoked with SHA-256 audit hash logged.");
+                                });
+                              }
+                            }}
+                            className="px-2.5 py-1 text-[11px] font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded border border-rose-200 transition-colors"
+                          >
+                            Revoke Credential
+                          </button>
+                        </td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>

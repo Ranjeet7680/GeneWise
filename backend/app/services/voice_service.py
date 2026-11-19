@@ -199,7 +199,10 @@ class MultilingualVoiceService:
         lower_txt = cleaned.lower()
 
         # Hinglish patterns
-        hinglish_words = ["kya", "hai", "batao", "mera", "meri", "sugar", "khoon", "dard", "karo", "kaise", "doctor", "report", "samjhao"]
+        hinglish_words = [
+            "kya", "hai", "batao", "mera", "meri", "sugar", "khoon", "dard", "karo", "kaise",
+            "doctor", "report", "samjhao", "mujhe", "subah", "se", "ho", "raha", "aur", "pehle"
+        ]
         if sum(1 for w in hinglish_words if re.search(r"\b" + w + r"\b", lower_txt)) >= 2:
             return "hi-IN", 0.94
 

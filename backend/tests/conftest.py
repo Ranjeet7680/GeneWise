@@ -11,6 +11,7 @@ backend_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(backend_dir))
 
 from app.db.session import Base, get_db
+from app.models import models, family_genetics, counselors, academy
 from app.db.seed import seed_database
 from app.main import app
 

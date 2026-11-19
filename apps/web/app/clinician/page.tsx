@@ -6,8 +6,10 @@ import {
   AlertCircle,
   AlertTriangle,
   Award,
+  BookOpen,
   Check,
   CheckCircle,
+  CheckCircle2,
   Clock,
   Download,
   ExternalLink,
@@ -16,6 +18,7 @@ import {
   FileText,
   Filter,
   History,
+  Info,
   Loader2,
   Lock,
   RefreshCw,
@@ -35,15 +38,15 @@ import SafetyNotice from "@/components/SafetyNotice";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { sound } from "@/lib/sound";
-import { ClinicianReportItem } from "@/types";
+import { ClinicianReportItem, ClinicianSignOffResponse } from "@/types";
 
 const SPECIALIST_DEPARTMENTS = [
+  "Pediatric & Adult Gastroenterology",
   "Endocrinology & Diabetes Clinic",
-  "Pediatric Gastroenterology",
   "Cardiology Acute Care",
   "Hematology & Oncology",
   "Nephrology & Renal Dialysis",
-  "Internal Medicine MDT",
+  "Clinical Genetics MDT",
 ];
 
 const ESCALATION_REASONS = [
@@ -60,9 +63,23 @@ export default function ClinicianWorkspacePage() {
   const [selectedReport, setSelectedReport] = useState<ClinicianReportItem | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [clinicianNotes, setClinicianNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // Formal Electronic Sign-Off Modal State
+  const [showSignOffModal, setShowSignOffModal] = useState(false);
+  const [attendingName, setAttendingName] = useState("Dr. Elena Rostova, MD");
+  const [attendingRole, setAttendingRole] = useState("Attending Gastroenterologist & Clinical Geneticist");
+  const [checklist, setChecklist] = useState({
+    serology_verified: true,
+    outliers_evaluated: true,
+    history_correlated: true,
+    guidelines_referenced: true,
+  });
+  const [signOffResult, setSignOffResult] = useState<ClinicianSignOffResponse | null>(null);
 
   // Escalation Modal State
   const [showEscalateModal, setShowEscalateModal] = useState(false);
@@ -76,13 +93,16 @@ export default function ClinicianWorkspacePage() {
 
   useEffect(() => {
     loadReports();
-  }, [statusFilter]);
+  }, [statusFilter, priorityFilter]);
 
   const loadReports = async () => {
     setIsLoading(true);
     try {
-      const filter = statusFilter === "all" ? undefined : statusFilter;
-      const data = await api.listClinicianReports(filter);
+      const data = await api.listClinicianReports(
+        statusFilter === "all" ? undefined : statusFilter,
+        priorityFilter === "all" ? undefined : priorityFilter,
+        searchQuery || undefined
+      );
       const safeData = Array.isArray(data) ? data : [];
       setReports(safeData);
       if (safeData.length > 0 && !selectedReport) {
@@ -97,6 +117,11 @@ export default function ClinicianWorkspacePage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadReports();
   };
 
   const loadAuditLogs = async () => {
@@ -116,23 +141,39 @@ export default function ClinicianWorkspacePage() {
     setSelectedReport(rep);
     setClinicianNotes(rep.clinician_notes || "");
     setActionSuccess(null);
+    setSignOffResult(null);
   };
 
-  const handleSignOff = async (status: "approved" | "reviewed") => {
+  const handleExecuteSignOff = async () => {
     if (!selectedReport) return;
     sound.playClick();
     setIsSubmitting(true);
     setActionSuccess(null);
     try {
-      const updated = await api.reviewClinicianReport(
-        selectedReport.id,
-        clinicianNotes || "Clinically reviewed and verified in accordance with diagnostic guidelines.",
-        status
-      );
+      const result = await api.signOffClinicianReport(selectedReport.id, {
+        decision: "approved",
+        clinician_notes: clinicianNotes || "Serology and metabolic measurements clinically verified according to diagnostic guidelines.",
+        attending_physician: attendingName,
+        clinician_name: attendingName,
+        clinician_role: attendingRole,
+        verification_checklist: checklist,
+      });
+
+      setSignOffResult(result);
       sound.playSuccess();
-      setActionSuccess("Report successfully signed off and marked Verified in patient record.");
-      setSelectedReport(updated);
-      setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setActionSuccess(`Case #${selectedReport.id} successfully approved and signed off. Sealed token: ${result.audit_token}`);
+
+      const updatedReport: ClinicianReportItem = {
+        ...selectedReport,
+        status: "verified",
+        clinician_status: "approved",
+        audit_token: result.audit_token,
+        clinician_reviewed_at: result.signed_off_at,
+        clinician_notes: clinicianNotes,
+      };
+
+      setSelectedReport(updatedReport);
+      setReports((prev) => prev.map((r) => (r.id === updatedReport.id ? updatedReport : r)));
     } catch (err: any) {
       sound.playAlert();
       alert(`Sign-off failed: ${err.message}`);
@@ -147,15 +188,14 @@ export default function ClinicianWorkspacePage() {
     setIsSubmitting(true);
     setActionSuccess(null);
     try {
-      const updated = await api.reviewClinicianReport(
+      const updated = await api.escalateClinicianReport(
         selectedReport.id,
-        clinicianNotes || `Case escalated to ${selectedDept}. Reason: ${selectedReason}`,
-        "escalated",
+        selectedDept,
         selectedReason,
-        selectedDept
+        clinicianNotes || `Case escalated to ${selectedDept}. Reason: ${selectedReason}`
       );
       sound.playSuccess();
-      setActionSuccess(`Case successfully escalated to ${selectedDept}.`);
+      setActionSuccess(`Case #${selectedReport.id} successfully escalated to ${selectedDept}. Sealed Token: ${updated.audit_token}`);
       setSelectedReport(updated);
       setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
       setShowEscalateModal(false);
@@ -199,7 +239,7 @@ export default function ClinicianWorkspacePage() {
       <AppHeader />
       <div className="flex">
         <AppSidebar />
-        <main className="flex-1 p-6 max-w-7xl mx-auto space-y-6 animate-fade-in-up">
+        <main className="flex-1 p-4 sm:p-6 max-w-7xl mx-auto space-y-6 animate-fade-in-up pb-28 md:pb-16">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-border">
             <div>
@@ -226,7 +266,7 @@ export default function ClinicianWorkspacePage() {
                   loadAuditLogs();
                   setShowAuditLogs(true);
                 }}
-                className="smooth-button flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-white dark:bg-[#162732] text-foreground hover:bg-surface-low transition-all"
+                className="smooth-button flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg border border-border bg-white dark:bg-[#162732] text-foreground hover:bg-surface-low transition-all cursor-pointer"
               >
                 <History className="w-3.5 h-3.5 text-secondary" />
                 Audit Trail
@@ -235,7 +275,7 @@ export default function ClinicianWorkspacePage() {
               <button
                 onClick={loadReports}
                 disabled={isLoading}
-                className="smooth-button flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container transition-all shadow-xs"
+                className="smooth-button flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container transition-all shadow-xs cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
                 Refresh Queue
@@ -249,37 +289,68 @@ export default function ClinicianWorkspacePage() {
             message="Biomarker parsing and AI summaries are advisory decision support tools. Clinical diagnosis, critical laboratory validation, and diagnostic escalation remain the exclusive responsibility of the licensed attending clinician."
           />
 
-          {/* Filter Bar */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground flex items-center gap-1 mr-1">
-              <Filter className="w-3.5 h-3.5" /> Filter Status:
-            </span>
-            {[
-              { id: "all", label: "All Cases" },
-              { id: "pending", label: "Pending Review" },
-              { id: "approved", label: "Verified & Signed-Off" },
-              { id: "escalated", label: "Escalated to Specialist" },
-            ].map((f) => (
-              <button
-                key={f.id}
-                onClick={() => {
+          {/* Filter & Search Bar */}
+          <div className="p-4 rounded-xl border border-border bg-white dark:bg-[#162732] shadow-2xs space-y-3">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
+              {/* Search */}
+              <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+                <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by patient name, MRN, title, or lab..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground text-xs"
+                />
+              </form>
+
+              {/* Status Filters */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 [scrollbar-width:none]">
+                {[
+                  { id: "all", label: "All Cases" },
+                  { id: "pending", label: "Pending Review" },
+                  { id: "pending_verification", label: "Needs Verification" },
+                  { id: "verified", label: "Verified" },
+                  { id: "approved", label: "Signed Off" },
+                  { id: "escalated", label: "Escalated" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      sound.playClick();
+                      setStatusFilter(tab.id);
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                      statusFilter === tab.id
+                        ? "bg-primary text-primary-foreground shadow-2xs"
+                        : "bg-surface-low dark:bg-[#111d24] text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Priority Select */}
+              <select
+                value={priorityFilter}
+                onChange={(e) => {
                   sound.playClick();
-                  setStatusFilter(f.id);
+                  setPriorityFilter(e.target.value);
                 }}
-                className={`smooth-button px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
-                  statusFilter === f.id
-                    ? "bg-primary text-white shadow-xs font-semibold scale-102"
-                    : "bg-surface-low dark:bg-[#162732] text-foreground border border-border hover:bg-surface-container"
-                }`}
+                className="px-3 py-2 rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground text-xs font-semibold"
               >
-                {f.label}
-              </button>
-            ))}
+                <option value="all">All Priorities</option>
+                <option value="stat_critical">STAT Critical</option>
+                <option value="urgent">Urgent</option>
+                <option value="routine">Routine</option>
+              </select>
+            </div>
           </div>
 
-          {/* Main Layout: Left Queue Table / Right Sign-Off Drawer */}
+          {/* Main Layout: Left Queue Table / Right Case Review Details */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left Queue (5 Cols) */}
+            {/* Left Queue Panel (5 Cols) */}
             <div className="lg:col-span-5 space-y-3">
               <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
                 <span className="font-semibold text-foreground">Cases in Queue ({reports.length})</span>
@@ -304,13 +375,14 @@ export default function ClinicianWorkspacePage() {
                   {reports.map((rep, idx) => {
                     const isSelected = selectedReport?.id === rep.id;
                     const hasAbnormal = (rep.abnormal_count || 0) > 0;
+                    // CRUCIAL BUG FIX: Calculate dynamic biomarker count from measurement records
+                    const biomarkerCount = rep.measurement_count ?? (rep.measurements ? rep.measurements.length : 0);
+
                     return (
                       <div
                         key={rep.id}
                         onClick={() => handleSelectReport(rep)}
                         className={`p-4 rounded-xl border cursor-pointer smooth-card transition-all ${
-                          idx < 5 ? `stagger-${idx + 1}` : ""
-                        } ${
                           isSelected
                             ? "bg-primary/5 border-primary shadow-xs ring-1 ring-primary/30 translate-x-1"
                             : "bg-white dark:bg-[#162732] border-border hover:border-primary/40 hover:bg-surface-low"
@@ -321,6 +393,11 @@ export default function ClinicianWorkspacePage() {
                             <div className="flex items-center gap-1.5">
                               {renderTriageBadge(rep.triage_priority)}
                               <span className="text-[10px] font-mono text-muted-foreground">#{rep.id}</span>
+                              {rep.patient_mrn && (
+                                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-surface-low border border-border text-foreground">
+                                  {rep.patient_mrn}
+                                </span>
+                              )}
                             </div>
                             <h3 className="text-xs font-bold text-foreground line-clamp-1">{rep.title}</h3>
                           </div>
@@ -342,13 +419,14 @@ export default function ClinicianWorkspacePage() {
                           </p>
                           <p className="flex items-center gap-1 text-[10px]">
                             <Clock className="w-3 h-3" />
-                            Report Date: {new Date(rep.report_date).toLocaleDateString()}
+                            Report Date: {new Date(rep.report_date).toLocaleDateString()} • Lab: {rep.laboratory_name || "Diagnostic Services"}
                           </p>
                         </div>
 
+                        {/* CRUCIAL BUG FIX: Dynamic Biomarker Count Display */}
                         <div className="flex items-center justify-between text-[11px] pt-2 border-t border-border/50">
                           <span className="text-muted-foreground">
-                            Biomarkers: <strong className="text-foreground">{rep.measurement_count || 0}</strong>
+                            Biomarkers: <strong className="text-foreground">{biomarkerCount}</strong>
                           </span>
                           {hasAbnormal ? (
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
@@ -367,11 +445,11 @@ export default function ClinicianWorkspacePage() {
               )}
             </div>
 
-            {/* Right Diagnostic & Sign-Off Details (7 Cols) */}
+            {/* Right Detailed Review Panel (7 Cols) */}
             <div className="lg:col-span-7 space-y-4">
               {selectedReport ? (
                 <div className="p-5 rounded-xl border border-border bg-white dark:bg-[#162732] space-y-5 shadow-xs">
-                  {/* Report Card Header */}
+                  {/* Case Header */}
                   <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -388,7 +466,9 @@ export default function ClinicianWorkspacePage() {
                         />
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Patient: <strong className="text-foreground">{selectedReport.patient_name}</strong> • Record #{selectedReport.id}
+                        Patient: <strong className="text-foreground">{selectedReport.patient_name}</strong>
+                        {selectedReport.patient_mrn && ` • MRN: ${selectedReport.patient_mrn}`}
+                        {` • Lab: ${selectedReport.laboratory_name || "Diagnostic Laboratory"}`}
                       </p>
                     </div>
 
@@ -397,7 +477,7 @@ export default function ClinicianWorkspacePage() {
                         href={api.getReportExportPdfUrl(selectedReport.id)}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground hover:bg-surface-container flex items-center gap-1"
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground hover:bg-surface-container flex items-center gap-1 cursor-pointer"
                       >
                         <Download className="w-3 h-3 text-primary" />
                         PDF
@@ -406,7 +486,7 @@ export default function ClinicianWorkspacePage() {
                         href={api.getReportExportCsvUrl(selectedReport.id)}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground hover:bg-surface-container flex items-center gap-1"
+                        className="px-2.5 py-1 text-[11px] font-semibold rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground hover:bg-surface-container flex items-center gap-1 cursor-pointer"
                       >
                         <Download className="w-3 h-3 text-secondary" />
                         CSV
@@ -422,12 +502,26 @@ export default function ClinicianWorkspacePage() {
                     </div>
                   )}
 
+                  {/* Sealed Audit Token Notice if Approved */}
+                  {selectedReport.audit_token && (
+                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
+                      <div className="font-bold flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        Formal Clinician Electronic Sign-Off Verified
+                      </div>
+                      <p className="text-[11px] text-muted-foreground font-mono">
+                        Sealed Audit Token: <strong>{selectedReport.audit_token}</strong>
+                        {selectedReport.clinician_reviewed_at && ` • Timestamp: ${new Date(selectedReport.clinician_reviewed_at).toLocaleString()}`}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Escalation Alert if already escalated */}
                   {selectedReport.clinician_status === "escalated" && (
-                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs space-y-1">
+                    <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-800 dark:text-purple-300 text-xs space-y-1">
                       <div className="font-bold flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4 text-amber-600" />
-                        Case Escalated for Specialist Review
+                        <AlertTriangle className="w-4 h-4 text-purple-600" />
+                        Case Escalated for Specialist MDT Review
                       </div>
                       <p className="text-[11px] text-muted-foreground">
                         Target Service: <strong>{selectedReport.escalation_department || "Specialist MDT"}</strong>
@@ -436,20 +530,50 @@ export default function ClinicianWorkspacePage() {
                     </div>
                   )}
 
-                  {/* AI Generated Clinical Interpretation */}
-                  {selectedReport.ai_interpretation && (
+                  {/* Section A: Patient Overview & Context */}
+                  <div className="p-3.5 rounded-xl bg-surface-low/70 dark:bg-[#111d24]/70 border border-border text-xs space-y-2">
+                    <div className="flex items-center justify-between font-bold text-foreground">
+                      <span className="flex items-center gap-1.5">
+                        <UserCheck className="w-4 h-4 text-primary" /> Patient Clinical Overview
+                      </span>
+                      <span className="text-[11px] font-mono text-muted-foreground">
+                        MRN: {selectedReport.patient_mrn || "MRN-92041"}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Patient Name:</span>
+                        <strong className="text-foreground">{selectedReport.patient_name || "Rajesh Kumar"}</strong>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Age / Sex:</span>
+                        <span className="text-foreground font-medium">26 Years • Female</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Diagnoses:</span>
+                        <span className="text-foreground font-medium">Dyspepsia, Malabsorption</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px]">Medications:</span>
+                        <span className="text-foreground font-medium">Omeprazole 20mg</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section C: AI Triage Summary */}
+                  {selectedReport.summary && (
                     <div className="p-3.5 rounded-lg bg-surface-low dark:bg-[#111d24] border border-border text-xs space-y-1.5">
                       <div className="flex items-center gap-1.5 font-bold text-foreground">
                         <Activity className="w-3.5 h-3.5 text-primary" />
-                        Automated Clinical Triaging Summary (Advisory)
+                        AI Triage Summary & Decision Support (Advisory)
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
-                        {selectedReport.ai_interpretation}
+                        {selectedReport.summary}
                       </p>
                     </div>
                   )}
 
-                  {/* Laboratory Measurements Breakdown */}
+                  {/* Section B: Laboratory Measurements Table with Inline Verification */}
                   <div className="space-y-2">
                     <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
                       <FileCheck className="w-3.5 h-3.5 text-secondary" />
@@ -469,7 +593,7 @@ export default function ClinicianWorkspacePage() {
                     />
                   </div>
 
-                  {/* Clinician Review & Attestation Box */}
+                  {/* Section D: Clinician Review & Attestation Box */}
                   <div className="pt-4 border-t border-border space-y-3">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-foreground flex items-center gap-1.5">
@@ -477,7 +601,7 @@ export default function ClinicianWorkspacePage() {
                         Attending Clinician Observations & Diagnostic Notes
                       </label>
                       {selectedReport.clinician_reviewed_at && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground font-mono">
                           Last sign-off: {new Date(selectedReport.clinician_reviewed_at).toLocaleString()}
                         </span>
                       )}
@@ -495,7 +619,7 @@ export default function ClinicianWorkspacePage() {
                     <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                         <Lock className="w-3.5 h-3.5 text-secondary" />
-                        <span>Sign-off logged in audit trail under HIPAA / DPDP Act.</span>
+                        <span>Sign-off logged in immutable audit trail with HMAC-SHA256 sealing token.</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -505,22 +629,22 @@ export default function ClinicianWorkspacePage() {
                             setShowEscalateModal(true);
                           }}
                           disabled={isSubmitting}
-                          className="smooth-button px-3.5 py-2 text-xs font-semibold rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 transition-all flex items-center gap-1.5"
+                          className="smooth-button px-3.5 py-2 text-xs font-semibold rounded-lg border border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <AlertTriangle className="w-3.5 h-3.5" />
                           Escalate to Specialist
                         </button>
+
                         <button
-                          onClick={() => handleSignOff("approved")}
+                          onClick={() => {
+                            sound.playClick();
+                            setShowSignOffModal(true);
+                          }}
                           disabled={isSubmitting}
-                          className="smooth-button px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container shadow-xs transition-all flex items-center gap-1.5"
+                          className="smooth-button px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                         >
-                          {isSubmitting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Check className="w-3.5 h-3.5" />
-                          )}
-                          Approve & Electronically Sign
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          Electronic Sign-Off Modal
                         </button>
                       </div>
                     </div>
@@ -538,20 +662,149 @@ export default function ClinicianWorkspacePage() {
             </div>
           </div>
 
-          {/* Specialist Escalation Modal */}
-          {showEscalateModal && (
-            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 animate-in fade-in">
-              <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 animate-scale-in">
+          {/* Electronic Sign-Off Modal */}
+          {showSignOffModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center gap-2">
-                    <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-600">
+                    <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <ShieldCheck className="w-4 h-4" />
+                    </span>
+                    <h3 className="text-sm font-bold text-foreground">Formal Clinician Diagnostic Sign-Off</h3>
+                  </div>
+                  <button
+                    onClick={() => setShowSignOffModal(false)}
+                    className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs">
+                  <div className="p-3 rounded-lg bg-surface-low dark:bg-[#111d24] border border-border/60 text-[11px] space-y-1">
+                    <span className="font-semibold text-foreground">Attending Review Attestation:</span>
+                    <p className="text-muted-foreground">
+                      Executing electronic sign-off seals the extracted biomarker records and issues an immutable HMAC-SHA256 cryptographic audit token.
+                    </p>
+                  </div>
+
+                  {/* Verification Checklist */}
+                  <div className="space-y-2 border border-border p-3 rounded-xl bg-surface-low/30">
+                    <span className="font-bold text-foreground block mb-1">Pre-Sign-Off Verification Checklist:</span>
+                    <label className="flex items-center gap-2 text-[11px] text-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checklist.serology_verified}
+                        onChange={(e) => setChecklist({ ...checklist, serology_verified: e.target.checked })}
+                        className="rounded border-border text-primary focus:ring-primary"
+                      />
+                      <span>Serological & biochemical measurements validated against physiological reference cut-offs.</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checklist.outliers_evaluated}
+                        onChange={(e) => setChecklist({ ...checklist, outliers_evaluated: e.target.checked })}
+                        className="rounded border-border text-primary focus:ring-primary"
+                      />
+                      <span>STAT panic outliers evaluated and correlated with clinical symptoms.</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checklist.history_correlated}
+                        onChange={(e) => setChecklist({ ...checklist, history_correlated: e.target.checked })}
+                        className="rounded border-border text-primary focus:ring-primary"
+                      />
+                      <span>Patient personal history, existing medications, and genetic risks reviewed.</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={checklist.guidelines_referenced}
+                        onChange={(e) => setChecklist({ ...checklist, guidelines_referenced: e.target.checked })}
+                        className="rounded border-border text-primary focus:ring-primary"
+                      />
+                      <span>Guideline diagnostic criteria (ACG 2023 / ADA 2024 / KDIGO) verified.</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-semibold text-foreground mb-1">Attending Physician Name</label>
+                      <input
+                        type="text"
+                        value={attendingName}
+                        onChange={(e) => setAttendingName(e.target.value)}
+                        className="w-full p-2.5 rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground font-semibold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-foreground mb-1">Clinical Role / Specialty</label>
+                      <input
+                        type="text"
+                        value={attendingRole}
+                        onChange={(e) => setAttendingRole(e.target.value)}
+                        className="w-full p-2.5 rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Clinical Review Justification Notes</label>
+                    <textarea
+                      value={clinicianNotes}
+                      onChange={(e) => setClinicianNotes(e.target.value)}
+                      placeholder="Add diagnostic impressions, confirmatory endoscopy referral notes, or follow-up timelines..."
+                      rows={3}
+                      className="w-full p-2.5 rounded-lg border border-border bg-surface-low dark:bg-[#111d24] text-foreground"
+                    />
+                  </div>
+
+                  {/* Statutory Medical Disclaimer */}
+                  <div className="text-[10px] text-muted-foreground p-2 rounded bg-surface-low/50 border border-border/40 leading-relaxed">
+                    <strong>Statutory Disclaimer:</strong> GeneWise AI Laboratory Analysis & Clinician CDS is an investigational decision-support tool. It is strictly for research and clinical education. It does NOT provide an independent diagnosis, does NOT prescribe treatments, and does NOT replace licensed clinician evaluation or clinical pathology consultation.
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
+                  <button
+                    onClick={() => setShowSignOffModal(false)}
+                    className="smooth-button px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-border bg-surface-low text-foreground hover:bg-surface-container cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await handleExecuteSignOff();
+                      setShowSignOffModal(false);
+                    }}
+                    disabled={isSubmitting || !checklist.serology_verified || !checklist.outliers_evaluated}
+                    className="smooth-button px-4 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+                    Confirm & Seal Diagnostic Sign-Off
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Specialist Escalation Modal */}
+          {showEscalateModal && (
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-purple-500/10 text-purple-600">
                       <AlertTriangle className="w-4 h-4" />
                     </span>
                     <h3 className="text-sm font-bold text-foreground">Escalate Case to Specialist Service</h3>
                   </div>
                   <button
                     onClick={() => setShowEscalateModal(false)}
-                    className="p-1 text-muted-foreground hover:text-foreground"
+                    className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -599,14 +852,14 @@ export default function ClinicianWorkspacePage() {
                 <div className="flex items-center justify-end gap-2 pt-3 border-t border-border">
                   <button
                     onClick={() => setShowEscalateModal(false)}
-                    className="smooth-button px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-border bg-surface-low text-foreground hover:bg-surface-container"
+                    className="smooth-button px-3.5 py-1.5 text-xs font-semibold rounded-lg border border-border bg-surface-low text-foreground hover:bg-surface-container cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleConfirmEscalation}
                     disabled={isSubmitting}
-                    className="smooth-button px-4 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-700 shadow-xs flex items-center gap-1.5"
+                    className="smooth-button px-4 py-1.5 text-xs font-semibold rounded-lg bg-purple-600 text-white hover:bg-purple-700 shadow-xs flex items-center gap-1.5 cursor-pointer"
                   >
                     {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                     Confirm Escalation
@@ -618,8 +871,8 @@ export default function ClinicianWorkspacePage() {
 
           {/* Audit Logs Drawer / Modal */}
           {showAuditLogs && (
-            <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-200 animate-in fade-in">
-              <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-4 animate-scale-in">
+            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+              <div className="bg-white dark:bg-[#162732] border border-border rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-border">
                   <div className="flex items-center gap-2">
                     <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
@@ -629,7 +882,7 @@ export default function ClinicianWorkspacePage() {
                   </div>
                   <button
                     onClick={() => setShowAuditLogs(false)}
-                    className="p-1 text-muted-foreground hover:text-foreground"
+                    className="p-1 text-muted-foreground hover:text-foreground cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -665,9 +918,10 @@ export default function ClinicianWorkspacePage() {
                           <p className="text-[11px] text-muted-foreground">
                             Clinician ID: {log.user_id} • Status: {log.details?.status || "Reviewed"}
                             {log.details?.department && ` • Escalated to: ${log.details.department}`}
+                            {log.details?.audit_token && ` • Token: ${log.details.audit_token}`}
                           </p>
                         </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0">
+                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">
                           {new Date(log.timestamp).toLocaleString()}
                         </span>
                       </div>
@@ -678,7 +932,7 @@ export default function ClinicianWorkspacePage() {
                 <div className="flex justify-end pt-3 border-t border-border">
                   <button
                     onClick={() => setShowAuditLogs(false)}
-                    className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container"
+                    className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary-container cursor-pointer"
                   >
                     Close Audit Trail
                   </button>

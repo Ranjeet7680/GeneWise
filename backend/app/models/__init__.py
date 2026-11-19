@@ -17,6 +17,32 @@ from app.models.models import (
     Notification,
 )
 
+from app.models.counselors import (
+    GeneticCounselorModel,
+    CounselorCredentialModel,
+    CounselorVerificationHistoryModel,
+    AppointmentRequestModel,
+    SavedCounselorModel,
+    ConsultationPreparationModel,
+)
+from app.models.academy import (
+    CourseModel,
+    CourseChapterModel,
+    CourseLessonModel,
+    CourseEnrollmentModel,
+    LessonProgressModel,
+    VirtualLabModel,
+    LabAttemptModel,
+    ModuleQuizModel,
+    QuizQuestionModel,
+    QuizAttemptModel,
+    FinalExamModel,
+    ExamAttemptModel,
+    CertificateModel,
+    CertificateRevocationModel,
+    DownloadableMaterialModel,
+)
+
 __all__ = [
     "User",
     "UserSession",
@@ -34,4 +60,25 @@ __all__ = [
     "AuditEvent",
     "BackgroundJob",
     "Notification",
+    "GeneticCounselorModel",
+    "CounselorCredentialModel",
+    "CounselorVerificationHistoryModel",
+    "AppointmentRequestModel",
+    "SavedCounselorModel",
+    "ConsultationPreparationModel",
+    "CourseModel",
+    "CourseChapterModel",
+    "CourseLessonModel",
+    "CourseEnrollmentModel",
+    "LessonProgressModel",
+    "VirtualLabModel",
+    "LabAttemptModel",
+    "ModuleQuizModel",
+    "QuizQuestionModel",
+    "QuizAttemptModel",
+    "FinalExamModel",
+    "ExamAttemptModel",
+    "CertificateModel",
+    "CertificateRevocationModel",
+    "DownloadableMaterialModel",
 ]

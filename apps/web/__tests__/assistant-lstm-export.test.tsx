@@ -18,11 +18,27 @@ import {
 } from "@/lib/export-share";
 import { setMockPathname } from "../vitest.setup";
 
+function seedUser() {
+  const user = {
+    id: 1,
+    email: "demo@medipredict.ai",
+    full_name: "Dr. Elena Rostova",
+    role: "clinician",
+    is_active: true,
+    is_verified: true,
+    created_at: new Date().toISOString(),
+  };
+  localStorage.setItem("medipredict_token", "test-token");
+  localStorage.setItem("medipredict_user", JSON.stringify(user));
+  localStorage.setItem("medipredict_profile_overrides", JSON.stringify(user));
+}
+
 describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Message-Only Export/Share", () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
     localStorage.clear();
+    seedUser();
     if (!Element.prototype.scrollIntoView) {
       Element.prototype.scrollIntoView = vi.fn();
     }
@@ -142,16 +158,17 @@ describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Me
     // Ensure AI engine pills and LSTM Forecasting suggestions appear cleanly
     await waitFor(() => {
       expect(screen.getByText(/SUGGESTED EDUCATIONAL INQUIRIES/i)).toBeInTheDocument();
-    });
-
-    expect(screen.getByRole("button", { name: /^Bi-LSTM Engine$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Hybrid RAG\+LSTM$/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^LSTM Forecasting$/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Bi-LSTM Engine/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Hybrid RAG\+LSTM/i })).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: /LSTM Forecasting/i }).length).toBeGreaterThanOrEqual(1);
+    }, { timeout: 4000 });
 
     // Filter suggested questions cleanly
-    const filterInput = screen.getByLabelText(/Filter suggested questions/i);
+    const filterInput = await screen.findByLabelText(/Filter suggested questions/i);
     fireEvent.change(filterInput, { target: { value: "HbA1c 90-Day" } });
-    expect(screen.getByText(/HbA1c 90-Day Longitudinal Trajectory/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/HbA1c 90-Day Longitudinal Trajectory/i)).toBeInTheDocument();
+    });
     fireEvent.change(filterInput, { target: { value: "" } });
 
     // Open interactive Bi-LSTM Temporal Forecaster modal

@@ -410,8 +410,16 @@ def seed_database(db: Session):
 
         db.commit()
 
+    # Seed Family Health & Genetics (Carrier Screening and Counsellor Directory)
+    try:
+        from app.services.family_genetics_service import FamilyGeneticsService
+        FamilyGeneticsService._ensure_carrier_seed_data(db)
+        FamilyGeneticsService._ensure_counsellor_seed_data(db)
+    except Exception as e:
+        print(f"Family Genetics seeding error: {e}")
+
     try:
         from app.db.expand_seeds import run_seed
-        run_seed()
+        run_seed(db)
     except Exception as e:
         print(f"Expanded seeding hook: {e}")

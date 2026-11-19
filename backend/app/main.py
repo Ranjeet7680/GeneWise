@@ -29,6 +29,10 @@ from app.api.v1 import (
     search,
     users,
     voice,
+    family_genetics,
+    evaluation,
+    counselors,
+    academy,
 )
 from app.core.config import settings
 from app.core.exceptions import (
@@ -188,6 +192,10 @@ app.include_router(devices.router, prefix=settings.API_V1_STR)
 app.include_router(ingestion.router, prefix=settings.API_V1_STR)
 app.include_router(analytics.router, prefix=settings.API_V1_STR)
 app.include_router(voice.router, prefix=settings.API_V1_STR)
+app.include_router(family_genetics.router, prefix=settings.API_V1_STR)
+app.include_router(evaluation.router, prefix=settings.API_V1_STR)
+app.include_router(counselors.router, prefix=settings.API_V1_STR)
+app.include_router(academy.router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 def root():

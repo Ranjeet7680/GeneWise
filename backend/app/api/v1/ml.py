@@ -11,6 +11,8 @@ from app.models.models import MLExperiment, User
 from app.schemas.schemas import (
     CeliacRiskRequest,
     CeliacRiskResponse,
+    ClinicianModelReviewRequest,
+    ClinicianModelReviewResponse,
     MLExperimentCreate,
     MLExperimentResponse,
 )
@@ -39,6 +41,43 @@ def predict_risk(
 
     return result
 
+@router.post("/review", response_model=ClinicianModelReviewResponse)
+def submit_clinician_model_review(
+    req: ClinicianModelReviewRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    review_id = f"rev_{uuid.uuid4().hex[:12]}"
+    now_iso = datetime.datetime.utcnow().isoformat()
+    audit_token = f"AUDIT-REV-{uuid.uuid4().hex[:8].upper()}"
+
+    AuditService.log_event(
+        db,
+        action="CLINICIAN_MODEL_REVIEW",
+        user_id=current_user.id,
+        resource_type="MLModelReview",
+        resource_id=review_id,
+        details={
+            "review_status": req.review_status,
+            "reviewer_name": req.reviewer_name,
+            "escalation_department": req.escalation_department,
+            "audit_token": audit_token,
+            "has_corrected_inputs": req.corrected_inputs is not None,
+        },
+    )
+
+    return ClinicianModelReviewResponse(
+        status="success",
+        review_id=review_id,
+        reviewed_at=now_iso,
+        reviewer_name=req.reviewer_name or getattr(current_user, "full_name", "Attending Clinician"),
+        review_status=req.review_status,
+        clinician_notes=req.clinician_notes,
+        escalation_department=req.escalation_department,
+        audit_token=audit_token,
+        disclaimer="Clinical review registered in immutable audit ledger. Does not constitute an independent automated diagnosis."
+    )
+
 @router.get("/models")
 def list_models():
     return [
@@ -48,7 +87,7 @@ def list_models():
             "type": "GradientBoostingClassifier",
             "status": "deployed",
             "metrics": service.metadata.get("evaluation_metrics", {}),
-            "version": service.metadata.get("model_provenance", {}).get("version", "1.0.0"),
+            "version": service.metadata.get("model_provenance", {}).get("version", "1.0.4"),
             "intended_use": "Clinical education & risk stratification research",
         },
         {
@@ -67,6 +106,8 @@ def get_celiac_model_info():
     return {
         "model_metadata": service.metadata,
         "is_loaded": service.pipeline is not None,
+        "model_transparency": service._get_model_transparency(),
+        "evidence_citations": service._get_evidence_citations(),
     }
 
 @router.post("/experiments", response_model=MLExperimentResponse, status_code=status.HTTP_201_CREATED)

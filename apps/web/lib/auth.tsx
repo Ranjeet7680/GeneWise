@@ -31,7 +31,8 @@ export interface AuthContextType {
   workspaceBrand: WorkspaceBrandConfig;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, options?: AuthActionOptions) => Promise<User>;
+  login: (email: string, password: string, options?: AuthActionOptions) => Promise<User | { mfa_required: true; mfa_token: string }>;
+  authenticateMFA: (mfaToken: string, code: string, options?: AuthActionOptions) => Promise<User>;
   loginWithPhone: (phone: string, otp: string, meta?: PhoneLoginMeta) => Promise<User>;
   register: (
     data: { email: string; password: string; full_name: string; phone?: string; role?: string },
@@ -160,10 +161,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, password: string, options?: AuthActionOptions): Promise<User> => {
+  const login = async (
+    email: string,
+    password: string,
+    options?: AuthActionOptions
+  ): Promise<User | { mfa_required: true; mfa_token: string }> => {
     setIsLoading(true);
     try {
       const res = await api.login({ email, password });
+      if (res.mfa_required && res.mfa_token) {
+        return { mfa_required: true, mfa_token: res.mfa_token };
+      }
+      const hydrated = mergeWithProfileOverrides(res.user);
+      persistUserState(hydrated);
+      if (!options?.skipRedirect) {
+        router.push(options?.redirectTo || "/dashboard");
+      }
+      return hydrated;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const authenticateMFA = async (
+    mfaToken: string,
+    code: string,
+    options?: AuthActionOptions
+  ): Promise<User> => {
+    setIsLoading(true);
+    try {
+      const res = await api.authenticateMFA(mfaToken, code);
       const hydrated = mergeWithProfileOverrides(res.user);
       persistUserState(hydrated);
       if (!options?.skipRedirect) {
@@ -435,6 +462,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         login,
+        authenticateMFA,
         loginWithPhone,
         register,
         logout,

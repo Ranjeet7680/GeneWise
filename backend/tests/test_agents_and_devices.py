@@ -42,7 +42,7 @@ def test_unified_sensor_ingestion_and_duplicate_detection(client: TestClient, au
         "unit": "%",
         "source": "esp32_sensor",
         "quality_status": "calibrated",
-        "timestamp": "2026-10-25T10:30:00Z",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     }
     resp1 = client.post("/api/v1/ingestion/sensors", json=payload, headers=auth_headers)
     assert resp1.status_code == 200

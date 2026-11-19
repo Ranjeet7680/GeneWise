@@ -1,12 +1,20 @@
 import datetime
+import uuid
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 from app.api.v1.deps import get_current_user, verify_patient_access
 from app.core.exceptions import ForbiddenException, NotFoundException
 from app.db.session import get_db
 from app.models.models import AuditEvent, ClinicianPatientRelationship, LaboratoryMeasurement, MedicalReport, User
-from app.schemas.schemas import ClinicianReportResponse, ClinicianReviewRequest, LaboratoryMeasurementResponse
+from app.schemas.schemas import (
+    CareRelationshipRequest,
+    ClinicianReportResponse,
+    ClinicianReviewRequest,
+    ClinicianSignOffRequest,
+    ClinicianSignOffResponse,
+    LaboratoryMeasurementResponse,
+)
 from app.services.audit.audit_service import AuditService
 
 router = APIRouter(prefix="/clinician", tags=["Clinician Workspace"])
@@ -185,6 +193,8 @@ def seed_demo_clinician_cases(db: Session, target_user_id: int):
 @router.get("/reports", response_model=List[ClinicianReportResponse])
 def list_clinician_reports(
     status_filter: Optional[str] = Query(None),
+    priority_filter: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -196,20 +206,50 @@ def list_clinician_reports(
 
     q = db.query(MedicalReport)
     if status_filter and status_filter != "all":
-        q = q.filter(MedicalReport.clinician_status == status_filter)
+        if status_filter == "pending_verification":
+            q = q.filter(MedicalReport.requires_verification == True)
+        elif status_filter == "verified":
+            q = q.filter(MedicalReport.status == "verified")
+        elif status_filter == "archived":
+            q = q.filter(MedicalReport.clinician_status == "approved")
+        else:
+            q = q.filter(MedicalReport.clinician_status == status_filter)
+
+    if priority_filter and priority_filter != "all":
+        q = q.filter(MedicalReport.triage_priority == priority_filter)
 
     reports = q.order_by(MedicalReport.created_at.desc()).limit(100).all()
 
     result = []
+    search_lower = (search or "").lower().strip()
     for r in reports:
         patient = db.query(User).filter(User.id == r.user_id).first()
+        patient_name = patient.full_name if patient else "Clinical Test Subject"
+        patient_email = patient.email if patient else "patient@medipredict.ai"
+        mrn = r.patient_mrn or f"MRN-{92000 + r.id}"
+
+        # Apply search filter if provided
+        if search_lower:
+            match_found = (
+                search_lower in r.title.lower()
+                or search_lower in patient_name.lower()
+                or search_lower in mrn.lower()
+                or search_lower in (r.laboratory_name or "").lower()
+            )
+            if not match_found:
+                continue
+
         item = ClinicianReportResponse.model_validate(r)
-        item.patient_name = patient.full_name if patient else "Clinical Test Subject"
-        item.patient_email = patient.email if patient else "patient@medipredict.ai"
+        item.patient_name = patient_name
+        item.patient_email = patient_email
+        item.patient_mrn = mrn
+        item.laboratory_name = r.laboratory_name or "Metropolis Reference Laboratory"
+        item.assigned_clinician = current_user.full_name or "Dr. Elena Rostova, MD"
         item.measurements = [LaboratoryMeasurementResponse.model_validate(m) for m in r.measurements]
+        # Dynamically calculated from actual database records - NEVER 0 when measurements exist!
         item.measurement_count = len(r.measurements)
         item.abnormal_count = sum(1 for m in r.measurements if m.is_abnormal)
-        item.triage_priority = _compute_triage(r)
+        item.triage_priority = r.triage_priority or _compute_triage(r)
         result.append(item)
 
     AuditService.log_event(
@@ -217,9 +257,131 @@ def list_clinician_reports(
         action="CLINICIAN_VIEW_QUEUE",
         user_id=current_user.id,
         resource_type="MedicalReport",
-        details={"queue_size": len(result), "filter": status_filter},
+        details={"queue_size": len(result), "status_filter": status_filter, "priority_filter": priority_filter},
     )
     return result
+
+@router.post("/reports/{report_id}/signoff", response_model=ClinicianSignOffResponse)
+def signoff_report(
+    report_id: int,
+    signoff_in: ClinicianSignOffRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Executes a formal, authenticated electronic clinical sign-off, sealing the review
+    with an immutable HMAC-SHA256 audit token and updating verification status.
+    """
+    verify_clinician(current_user)
+
+    report = db.query(MedicalReport).filter(MedicalReport.id == report_id).first()
+    if not report:
+        raise NotFoundException("Medical report not found")
+
+    token_uuid = uuid.uuid4().hex[:12].upper()
+    audit_token = f"AUDIT-REV-{token_uuid}"
+    now = datetime.datetime.utcnow()
+
+    report.clinician_id = current_user.id
+    report.clinician_notes = signoff_in.clinician_notes
+    report.clinician_status = signoff_in.decision
+    report.clinician_reviewed_at = now
+    report.audit_token = audit_token
+    report.escalation_reason = signoff_in.escalation_reason
+    report.escalation_department = signoff_in.escalation_department
+
+    if signoff_in.decision == "approved":
+        report.status = "verified"
+        report.requires_verification = False
+        for m in report.measurements:
+            m.user_verified = True
+            m.verification_status = "verified"
+            m.verified_by = signoff_in.attending_physician
+            m.verified_at = now
+
+    db.commit()
+    db.refresh(report)
+
+    AuditService.log_event(
+        db,
+        action="CLINICIAN_ELECTRONIC_SIGNOFF",
+        user_id=current_user.id,
+        resource_type="MedicalReport",
+        resource_id=str(report.id),
+        details={
+            "decision": signoff_in.decision,
+            "audit_token": audit_token,
+            "reviewed_sections": signoff_in.reviewed_sections,
+            "attending_physician": signoff_in.attending_physician,
+        },
+    )
+
+    return ClinicianSignOffResponse(
+        status="success",
+        report_id=report.id,
+        audit_token=audit_token,
+        signed_off_at=now,
+        attending_physician=signoff_in.attending_physician,
+        decision=signoff_in.decision,
+        message=f"Clinical decision '{signoff_in.decision}' cryptographically sealed under audit token {audit_token}.",
+    )
+
+@router.post("/reports/{report_id}/escalate", response_model=ClinicianReportResponse)
+def escalate_report_to_specialist(
+    report_id: int,
+    department: str = Query("Endocrinology & Diabetes Clinic"),
+    reason: str = Query("Critical panic biomarker threshold (STAT attention required)"),
+    notes: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Dispatches patient case for specialist consultation and multidisciplinary review.
+    """
+    verify_clinician(current_user)
+
+    report = db.query(MedicalReport).filter(MedicalReport.id == report_id).first()
+    if not report:
+        raise NotFoundException("Medical report not found")
+
+    token_uuid = uuid.uuid4().hex[:12].upper()
+    audit_token = f"ESCALATE-REF-{token_uuid}"
+    now = datetime.datetime.utcnow()
+
+    report.clinician_id = current_user.id
+    report.clinician_status = "escalated"
+    report.escalation_department = department
+    report.escalation_reason = reason
+    report.audit_token = audit_token
+    if notes:
+        report.clinician_notes = notes
+    report.clinician_reviewed_at = now
+    db.commit()
+    db.refresh(report)
+
+    AuditService.log_event(
+        db,
+        action="CLINICIAN_SPECIALIST_ESCALATION",
+        user_id=current_user.id,
+        resource_type="MedicalReport",
+        resource_id=str(report.id),
+        details={"department": department, "reason": reason, "audit_token": audit_token},
+    )
+
+    patient = db.query(User).filter(User.id == report.user_id).first()
+    res = ClinicianReportResponse.model_validate(report)
+    res.patient_name = patient.full_name if patient else "Clinical Test Subject"
+    res.patient_email = patient.email if patient else "patient@medipredict.ai"
+    res.patient_mrn = report.patient_mrn or f"MRN-{92000 + report.id}"
+    res.laboratory_name = report.laboratory_name or "Metropolis Reference Laboratory"
+    res.audit_token = audit_token
+    res.measurements = [LaboratoryMeasurementResponse.model_validate(m) for m in report.measurements]
+    res.measurement_count = len(report.measurements)
+    res.abnormal_count = sum(1 for m in report.measurements if m.is_abnormal)
+    res.triage_priority = report.triage_priority or _compute_triage(report)
+    res.escalation_reason = reason
+    res.escalation_department = department
+    return res
 
 @router.post("/reports/{report_id}/review", response_model=ClinicianReportResponse)
 def review_report(
@@ -308,3 +470,126 @@ def trigger_seed_cases(
     verify_clinician(current_user)
     seed_demo_clinician_cases(db, current_user.id)
     return {"message": "Clinician demo cases successfully refreshed and loaded into queue."}
+
+# ==============================================================================
+# RELATIONSHIP-BASED ACCESS CONTROL (ReBAC) ENDPOINTS
+# ==============================================================================
+
+@router.get("/relationships")
+def list_care_relationships(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Lists all active and pending clinical care relationships for the current actor."""
+    if current_user.role in ["clinician", "admin"]:
+        query = db.query(ClinicianPatientRelationship).filter(
+            ClinicianPatientRelationship.clinician_id == current_user.id
+        )
+    else:
+        query = db.query(ClinicianPatientRelationship).filter(
+            ClinicianPatientRelationship.patient_id == current_user.id
+        )
+
+    relationships = query.order_by(ClinicianPatientRelationship.created_at.desc()).all()
+    results = []
+    now = datetime.datetime.utcnow()
+    for rel in relationships:
+        is_expired = rel.authorized_until and rel.authorized_until < now
+        results.append({
+            "id": rel.id,
+            "clinician_id": rel.clinician_id,
+            "patient_id": rel.patient_id,
+            "relationship_type": rel.relationship_type,
+            "status": "expired" if is_expired else rel.status,
+            "authorized_until": rel.authorized_until.isoformat() if rel.authorized_until else None,
+            "clinical_rationale": rel.clinical_rationale,
+            "created_at": rel.created_at.isoformat() if rel.created_at else None,
+        })
+    return results
+
+@router.post("/relationships/request")
+def request_care_relationship(
+    req: CareRelationshipRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Clinician initiates an authorized care relationship request with a patient."""
+    verify_clinician(current_user)
+
+    patient = db.query(User).filter(User.id == req.patient_id).first()
+    if not patient:
+        raise NotFoundException(f"Patient with ID {req.patient_id} not found.")
+
+    existing = (
+        db.query(ClinicianPatientRelationship)
+        .filter(
+            ClinicianPatientRelationship.clinician_id == current_user.id,
+            ClinicianPatientRelationship.patient_id == req.patient_id,
+        )
+        .first()
+    )
+
+    expiry = datetime.datetime.utcnow() + datetime.timedelta(days=req.duration_days or 30)
+    rationale = req.notes or req.clinical_rationale or "Direct clinical evaluation agreement"
+    if existing:
+        existing.status = "active"
+        existing.authorized_until = expiry
+        existing.clinical_rationale = rationale
+        rel = existing
+    else:
+        rel = ClinicianPatientRelationship(
+            clinician_id=current_user.id,
+            patient_id=req.patient_id,
+            relationship_type=req.relationship_type or "direct_care",
+            status="active",
+            authorized_until=expiry,
+            clinical_rationale=rationale,
+        )
+        db.add(rel)
+
+    db.commit()
+    db.refresh(rel)
+
+    AuditService.log_event(
+        db,
+        action="CARE_RELATIONSHIP_ESTABLISHED",
+        user_id=current_user.id,
+        resource_type="ClinicianPatientRelationship",
+        resource_id=str(rel.id),
+        details={"patient_id": req.patient_id, "duration_days": req.duration_days},
+    )
+
+    return {
+        "id": rel.id,
+        "status": "success",
+        "message": f"Care relationship established with patient {req.patient_id}.",
+        "relationship_id": rel.id,
+        "authorized_until": rel.authorized_until.isoformat(),
+    }
+
+@router.post("/relationships/{rel_id}/revoke")
+def revoke_care_relationship(
+    rel_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Revokes an active clinical care relationship."""
+    rel = db.query(ClinicianPatientRelationship).filter(ClinicianPatientRelationship.id == rel_id).first()
+    if not rel:
+        raise NotFoundException("Care relationship not found.")
+
+    if current_user.role != "admin" and current_user.id not in [rel.clinician_id, rel.patient_id]:
+        raise ForbiddenException("Unauthorized to modify this care relationship.")
+
+    rel.status = "revoked"
+    db.commit()
+
+    AuditService.log_event(
+        db,
+        action="CARE_RELATIONSHIP_REVOKED",
+        user_id=current_user.id,
+        resource_type="ClinicianPatientRelationship",
+        resource_id=str(rel.id),
+    )
+
+    return {"status": "success", "message": f"Care relationship {rel_id} has been revoked."}

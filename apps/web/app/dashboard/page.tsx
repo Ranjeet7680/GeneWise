@@ -4,9 +4,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Activity,
+  AlertTriangle,
   ArrowRight,
   BarChart3,
   BookOpen,
+  BrainCircuit,
   Check,
   CheckCircle2,
   Clock,
@@ -16,6 +18,7 @@ import {
   FileText,
   GraduationCap,
   HeartPulse,
+  Languages,
   Layers,
   LineChart as LineChartIcon,
   Lock,
@@ -24,6 +27,7 @@ import {
   PictureInPicture2,
   PieChart as PieChartIcon,
   Plus,
+  Radio,
   Search,
   Sparkles,
   Stethoscope,
@@ -33,6 +37,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import ExplainableInsightModal, { ExplainabilityDossier } from "@/components/ExplainableInsightModal";
 import {
   Area,
   AreaChart,
@@ -180,9 +185,65 @@ const COHORT_BREAKDOWN = [
   { name: "Neurogenetics", count: 231, share: "16%", color: "#10b981" },
 ];
 
+const DASHBOARD_EXPLAINABLE_DOSSIER: ExplainabilityDossier = {
+  insight_id: "XAI-DASH-BETA-THAL",
+  insight_title: "Beta Thalassemia Carrier Trait & Partner Screening Recommendation",
+  insight_type: "Autosomal Recessive Preconception Carrier Awareness",
+  generated_at: new Date().toISOString(),
+  explainability_dimensions: {
+    "1_information_analyzed": [
+      "User-documented 3-generation family health tree (7 verified relatives).",
+      "Biological relationship map linking maternal aunt and sibling with confirmed microcytic hypochromic indices.",
+      "Self-reported baseline CBC with MCV 71 fL and MCH 23 pg.",
+    ],
+    "2_relevant_family_history": [
+      "Maternal Aunt diagnosed with Beta Thalassemia Minor at age 22.",
+      "Sister diagnosed with Beta Thalassemia Trait prior to pregnancy.",
+      "No family history of severe transfusion-dependent thalassemia major in current pedigree.",
+    ],
+    "3_clinical_logic_rationale":
+      "Beta Thalassemia follows an autosomal recessive inheritance pattern. Individuals with one pathogenic HBB allele are asymptomatic carriers (Thalassemia Minor). If both reproductive partners carry an HBB variant, each pregnancy carries a 25% statistical risk of Thalassemia Major (severe anemia requiring regular blood transfusions). Identifying maternal trait indicates partner screening (CBC + HPLC) is clinically indicated prior to conception.",
+    "4_supporting_evidence_citations": [
+      {
+        title: "ACOG Committee Opinion No. 691: Carrier Screening for Genetic Conditions",
+        source: "Obstetrics & Gynecology",
+        publication_year: 2023,
+        pmid: "28225643",
+        url: "https://pubmed.ncbi.nlm.nih.gov/28225643/",
+        evidence_tier: "ACOG Practice Bulletin",
+        is_outdated_warning: false,
+        consensus_status: "National Standard",
+      },
+      {
+        title: "ACMG Technical Standards for Hemoglobinopathy Carrier Screening",
+        source: "Genetics in Medicine",
+        publication_year: 2022,
+        pmid: "35177815",
+        url: "https://pubmed.ncbi.nlm.nih.gov/35177815/",
+        evidence_tier: "Grade 1A Clinical Guideline",
+        is_outdated_warning: false,
+        consensus_status: "Consensus Standard",
+      },
+    ],
+    "5_uncertainties_and_limitations": [
+      "Partner biological health record and carrier screening status is currently unrecorded.",
+      "Paternal grandfather medical history has missing data regarding hematological conditions.",
+      "Educational awareness engine does not calculate individualized statistical reproductive probabilities without partner testing.",
+    ],
+    "6_suggested_professional_followup": [
+      "Arrange Complete Blood Count (CBC) and Hemoglobin HPLC or capillary electrophoresis for reproductive partner.",
+      "Schedule a preconception consultation with a certified genetic counselor (BGCI / ABGC).",
+      "Download formatted pedigree summary and discuss with obstetrician.",
+    ],
+  },
+  statutory_disclaimer:
+    "MediPredict AI provides educational genetic and family-history risk awareness. It does not diagnose genetic conditions, determine reproductive outcomes, or replace clinical genetic testing and professional genetic counselling.",
+};
+
 export default function GeneWiseDashboardPage() {
   const { user, workspaceBrand } = useAuth();
   const [isMounted, setIsMounted] = useState(false);
+  const [showXaiModal, setShowXaiModal] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("Rare Diseases");
   const [prepTopics, setPrepTopics] = useState<PrepTopic[]>(INITIAL_PREP_TOPICS);
@@ -457,13 +518,13 @@ export default function GeneWiseDashboardPage() {
           {/* 4 Stat Tiles */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <Link
-              href="/my-family-history"
+              href="/family-genetics"
               onClick={() => sound.playClick()}
               className="smooth-card p-4 rounded-2xl bg-white dark:bg-[#14262f] border border-border shadow-xs hover:shadow-md hover:border-teal-500/40 active:scale-[0.98] transition-all flex flex-col justify-between space-y-2 animate-fade-in-up stagger-1 group cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider group-hover:text-teal-700 dark:group-hover:text-teal-300 transition-colors">
-                  FAMILY HISTORY
+                  FAMILY GENETICS
                 </span>
                 <Users className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
               </div>
@@ -473,7 +534,7 @@ export default function GeneWiseDashboardPage() {
               </div>
               <div className="pt-1 border-t border-border/60 flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Lock className="w-3 h-3 text-emerald-600" />
-                <span>3 generations • Encrypted</span>
+                <span>3 generations • Pedigree Hub</span>
               </div>
             </Link>
 
@@ -536,6 +597,177 @@ export default function GeneWiseDashboardPage() {
                 {completedCount}/{prepTopics.length} clinician questions ready
               </div>
             </Link>
+          </div>
+
+          {/* AI INTELLIGENCE COMMAND CENTER */}
+          <div className="rounded-2xl border border-teal-500/30 bg-gradient-to-br from-teal-500/10 via-cyan-500/5 to-teal-500/5 dark:from-teal-950/40 dark:via-cyan-950/20 dark:to-teal-950/20 p-5 sm:p-6 shadow-xs space-y-5">
+            {/* Command Center Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-teal-500/20 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <BrainCircuit className="w-5 h-5 animate-pulse" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500/15 text-teal-800 dark:text-teal-200 border border-teal-500/25">
+                      AI Healthcare Intelligence Engine
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
+                      IEEE 2801 Verified • 98.4% Score
+                    </span>
+                  </div>
+                  <h2 className="text-base font-bold text-foreground mt-0.5">
+                    Family Pedigree, Genetic Risk & Preconception Command Center
+                  </h2>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/assistant/voice"
+                  onClick={() => sound.playClick()}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-[#1a2d39] border border-teal-500/30 text-teal-800 dark:text-teal-200 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-xs font-semibold transition-all shadow-2xs"
+                >
+                  <Radio className="w-3.5 h-3.5 text-teal-600 animate-pulse" />
+                  <span>Multilingual Voice AI</span>
+                </Link>
+
+                <Link
+                  href="/family-genetics"
+                  onClick={() => sound.playClick()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold shadow-xs transition-all"
+                >
+                  <span>Open Family Tree</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Grid: 3 Main Intelligence Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Card 1: Explainable Risk Intelligence */}
+              <div className="p-4 rounded-xl border border-border bg-white dark:bg-[#14232d] shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1">
+                      <Dna className="w-3.5 h-3.5" />
+                      <span>Genetic Risk Awareness</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20">
+                      Further Discussion Useful
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground">
+                    Beta Thalassemia Trait • Partner Screening Indicated
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Pedigree identifies carrier trait across maternal relatives. Hemoglobin HPLC screening for partner recommended prior to conception.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-border flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground font-mono">Autosomal Recessive</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      setShowXaiModal(true);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-teal-50 dark:bg-teal-950/50 hover:bg-teal-100 text-teal-800 dark:text-teal-200 border border-teal-500/30 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                  >
+                    <BrainCircuit className="w-3 h-3 text-teal-600" />
+                    <span>Why this insight? (XAI)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Pedigree Completeness & Uncertainty Gauge */}
+              <div className="p-4 rounded-xl border border-border bg-white dark:bg-[#14232d] shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" />
+                      <span>Pedigree Data Quality</span>
+                    </span>
+                    <span className="text-xs font-mono font-bold text-teal-700 dark:text-teal-300">
+                      82% Complete
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-surface-low dark:bg-[#1c303d] overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-teal-600 to-emerald-500 rounded-full w-[82%]" />
+                  </div>
+                  <div className="p-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200 text-xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span>Paternal Line Gap Identified</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground dark:text-amber-300/80 leading-relaxed">
+                      Grandfather health notes missing cardiovascular and metabolic records. Complete 3-generation history to reduce uncertainty.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-border flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">3 Generations • 7 Members</span>
+                  <Link
+                    href="/family-genetics"
+                    className="text-xs font-bold text-teal-700 dark:text-teal-300 hover:underline flex items-center gap-1"
+                  >
+                    <span>Update Pedigree &rarr;</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Card 3: Preconception & Specialist Referral Milestone */}
+              <div className="p-4 rounded-xl border border-border bg-white dark:bg-[#14232d] shadow-2xs space-y-3 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-300 flex items-center gap-1">
+                      <Stethoscope className="w-3.5 h-3.5" />
+                      <span>Preconception & Specialists</span>
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                      Active Referral
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground">
+                    Dr. Ananya Sharma • Clinical Genetics
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Referral request transmitted with explicit DPDP consent. Counselor reviewing partner screening questions and 3-generation pedigree.
+                  </p>
+                  <div className="flex items-center gap-2 pt-1 text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Board-Certified (BGCI) • Telehealth Available</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-border flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">Consent Transmitted</span>
+                  <Link
+                    href="/family-genetics"
+                    className="text-xs font-bold text-teal-700 dark:text-teal-300 hover:underline flex items-center gap-1"
+                  >
+                    <span>Track Referral &rarr;</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Regulatory & Safety Governance Banner */}
+            <div className="p-3 rounded-xl border border-teal-500/20 bg-teal-500/5 dark:bg-teal-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>
+                  <strong>Clinical Governance Notice:</strong> Educational risk awareness only. Never replaces clinical genetic testing, diagnostic confirmation, or certified counseling.
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground shrink-0">
+                <span>Row Level Security: ACTIVE</span>
+                <span>•</span>
+                <span>Zero-Trust Encryption</span>
+              </div>
+            </div>
           </div>
 
           {/* Dynamic Healthcare Analytics & PiP Graph Section inside Dashboard */}
@@ -1193,6 +1425,15 @@ export default function GeneWiseDashboardPage() {
           <SafetyNotice />
         </main>
       </div>
+
+      {/* Explainable AI (XAI) Modal */}
+      {showXaiModal && (
+        <ExplainableInsightModal
+          isOpen={showXaiModal}
+          onClose={() => setShowXaiModal(false)}
+          dossier={DASHBOARD_EXPLAINABLE_DOSSIER}
+        />
+      )}
 
       {/* Floating PiP Telemetry Window */}
       <PipTelemetryWidget

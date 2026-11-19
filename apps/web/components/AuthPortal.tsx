@@ -89,7 +89,12 @@ export interface AuthPortalProps {
 export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
   const [activeTab, setActiveTab] = useState<"register" | "login">(initialTab);
   const router = useRouter();
-  const { login, register, loginWithPhone, workspaceBrand } = useAuth();
+  const { login, register, loginWithPhone, authenticateMFA, workspaceBrand } = useAuth();
+
+  // MFA Challenge State
+  const [mfaChallenge, setMfaChallenge] = useState<{ required: boolean; token: string } | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
+  const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
 
   // Optional query redirect
   const [redirectPath, setRedirectPath] = useState("/dashboard");
@@ -326,9 +331,15 @@ export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
       });
     } catch (err: any) {
       try {
-        const loggedUser = await login(email || "demo@medipredict.ai", "MedicalAI2026!", {
+        const loggedResult = await login(email || "demo@medipredict.ai", "MedicalAI2026!", {
           skipRedirect: true,
         });
+        if ("mfa_required" in loggedResult && loggedResult.mfa_required) {
+          setMfaChallenge({ required: true, token: loggedResult.mfa_token });
+          setLoginMethod("password");
+          return;
+        }
+        const loggedUser = loggedResult as any;
         sound.playSuccess();
         launchDashboardTransition({
           mode: "phone",
@@ -352,7 +363,12 @@ export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
     setIsLoading(true);
     setError(null);
     try {
-      const loggedUser = await login(email, password, { skipRedirect: true });
+      const result = await login(email, password, { skipRedirect: true });
+      if ("mfa_required" in result && result.mfa_required) {
+        setMfaChallenge({ required: true, token: result.mfa_token });
+        return;
+      }
+      const loggedUser = result as any;
       sound.playSuccess();
       launchDashboardTransition({
         mode: "login",
@@ -366,6 +382,29 @@ export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
       setError(err?.message || "Invalid clinical credentials. Try the instant demo switcher.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mfaChallenge?.token) return;
+    setIsVerifyingMfa(true);
+    setError(null);
+    try {
+      const loggedUser = await authenticateMFA(mfaChallenge.token, mfaCode, { skipRedirect: true });
+      sound.playSuccess();
+      launchDashboardTransition({
+        mode: "login",
+        userName: loggedUser.full_name,
+        userRole: loggedUser.role,
+        phone: loggedUser.phone,
+        avatarUrl: loggedUser.avatar_url,
+        avatarColor: loggedUser.avatar_color,
+      });
+    } catch (err: any) {
+      setError(err?.message || "Invalid two-factor authentication code or backup recovery code.");
+    } finally {
+      setIsVerifyingMfa(false);
     }
   };
 
@@ -416,9 +455,15 @@ export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
     try {
       await new Promise((r) => setTimeout(r, 550));
       const preset = ROLE_PRESETS[selectedRole];
-      const loggedUser = await login(email || preset.email, "MedicalAI2026!", {
+      const loggedResult = await login(email || preset.email, "MedicalAI2026!", {
         skipRedirect: true,
       });
+      if ("mfa_required" in loggedResult && loggedResult.mfa_required) {
+        setMfaChallenge({ required: true, token: loggedResult.mfa_token });
+        setLoginMethod("password");
+        return;
+      }
+      const loggedUser = loggedResult as any;
       sound.playSuccess();
       launchDashboardTransition({
         mode: "biometric",
@@ -1183,76 +1228,126 @@ export default function AuthPortal({ initialTab = "login" }: AuthPortalProps) {
 
                   {/* Password & 2FA Mode */}
                   {loginMethod === "password" && (
-                    <form onSubmit={handlePasswordLogin} className="space-y-3.5 animate-in fade-in">
-                      <div className="space-y-1">
-                        <label className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
-                          EMAIL ADDRESS
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="demo@medipredict.ai"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#0c181d] text-foreground text-xs focus:ring-1 focus:ring-teal-600"
-                        />
-                      </div>
-
-                      <div className="space-y-1">
-                        <div className="flex justify-between items-center">
-                          <label className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
-                            PASSWORD
-                          </label>
-                          <Link href="/forgot-password" className="text-[10px] text-teal-700 dark:text-teal-300 hover:underline">
-                            Forgot password?
-                          </Link>
+                    mfaChallenge?.required ? (
+                      <form onSubmit={handleMfaSubmit} className="space-y-4 animate-in fade-in">
+                        <div className="p-3.5 rounded-xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/20 text-xs space-y-1">
+                          <div className="flex items-center gap-2 font-bold text-teal-800 dark:text-teal-200">
+                            <Smartphone className="w-4 h-4 text-teal-600" />
+                            Two-Factor Authentication Required
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Enter the 6-digit verification code from your authenticator app or an emergency backup code to complete login.
+                          </p>
                         </div>
-                        <div className="relative">
+
+                        <div className="space-y-1">
+                          <label className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+                            AUTHENTICATOR / BACKUP CODE
+                          </label>
                           <input
-                            type={showPassword ? "text" : "password"}
+                            type="text"
                             required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter password"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#0c181d] text-foreground text-xs focus:ring-1 focus:ring-teal-600 pr-10"
+                            autoFocus
+                            placeholder="000000"
+                            value={mfaCode}
+                            onChange={(e) => setMfaCode(e.target.value.trim())}
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#0c181d] text-foreground text-center font-mono font-bold tracking-widest text-sm focus:ring-1 focus:ring-teal-600"
                           />
+                        </div>
+
+                        <div className="flex gap-2">
                           <button
                             type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              setMfaChallenge(null);
+                              setMfaCode("");
+                            }}
+                            className="w-1/3 py-2.5 rounded-xl border border-border bg-surface text-muted-foreground text-xs hover:text-foreground cursor-pointer"
                           >
-                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isVerifyingMfa || !mfaCode}
+                            className="w-2/3 py-2.5 rounded-xl bg-[#004d47] hover:bg-[#003833] text-white font-semibold text-xs transition-all shadow-md inline-flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                          >
+                            {isVerifyingMfa ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                            <span>Verify Code</span>
                           </button>
                         </div>
-                      </div>
+                      </form>
+                    ) : (
+                      <form onSubmit={handlePasswordLogin} className="space-y-3.5 animate-in fade-in">
+                        <div className="space-y-1">
+                          <label className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+                            EMAIL ADDRESS
+                          </label>
+                          <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="demo@medipredict.ai"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#0c181d] text-foreground text-xs focus:ring-1 focus:ring-teal-600"
+                          />
+                        </div>
 
-                      <button
-                        type="submit"
-                        disabled={isLoading}
-                        className="w-full py-3 rounded-xl bg-[#004d47] hover:bg-[#003833] text-white font-semibold text-xs transition-all shadow-md inline-flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <>
-                            <span>Log In with Password</span>
-                            <ArrowRight className="w-4 h-4" />
-                          </>
-                        )}
-                      </button>
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center">
+                            <label className="font-bold text-[11px] uppercase tracking-wider text-muted-foreground">
+                              PASSWORD
+                            </label>
+                            <Link href="/forgot-password" className="text-[10px] text-teal-700 dark:text-teal-300 hover:underline">
+                              Forgot password?
+                            </Link>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type={showPassword ? "text" : "password"}
+                              required
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="Enter password"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-surface-low dark:bg-[#0c181d] text-foreground text-xs focus:ring-1 focus:ring-teal-600 pr-10"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+                            >
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </div>
 
-                      <button
-                        type="button"
-                        onClick={handleBiometricAuth}
-                        disabled={isBiometricLoading}
-                        className="w-full py-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-100/50 text-teal-900 dark:text-teal-200 font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
-                      >
-                        <Fingerprint className="w-4 h-4 text-teal-600" />
-                        <span>
-                          {isBiometricLoading ? "Verifying..." : "Sign In with Biometric Passkey / Touch ID"}
-                        </span>
-                      </button>
-                    </form>
+                        <button
+                          type="submit"
+                          disabled={isLoading}
+                          className="w-full py-3 rounded-xl bg-[#004d47] hover:bg-[#003833] text-white font-semibold text-xs transition-all shadow-md inline-flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <span>Log In with Password</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleBiometricAuth}
+                          disabled={isBiometricLoading}
+                          className="w-full py-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/50 dark:bg-teal-950/20 hover:bg-teal-100/50 text-teal-900 dark:text-teal-200 font-semibold text-xs transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
+                        >
+                          <Fingerprint className="w-4 h-4 text-teal-600" />
+                          <span>
+                            {isBiometricLoading ? "Verifying..." : "Sign In with Biometric Passkey / Touch ID"}
+                          </span>
+                        </button>
+                      </form>
+                    )
                   )}
 
                   {/* Footer Security Commitment */}

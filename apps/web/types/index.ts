@@ -15,6 +15,8 @@ export interface User {
   role: string;
   is_active: boolean;
   is_verified: boolean;
+  mfa_enabled?: boolean;
+  email_verified_at?: string;
   created_at: string;
   phone?: string;
   phone_verified?: boolean;
@@ -39,6 +41,39 @@ export interface AuthResponse {
   refresh_token: string;
   token_type: string;
   user: User;
+  mfa_required?: boolean;
+  mfa_token?: string;
+  mfa_type?: string;
+}
+
+export interface MFAEnrollResponse {
+  secret: string;
+  qr_code_url?: string;
+  otpauth_url: string;
+  backup_codes: string[];
+}
+
+export interface UserSession {
+  id: number;
+  user_id: number;
+  ip_address: string;
+  user_agent: string;
+  created_at: string;
+  expires_at: string;
+  last_activity_at: string;
+  is_active: boolean;
+  is_current: boolean;
+}
+
+export interface SuspiciousActivity {
+  id: number;
+  threat_type: string;
+  severity: "low" | "medium" | "high" | "critical";
+  ip_address?: string;
+  user_agent?: string;
+  details?: Record<string, any>;
+  created_at: string;
+  resolved: boolean;
 }
 
 export interface MessageSource {
@@ -130,16 +165,26 @@ export interface LaboratoryMeasurement {
   id: number;
   report_id: number;
   test_name: string;
+  name?: string;
   category: string;
   value: number;
   unit: string;
   reference_low?: number;
   reference_high?: number;
   reference_text?: string;
-  is_abnormal: boolean;
-  flag: "normal" | "low" | "high" | "critical";
-  user_verified: boolean;
+  reference_range?: string;
+  is_abnormal?: boolean;
+  flag: "normal" | "low" | "high" | "critical" | "critical_high" | "critical_low";
+  user_verified?: boolean;
   confidence: number;
+  original_value?: number;
+  original_unit?: string;
+  previous_value?: number;
+  change_pct?: number;
+  verification_status?: "pending" | "verified" | "corrected" | "uncertain" | "rejected";
+  verified_by?: string;
+  verified_at?: string;
+  created_at?: string;
   notes?: string;
 }
 
@@ -158,6 +203,17 @@ export interface MedicalReport {
   created_at: string;
   measurement_count: number;
   abnormal_count: number;
+  laboratory_name?: string;
+  patient_mrn?: string;
+  triage_priority?: "stat_critical" | "urgent" | "routine" | "incomplete";
+  clinician_status?: "pending" | "reviewed" | "approved" | "escalated" | "rejected";
+  clinician_notes?: string;
+  clinician_reviewed_at?: string;
+  assigned_clinician?: string;
+  review_deadline?: string;
+  audit_token?: string;
+  escalation_reason?: string;
+  escalation_department?: string;
   measurements?: LaboratoryMeasurement[];
 }
 
@@ -257,6 +313,60 @@ export interface UserConsent {
   updated_at: string;
 }
 
+export interface ShapExplanation {
+  feature_name: string;
+  display_name: string;
+  feature_value: string;
+  shap_value: number;
+  direction: 'positive' | 'negative';
+  magnitude: 'high' | 'moderate' | 'low';
+  reference_cohort_mean: string;
+  clinical_relevance: string;
+}
+
+export interface ModelTransparencyInfo {
+  model_name: string;
+  version: string;
+  training_dataset: string;
+  sample_size: number;
+  train_size?: number;
+  test_size?: number;
+  training_date?: string;
+  validation_method: string;
+  roc_auc: number;
+  cv_auc_mean?: number;
+  cv_auc_std?: number;
+  sensitivity?: number;
+  specificity?: number;
+  precision?: number;
+  recall?: number;
+  f1_score?: number;
+  brier_score?: number;
+  calibration_status: string;
+  known_limitations: string;
+  intended_population: string;
+  clinical_causation_notice?: string;
+}
+
+export interface ClinicalEvidenceCitation {
+  guideline: string;
+  authors?: string;
+  journal?: string;
+  year?: number;
+  pmid?: string;
+  doi?: string;
+  recommendation: string;
+  url?: string;
+}
+
+export interface DataCompletenessInfo {
+  score_pct: number;
+  is_sufficient: boolean;
+  present_features: string[];
+  missing_features: string[];
+  status_message: string;
+}
+
 export interface CeliacRiskRequest {
   age: number;
   gender: string;
@@ -270,6 +380,20 @@ export interface CeliacRiskRequest {
   iga: number;
   igg: number;
   igm: number;
+  anti_ttg_iga?: number;
+  total_iga?: number;
+  anti_dgp_igg?: number;
+  ema_iga?: string;
+  symptom_duration?: string;
+  gi_symptoms?: string[];
+  family_history_celiac?: string;
+  family_inherited_conditions?: string[];
+  genetic_testing_hla?: string;
+  ethnicity?: string;
+  lab_measurement_date?: string;
+  lab_source?: string;
+  existing_diagnoses?: string[];
+  missing_critical_data?: boolean;
 }
 
 export interface CeliacRiskResponse {
@@ -286,6 +410,31 @@ export interface CeliacRiskResponse {
   };
   contributing_factors: string[];
   recommended_clinical_followup: string[];
+  disclaimer: string;
+  data_completeness?: DataCompletenessInfo;
+  shap_explanations?: ShapExplanation[];
+  model_transparency?: ModelTransparencyInfo;
+  evidence_citations?: ClinicalEvidenceCitation[];
+  clinician_review?: any;
+}
+
+export interface ClinicianModelReviewRequest {
+  review_status: 'approved' | 'rejected' | 'escalated';
+  clinician_notes: string;
+  reviewer_name?: string;
+  escalation_department?: string;
+  corrected_inputs?: Record<string, any>;
+}
+
+export interface ClinicianModelReviewResponse {
+  status: string;
+  review_id: string;
+  reviewed_at: string;
+  reviewer_name: string;
+  review_status: string;
+  clinician_notes: string;
+  escalation_department?: string;
+  audit_token: string;
   disclaimer: string;
 }
 
@@ -313,14 +462,81 @@ export interface NotificationItem {
 }
 
 export interface ClinicianReportItem extends MedicalReport {
+  patient_id?: number;
   patient_name?: string;
   patient_email?: string;
+  patient_mrn?: string;
+  laboratory_name?: string;
+  assigned_clinician?: string;
+  review_deadline?: string;
   clinician_notes?: string;
-  clinician_status?: "pending" | "reviewed" | "approved" | "escalated";
+  clinician_status?: "pending" | "reviewed" | "approved" | "escalated" | "rejected";
   clinician_reviewed_at?: string;
-  triage_priority?: "stat_critical" | "urgent" | "routine";
+  triage_priority?: "stat_critical" | "urgent" | "routine" | "incomplete";
   escalation_reason?: string;
   escalation_department?: string;
+  audit_token?: string;
+}
+
+export interface BiomarkerTrendPoint {
+  date: string;
+  report_title?: string;
+  value: number;
+  flag: string;
+  is_abnormal?: boolean;
+}
+
+export interface BiomarkerTrendSeries {
+  test_name?: string;
+  biomarker_name?: string;
+  category?: string;
+  current_value?: number;
+  unit: string;
+  reference_low?: number;
+  reference_high?: number;
+  reference_text?: string;
+  flag?: string;
+  trend_direction?: "increasing" | "decreasing" | "stable";
+  data_points?: BiomarkerTrendPoint[];
+  points?: BiomarkerTrendPoint[];
+}
+
+export interface MedicalEvidenceCitation {
+  title: string;
+  organization?: string;
+  journal?: string;
+  pmid: string;
+  publication_year?: number;
+  url: string;
+  relevance: string;
+  limitations?: string;
+}
+
+export interface ClinicianSignOffRequest {
+  clinician_notes: string;
+  decision: "approved" | "reviewed" | "rejected" | "escalated";
+  reviewed_sections?: string[];
+  attending_physician?: string;
+  department?: string;
+  escalation_reason?: string;
+  escalation_department?: string;
+  clinician_name?: string;
+  clinician_role?: string;
+  verification_checklist?: Record<string, boolean>;
+}
+
+export interface ClinicianSignOffResponse {
+  status: string;
+  report_id: number;
+  audit_token: string;
+  signed_off_at: string;
+  attending_physician?: string;
+  clinician_name?: string;
+  clinician_role?: string;
+  verified_measurement_count?: number;
+  statutory_disclaimer?: string;
+  decision?: string;
+  message?: string;
 }
 
 export interface AdminStatsItem {
@@ -490,5 +706,272 @@ export interface MLExperiment {
   artifact_path?: string;
   version: string;
   status: string;
+  created_at: string;
+}
+
+// Advanced AI Medical Assistant Upgrade Types
+export interface SymptomCheckRequest {
+  primary_symptom: string;
+  duration?: string;
+  severity: number;
+  associated_symptoms?: string[];
+  relevant_medical_history?: string[];
+  current_medications?: string[];
+  user_age?: number;
+  user_biological_sex?: string;
+}
+
+export interface SymptomCheckResponse {
+  triage_level: "EMERGENCY_SOS" | "URGENT_EVALUATION" | "ROUTINE_CLINICAL_REVIEW" | "SELF_CARE_MONITORING" | string;
+  urgency_explanation: string;
+  red_flags_detected: string[];
+  possible_considerations: string[];
+  evidence_sources: Array<{
+    guideline: string;
+    journal: string;
+    year: number;
+    pmid?: string;
+    doi?: string;
+    url?: string;
+  }>;
+  suggested_doctor_questions: string[];
+  self_care_precautions: string[];
+  emergency_contacts: Record<string, string>;
+  statutory_disclaimer: string;
+}
+
+export interface MedicationEducationRequest {
+  medication_name: string;
+  dosage?: string;
+  current_conditions?: string[];
+  other_medications?: string[];
+}
+
+export interface MedicationEducationResponse {
+  medication_name: string;
+  generic_name: string;
+  drug_class: string;
+  primary_uses: string[];
+  mechanism_of_action: string;
+  common_side_effects: string[];
+  serious_side_effects_warning: string[];
+  precautions_and_warnings: string[];
+  potential_interactions: Array<{
+    drug: string;
+    severity: string;
+    effect: string;
+  }>;
+  food_and_lifestyle_interactions: string[];
+  questions_for_pharmacist_or_doctor: string[];
+  citations: Array<{
+    guideline: string;
+    journal: string;
+    year: number;
+    pmid?: string;
+    doi?: string;
+    url?: string;
+  }>;
+  non_prescribing_disclaimer: string;
+}
+
+export interface AuthorizedHealthContextResponse {
+  user_id: number;
+  consent_status: Record<string, boolean>;
+  recent_reports: Array<{
+    id: number;
+    title: string;
+    date?: string;
+    abnormal_findings_count: number;
+    key_abnormals: Array<{
+      test: string;
+      value: number;
+      unit: string;
+      flag: string;
+    }>;
+  }>;
+  vitals_summary: {
+    blood_pressure?: string;
+    resting_heart_rate?: string;
+    fasting_blood_glucose?: string;
+    [key: string]: any;
+  };
+  wearables_telemetry?: {
+    device_source: string;
+    heart_rate?: number;
+    spo2?: number;
+    hrv_rmssd?: number;
+    activity_steps?: number;
+    recorded_at?: string;
+  } | null;
+  family_history_summary: Array<{
+    relationship: string;
+    first_name?: string;
+    conditions: string[];
+    maternal_or_paternal: string;
+  }>;
+  genetic_predispositions: Array<{
+    gene: string;
+    variant: string;
+    significance: string;
+    zygosity: string;
+  }>;
+  active_medications: string[];
+  data_minimization_note: string;
+}
+
+export interface ConsultationSummaryRequest {
+  counsellor_id?: number;
+  specialty_requested: string;
+  referral_reason: string;
+  clinical_priority?: string;
+  include_family_tree?: boolean;
+  include_genetic_tests?: boolean;
+  include_recent_vitals?: boolean;
+  include_medications?: boolean;
+  consent_granted: boolean;
+  notes_for_specialist?: string;
+}
+
+export interface ConsultationSummaryResponse {
+  referral_id?: number;
+  patient_summary: {
+    user_id: number;
+    full_name: string;
+    email: string;
+    specialty_requested: string;
+    clinical_priority?: string;
+  };
+  chief_complaint_and_history: string;
+  relevant_family_and_genetic_findings: string[];
+  key_biomarkers_and_vitals: Array<{
+    metric: string;
+    value: number;
+    unit: string;
+  }>;
+  prepared_clinical_discussion_points: string[];
+  consent_audit_token: string;
+  statutory_disclaimer: string;
+}
+
+// ==============================================================================
+// GENETIC COUNSELOR DISCOVERY & CLINICAL SUPPORT NETWORK
+// ==============================================================================
+
+export interface CounselorCredential {
+  id?: number;
+  credential_type: string;
+  issuer_org: string;
+  credential_id: string;
+  status: "verified" | "pending" | "unverified" | "expired";
+  country: string;
+  issued_date?: string;
+  expiry_date?: string;
+  verification_source_url?: string;
+  evidence_notes?: string;
+}
+
+export interface GeneticCounselor {
+  id: string;
+  name: string;
+  title: string;
+  professional_title: string;
+  credentials: string;
+  qualification: string;
+  certification_org: string;
+  registration_number: string;
+  verification_status: "verified" | "pending" | "unverified" | "expired";
+  verification_source?: string;
+  institution: string;
+  department?: string;
+  location: string;
+  city: string;
+  state_province: string;
+  country: string;
+  specialty: string;
+  subspecialties: string[];
+  telehealth: boolean;
+  languages: string[];
+  bio: string;
+  fee: string;
+  waitlist_days: number;
+  experience_years: number;
+  avatar?: string;
+  target_loci: string[];
+  target_conditions: string[];
+  services_offered?: string[];
+  consultation_modes?: string[];
+  consultation_availability: string;
+  is_demo_provider: boolean;
+  is_saved?: boolean;
+  match_rationale?: string;
+  credentials_list?: CounselorCredential[];
+}
+
+export interface AppointmentBookingPayload {
+  counsellor_id: string;
+  patient_name: string;
+  patient_email: string;
+  patient_phone?: string;
+  consultation_purpose: string;
+  preferred_date: string;
+  preferred_time_slot: string;
+  time_zone: string;
+  consultation_format: "telehealth" | "in_person";
+  intake_notes?: string;
+  consent_data_sharing: boolean;
+  attached_report_ids?: number[];
+  include_pedigree?: boolean;
+  doctor_prep_summary_id?: string;
+}
+
+export interface AppointmentBookingRecord {
+  id: string;
+  counsellor_id: string;
+  counsellor_name: string;
+  patient_name: string;
+  patient_email: string;
+  consultation_purpose: string;
+  preferred_date: string;
+  preferred_time_slot: string;
+  time_zone: string;
+  consultation_format: "telehealth" | "in_person";
+  telehealth_link?: string;
+  status: "pending" | "accepted" | "rejected" | "rescheduled" | "cancelled";
+  reschedule_reason?: string;
+  intake_notes?: string;
+  consent_data_sharing: boolean;
+  audit_token: string;
+  created_at: string;
+  pre_consultation_instructions: string[];
+}
+
+export interface DoctorPrepPayload {
+  counselor_id?: string;
+  consultation_purpose: string;
+  selected_goals: string[];
+  family_conditions?: Array<{
+    relative: string;
+    branch: string;
+    condition: string;
+    age_at_diagnosis?: number;
+  }>;
+  relevant_genes?: string[];
+  attached_report_ids?: number[];
+  include_saved_pedigree?: boolean;
+  patient_notes?: string;
+}
+
+export interface DoctorPrepBrief {
+  id: string;
+  consultation_purpose: string;
+  family_history_overview: string;
+  questions_to_ask: string[];
+  documents_to_bring: string[];
+  screening_topics: string[];
+  missing_information: string[];
+  important_uncertainties: string[];
+  suggested_counselor_specialty: string;
+  suggested_counselor_ids: string[];
+  disclaimer: string;
   created_at: string;
 }

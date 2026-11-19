@@ -3,7 +3,7 @@ import json
 from typing import Any, Dict, Optional
 from sqlalchemy.orm import Session
 from app.core.security import sign_audit_payload
-from app.models.models import AuditEvent
+from app.models.models import AuditEvent, SuspiciousActivity
 
 class AuditService:
     @staticmethod
@@ -40,3 +40,31 @@ class AuditService:
         except Exception:
             db.rollback()
         return event
+
+    @staticmethod
+    def log_suspicious_activity(
+        db: Session,
+        threat_type: str,
+        user_id: Optional[int] = None,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+        severity: str = "medium",
+        details: Optional[Dict[str, Any]] = None,
+    ) -> SuspiciousActivity:
+        """Logs detected security anomalies and threat vectors for automated monitoring."""
+        activity = SuspiciousActivity(
+            user_id=user_id,
+            threat_type=threat_type,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            severity=severity,
+            details=details,
+            created_at=datetime.datetime.utcnow(),
+        )
+        db.add(activity)
+        try:
+            db.commit()
+            db.refresh(activity)
+        except Exception:
+            db.rollback()
+        return activity

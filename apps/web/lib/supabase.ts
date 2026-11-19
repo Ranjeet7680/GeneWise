@@ -62,3 +62,48 @@ export async function uploadReportToSupabase(
     return { path: "", url: null, error: err };
   }
 }
+
+/**
+ * Generates a short-lived signed URL for any private healthcare storage bucket.
+ * Default expiration is 300 seconds (5 minutes). Never creates public URLs.
+ */
+export async function getPrivateSignedUrl(
+  bucket: "medical-reports" | "genetic-records" | "clinical-scans" | "voice-notes",
+  path: string,
+  expiresInSeconds: number = 300
+): Promise<{ signedUrl: string | null; error: Error | null }> {
+  try {
+    const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, expiresInSeconds);
+    return { signedUrl: data?.signedUrl || null, error: error || null };
+  } catch (err: any) {
+    return { signedUrl: null, error: err };
+  }
+}
+
+/**
+ * Supabase Auth MFA (TOTP) Enrollment helper.
+ */
+export async function enrollSupabaseMFA() {
+  return await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    issuer: "MediPredict AI",
+  });
+}
+
+/**
+ * Supabase Auth MFA Verification helper.
+ */
+export async function verifySupabaseMFA(factorId: string, challengeId: string, code: string) {
+  return await supabase.auth.mfa.verify({
+    factorId,
+    challengeId,
+    code,
+  });
+}
+
+/**
+ * List verified MFA factors for the current Supabase session.
+ */
+export async function listSupabaseMFAFactors() {
+  return await supabase.auth.mfa.listFactors();
+}

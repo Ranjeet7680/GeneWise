@@ -5,15 +5,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Activity,
+  Award,
   Bell,
   BookOpen,
   BrainCircuit,
+  CheckCircle2,
   ChevronDown,
   ChevronRight,
   Cpu,
   Dna,
   FileText,
+  FlaskConical,
   FolderHeart,
+  GraduationCap,
   HeartPulse,
   LayoutDashboard,
   LayoutGrid,
@@ -51,6 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "Clinical Workspace",
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+      { href: "/family-genetics", label: "Family Health & Genetics", icon: Dna, badge: "New" },
       { href: "/assistant", label: "AI Medical Assistant", icon: MessageSquare, badge: "AI" },
       { href: "/assistant/voice", label: "Voice Assistant", icon: Radio, badge: "Live" },
       { href: "/my-family-history", label: "My Family History", icon: FolderHeart },
@@ -58,6 +63,16 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/health-metrics", label: "Health Metrics & Trends", icon: HeartPulse },
       { href: "/clinician", label: "Clinician Queue", icon: Stethoscope, badge: "MD" },
       { href: "/documentation", label: "All Documentary Portal", icon: LayoutGrid, badge: "Portal" },
+    ],
+  },
+  {
+    id: "academy",
+    title: "Learning Academy",
+    items: [
+      { href: "/academy", label: "Academy Hub", icon: GraduationCap, badge: "LMS" },
+      { href: "/academy/my-courses", label: "My Learning & Certs", icon: Award, badge: "Certs" },
+      { href: "/academy/labs", label: "Virtual Genetics Labs", icon: FlaskConical, badge: "10 Labs" },
+      { href: "/verify-certificate", label: "Verify Certificate", icon: CheckCircle2 },
     ],
   },
   {

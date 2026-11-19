@@ -78,6 +78,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     LOCAL_MODEL_BASE_URL: str = os.getenv("LOCAL_MODEL_BASE_URL", "http://localhost:11434/v1")
+    EXA_API_KEY: str = os.getenv("EXA_API_KEY", "")
 
     # Supabase Configuration (Safely sourced from environment)
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "https://affjbuibhbejzzrwdusw.supabase.co")
@@ -87,7 +88,10 @@ class Settings(BaseSettings):
     SUPABASE_PROJECT_REF: str = os.getenv("SUPABASE_PROJECT_REF", "affjbuibhbejzzrwdusw")
     
     class Config:
-        env_file = ".env"
+        env_file = (
+            Path(__file__).resolve().parent.parent.parent / ".env",
+            ".env",
+        )
         case_sensitive = True
         extra = "allow"
 

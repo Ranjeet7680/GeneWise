@@ -1,4 +1,5 @@
 import csv
+import hashlib
 import io
 import re
 import logging
@@ -76,17 +77,122 @@ REFERENCE_RANGES: Dict[str, Dict[str, Any]] = {
     "transferrin saturation": {"low": 20.0, "high": 50.0, "unit": "%", "category": "Iron Studies"},
 
     # Immunology & Celiac Serology
-    "iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
-    "serum iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
-    "igg": {"low": 7.0, "high": 16.0, "unit": "g/L", "category": "Immunology"},
-    "serum igg": {"low": 7.0, "high": 16.0, "unit": "g/L", "category": "Immunology"},
-    "igm": {"low": 0.4, "high": 2.3, "unit": "g/L", "category": "Immunology"},
-    "serum igm": {"low": 0.4, "high": 2.3, "unit": "g/L", "category": "Immunology"},
+    "tissue transglutaminase iga": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
+    "tissue transglutaminase igg": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
+    "anti-ttg iga": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
+    "anti-ttg": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
     "ttg-iga": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
     "ttg-igg": {"low": 0.0, "high": 10.0, "unit": "U/mL", "category": "Serology"},
+    "deamidated gliadin peptide igg": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "deamidated gliadin peptide iga": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "anti-dgp igg": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "anti-dgp iga": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "dgp igg": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "dgp iga": {"low": 0.0, "high": 15.0, "unit": "U/mL", "category": "Serology"},
+    "total serum iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
+    "total iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
+    "serum iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
+    "iga": {"low": 0.8, "high": 3.0, "unit": "g/L", "category": "Immunology"},
+    "serum igg": {"low": 7.0, "high": 16.0, "unit": "g/L", "category": "Immunology"},
+    "igg": {"low": 7.0, "high": 16.0, "unit": "g/L", "category": "Immunology"},
+    "serum igm": {"low": 0.4, "high": 2.3, "unit": "g/L", "category": "Immunology"},
+    "igm": {"low": 0.4, "high": 2.3, "unit": "g/L", "category": "Immunology"},
+
+    # Vitamins & Essential Minerals
+    "vitamin d": {"low": 30.0, "high": 100.0, "unit": "ng/mL", "category": "Vitamins & Minerals"},
+    "25-hydroxy vitamin d": {"low": 30.0, "high": 100.0, "unit": "ng/mL", "category": "Vitamins & Minerals"},
+    "vitamin b12": {"low": 200.0, "high": 900.0, "unit": "pg/mL", "category": "Vitamins & Minerals"},
+    "folate": {"low": 4.0, "high": 20.0, "unit": "ng/mL", "category": "Vitamins & Minerals"},
+    "magnesium": {"low": 1.7, "high": 2.2, "unit": "mg/dL", "category": "Electrolytes"},
+    "phosphorus": {"low": 2.5, "high": 4.5, "unit": "mg/dL", "category": "Electrolytes"},
+    "bicarbonate": {"low": 22.0, "high": 29.0, "unit": "mmol/L", "category": "Electrolytes"},
+
+    # Differential White Blood Cell Count
+    "neutrophils": {"low": 40.0, "high": 75.0, "unit": "%", "category": "Hematology"},
+    "lymphocytes": {"low": 20.0, "high": 45.0, "unit": "%", "category": "Hematology"},
+    "monocytes": {"low": 2.0, "high": 10.0, "unit": "%", "category": "Hematology"},
+    "eosinophils": {"low": 1.0, "high": 6.0, "unit": "%", "category": "Hematology"},
+    "basophils": {"low": 0.0, "high": 2.0, "unit": "%", "category": "Hematology"},
 }
 
 class ReportParser:
+    @staticmethod
+    def validate_document_file(file_bytes: bytes, filename: str, mime_type: str = "") -> Tuple[str, int]:
+        """
+        Validates file integrity, size, prohibits executable payloads,
+        detects corrupted PDFs or empty files, and returns (sha256_hash, file_size).
+        """
+        if not file_bytes or len(file_bytes) == 0:
+            raise ValueError("Document file is empty (0 bytes).")
+        
+        file_size = len(file_bytes)
+        if file_size > 15 * 1024 * 1024:
+            raise ValueError("File exceeds maximum allowed size of 15MB.")
+
+        # Prohibited executable signatures
+        if file_bytes.startswith(b"MZ") or file_bytes.startswith(b"\x7fELF") or file_bytes.startswith(b"#!"):
+            raise ValueError("Executable files are strictly prohibited. Binary files and scripts are prohibited.")
+        if file_bytes.startswith(b"PK\x03\x04") and any(ext in filename.lower() for ext in [".exe", ".jar", ".war"]):
+            raise ValueError("Executable archive packages are prohibited.")
+
+        # Script injection check
+        sample = file_bytes[:1024].lower()
+        if b"<script" in sample or b"javascript:" in sample or b"<iframe" in sample:
+            raise ValueError("Embedded script payloads in medical documents are prohibited.")
+
+        fn_lower = filename.lower()
+        if fn_lower.endswith(".pdf") or "pdf" in mime_type.lower():
+            if not file_bytes.startswith(b"%PDF-"):
+                raise ValueError("Corrupted or invalid PDF: Missing %PDF- magic header.")
+            if len(file_bytes) < 32:
+                raise ValueError("Corrupted PDF: Document truncated or incomplete.")
+        elif fn_lower.endswith(".png"):
+            if not file_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+                raise ValueError("Corrupted or invalid PNG image.")
+        elif fn_lower.endswith((".jpg", ".jpeg")):
+            if not file_bytes.startswith(b"\xff\xd8\xff"):
+                raise ValueError("Corrupted or invalid JPEG image.")
+
+        sha256_hash = hashlib.sha256(file_bytes).hexdigest()
+        return sha256_hash, file_size
+
+    @staticmethod
+    def extract_metadata(content_text: str) -> Dict[str, Any]:
+        """
+        Extracts laboratory name, patient MRN, and report collection date from clinical text.
+        """
+        lab_name = "Metropolis Reference Laboratory"
+        patient_mrn = "MRN-92041"
+        report_date_str = None
+
+        text_lower = content_text.lower()
+        if "quest" in text_lower:
+            lab_name = "Quest Diagnostics Nichols Institute"
+        elif "labcorp" in text_lower:
+            lab_name = "LabCorp Laboratory Corporation of America"
+        elif "apollo" in text_lower:
+            lab_name = "Apollo Diagnostics Central Reference Lab"
+        elif "dr. lal" in text_lower or "dr lal" in text_lower or "lal path" in text_lower:
+            lab_name = "Dr. Lal PathLabs National Reference Laboratory"
+        elif "mayo clinic" in text_lower or "mayo" in text_lower:
+            lab_name = "Mayo Clinic Laboratories"
+        elif "bioreference" in text_lower:
+            lab_name = "BioReference Health Laboratories"
+
+        mrn_match = re.search(r"(?i)\b(?:MRN|Record\s*#?|Patient\s*ID)\s*[:#\-]?\s*([A-Z0-9\-]+)", content_text)
+        if mrn_match:
+            patient_mrn = mrn_match.group(1).strip()
+
+        date_match = re.search(r"(?i)\b(?:Report\s*Date|Date\s*of\s*Collection|Collection\s*Date|Date)\s*[:#\-]?\s*([0-9]{4}-[0-9]{2}-[0-9]{2}|[0-9]{1,2}[/\-][0-9]{1,2}[/\-][0-9]{2,4})", content_text)
+        if date_match:
+            report_date_str = date_match.group(1).strip()
+
+        return {
+            "laboratory_name": lab_name,
+            "patient_mrn": patient_mrn,
+            "report_date_str": report_date_str,
+        }
+
     @staticmethod
     def extract_text_from_pdf_bytes(pdf_bytes: bytes) -> str:
         """
@@ -182,15 +288,20 @@ class ReportParser:
 
         # If standard medical report text (or OCR text)
         if not measurements:
+            sorted_keys = sorted(REFERENCE_RANGES.keys(), key=len, reverse=True)
             lines = content.splitlines()
             for line in lines:
                 line_clean = line.strip()
                 if not line_clean or len(line_clean) < 3:
                     continue
 
-                for ref_key, ref_info in REFERENCE_RANGES.items():
-                    # Match pattern: "Test Name : 12.5 mg/dL" or "Test Name 12.5"
-                    pattern = rf"(?i)\b{re.escape(ref_key)}\b\s*[:=\-]?\s*([0-9]+\.?[0-9]*)"
+                line_matched = False
+                for ref_key in sorted_keys:
+                    if line_matched:
+                        break
+                    ref_info = REFERENCE_RANGES[ref_key]
+                    # Match pattern: "Test Name : 12.5 mg/dL", "Test Name (Abbr): 12.5", or "Test Name 12.5"
+                    pattern = rf"(?i)\b{re.escape(ref_key)}\b(?:\s*\([^)]*\))?\)?\s*[:=\-]?\s*([0-9]+\.?[0-9]*)"
                     match = re.search(pattern, line_clean)
                     if match:
                         try:
@@ -199,6 +310,7 @@ class ReportParser:
                             # Avoid duplicates in same parse
                             if not any(x["test_name"].lower() == ref_key.lower() for x in measurements):
                                 measurements.append(m)
+                            line_matched = True
                         except (ValueError, TypeError):
                             continue
 

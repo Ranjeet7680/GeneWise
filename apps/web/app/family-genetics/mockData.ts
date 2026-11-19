@@ -1,0 +1,501 @@
+import {
+  CarrierConditionInfo,
+  EducationalRiskCategory,
+  FamilyGeneticsOverview,
+  FamilyMember,
+  GeneticCounsellor,
+  GeneticRiskSummary,
+  PreconceptionPlan,
+  SpecialistReferral,
+} from "./types";
+
+export const MANDATED_DISCLAIMER =
+  "MediPredict AI provides educational genetic and family-history risk awareness. It does not diagnose genetic conditions, determine reproductive outcomes, or replace clinical genetic testing and professional genetic counselling.";
+
+export const INITIAL_OVERVIEW: FamilyGeneticsOverview = {
+  family_members_count: 7,
+  pedigree_completeness_pct: 82,
+  conditions_recorded_count: 5,
+  genetic_variants_count: 2,
+  carrier_conditions_count: 6,
+  referrals_count: 1,
+  primary_risk_level: "Further discussion may be useful",
+  disclaimer: MANDATED_DISCLAIMER,
+};
+
+export const INITIAL_MEMBERS: FamilyMember[] = [
+  {
+    id: 1,
+    first_name: "Self",
+    last_name: "Proband",
+    relationship: "Self (Proband)",
+    biological_branch: "immediate",
+    biological_sex: "female",
+    generation_depth: 3,
+    is_proband: true,
+    vital_status: "living",
+    age_current_or_death: 29,
+    year_of_birth: 1997,
+    carrier_status: "carrier",
+    notes: "Carrier for Beta Thalassemia trait (HBB:c.92+5G>C). Planning pregnancy.",
+    conditions: [
+      {
+        id: 101,
+        condition_name: "Beta Thalassemia Minor (Trait)",
+        icd10_code: "D56.1",
+        age_of_diagnosis: 18,
+        is_genetic_confirmed: true,
+        notes: "Confirmed by Hb HPLC (HbA2: 5.2%) and DNA sequencing",
+      },
+    ],
+  },
+  {
+    id: 2,
+    first_name: "Rajesh",
+    last_name: "Sharma",
+    relationship: "Father",
+    biological_branch: "paternal",
+    biological_sex: "male",
+    generation_depth: 2,
+    is_proband: false,
+    vital_status: "living",
+    age_current_or_death: 58,
+    year_of_birth: 1968,
+    carrier_status: "carrier",
+    notes: "Beta Thalassemia trait documented during pre-surgical workup.",
+    conditions: [
+      {
+        id: 102,
+        condition_name: "Beta Thalassemia Minor",
+        icd10_code: "D56.1",
+        age_of_diagnosis: 42,
+        is_genetic_confirmed: true,
+      },
+      {
+        id: 103,
+        condition_name: "Essential Hypertension",
+        icd10_code: "I10",
+        age_of_diagnosis: 50,
+        is_genetic_confirmed: false,
+      },
+    ],
+  },
+  {
+    id: 3,
+    first_name: "Sunita",
+    last_name: "Sharma",
+    relationship: "Mother",
+    biological_branch: "maternal",
+    biological_sex: "female",
+    generation_depth: 2,
+    is_proband: false,
+    vital_status: "living",
+    age_current_or_death: 55,
+    year_of_birth: 1971,
+    carrier_status: "negative",
+    notes: "CBC and HPLC normal. No hemoglobinopathy identified.",
+    conditions: [
+      {
+        id: 104,
+        condition_name: "Type 2 Diabetes Mellitus",
+        icd10_code: "E11",
+        age_of_diagnosis: 48,
+        is_genetic_confirmed: false,
+      },
+    ],
+  },
+  {
+    id: 4,
+    first_name: "Ramesh",
+    last_name: "Sharma",
+    relationship: "Paternal Grandfather",
+    biological_branch: "paternal",
+    biological_sex: "male",
+    generation_depth: 1,
+    is_proband: false,
+    vital_status: "deceased",
+    age_current_or_death: 74,
+    year_of_birth: 1938,
+    carrier_status: "unknown",
+    notes: "Died of cardiac event. Had mild chronic anemia of unknown cause.",
+    conditions: [
+      {
+        id: 105,
+        condition_name: "Coronary Artery Disease",
+        icd10_code: "I25.1",
+        age_of_diagnosis: 62,
+        is_genetic_confirmed: false,
+      },
+      {
+        id: 106,
+        condition_name: "Microcytic Anemia (Etiology Unverified)",
+        icd10_code: "D50.9",
+        age_of_diagnosis: 55,
+        is_genetic_confirmed: false,
+      },
+    ],
+  },
+  {
+    id: 5,
+    first_name: "Kamla",
+    last_name: "Sharma",
+    relationship: "Paternal Grandmother",
+    biological_branch: "paternal",
+    biological_sex: "female",
+    generation_depth: 1,
+    is_proband: false,
+    vital_status: "living",
+    age_current_or_death: 80,
+    year_of_birth: 1946,
+    carrier_status: "unknown",
+    notes: "Mild osteoarthritis, no known inherited hemoglobin disorder.",
+    conditions: [],
+  },
+  {
+    id: 6,
+    first_name: "Mohan",
+    last_name: "Verma",
+    relationship: "Maternal Grandfather",
+    biological_branch: "maternal",
+    biological_sex: "male",
+    generation_depth: 1,
+    is_proband: false,
+    vital_status: "deceased",
+    age_current_or_death: 71,
+    year_of_birth: 1941,
+    carrier_status: "untested",
+    notes: "Type 2 Diabetes and chronic kidney disease.",
+    conditions: [
+      {
+        id: 107,
+        condition_name: "Type 2 Diabetes Mellitus",
+        icd10_code: "E11",
+        age_of_diagnosis: 52,
+        is_genetic_confirmed: false,
+      },
+    ],
+  },
+  {
+    id: 7,
+    first_name: "Arjun",
+    last_name: "Sharma",
+    relationship: "Brother",
+    biological_branch: "immediate",
+    biological_sex: "male",
+    generation_depth: 3,
+    is_proband: false,
+    vital_status: "living",
+    age_current_or_death: 26,
+    year_of_birth: 2000,
+    carrier_status: "unknown",
+    notes: "Has not undergone carrier screening yet. Advised to consider screening before family planning.",
+    conditions: [],
+  },
+];
+
+export const INITIAL_RISK_SUMMARY: GeneticRiskSummary = {
+  risk_category: "Further discussion may be useful",
+  observed_family_history: [
+    "Confirmed Beta Thalassemia minor (trait) documented in proband and father across two generations.",
+    "Early adult-onset Type 2 Diabetes observed across maternal grandfather and mother.",
+    "Coronary artery disease diagnosed at age 62 in paternal grandfather.",
+    "Maternal grandmother medical history remains unrecorded.",
+  ],
+  relevant_inherited_conditions: [
+    "Beta Thalassemia (Autosomal Recessive hemoglobin disorder involving HBB gene)",
+    "Familial Type 2 Diabetes (Multifactorial / Polygenic susceptibility)",
+    "Early-onset Coronary Artery Disease (Multifactorial cardiovascular risk)",
+  ],
+  why_pattern_deserves_attention: [
+    "Beta Thalassemia is an autosomal recessive disorder. Because the proband is a validated carrier, partner screening is critical before conception to evaluate reproductive risk for Beta Thalassemia Major.",
+    "Multifactorial conditions (T2D and CAD) in first-degree and second-degree relatives warrant early preventive metabolic and cardiovascular monitoring.",
+  ],
+  missing_information: [
+    "Partner carrier screening status (Hemoglobin HPLC and complete blood count) is currently unknown.",
+    "Maternal grandmother's health history and cause of death (if applicable) are missing.",
+    "Brother has unverified carrier status for Beta Thalassemia trait.",
+  ],
+  evidence_and_sources: [
+    {
+      title: "MedlinePlus Genetics: Beta Thalassemia",
+      source: "National Library of Medicine (NIH)",
+      url: "https://medlineplus.gov/genetics/condition/beta-thalassemia/",
+      level: "Authoritative Clinical Reference",
+    },
+    {
+      title: "Carrier Screening for Genetic Conditions (ACOG Practice Bulletin No. 690)",
+      source: "American College of Obstetricians and Gynecologists",
+      url: "https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2017/03/carrier-screening-for-genetic-conditions",
+      level: "Clinical Practice Guideline",
+    },
+    {
+      title: "GeneReviews: Beta-Hemoglobinopathies",
+      source: "NCBI Bookshelf / University of Washington",
+      url: "https://www.ncbi.nlm.nih.gov/books/NBK1426/",
+      level: "Peer-reviewed Expert Review",
+    },
+    {
+      title: "CDC Public Health Genomics: Family Health History",
+      source: "Centers for Disease Control and Prevention",
+      url: "https://www.cdc.gov/genomics/famhistory/",
+      level: "Public Health Standard",
+    },
+  ],
+  suggested_clinician_questions: [
+    "Should my reproductive partner undergo a Complete Blood Count (CBC) and Hemoglobin HPLC / capillary electrophoresis?",
+    "If my partner's MCV is normal, does residual risk for rare HBB variants still exist?",
+    "Should my brother be evaluated for Beta Thalassemia carrier status before he plans a family?",
+    "What lifestyle and screening measures are recommended given my paternal history of coronary artery disease?",
+  ],
+  recommended_next_steps: [
+    "Arrange partner carrier screening (CBC + Hemoglobin HPLC) prior to conception.",
+    "Schedule a preconception consultation with a certified genetic counsellor.",
+    "Collect health information regarding the maternal grandmother to complete the 3-generation pedigree.",
+    "Maintain routine cardiovascular and metabolic preventative screenings.",
+  ],
+  disclaimer: MANDATED_DISCLAIMER,
+};
+
+export const INITIAL_CARRIER_CONDITIONS: CarrierConditionInfo[] = [
+  {
+    condition_name: "Beta Thalassemia & Hemoglobin Disorders",
+    gene_symbol: "HBB",
+    inheritance_pattern: "Autosomal Recessive",
+    who_should_consider: [
+      "Individuals of Mediterranean, South Asian, Southeast Asian, Middle Eastern, or African ancestry",
+      "Anyone with an individual or family history of microcytic anemia or low MCV (< 80 fL)",
+      "All couples planning a pregnancy or currently in early pregnancy",
+    ],
+    screening_limitations: [
+      "Standard HPLC screening detects major variants (HbS, HbE, HbD, elevated HbA2) but may miss silent alpha-thalassemia or rare copy number variants.",
+      "Concomitant iron deficiency can artificially lower HbA2, potentially masking a Beta Thalassemia trait.",
+    ],
+    residual_risk_explanation:
+      "A negative hemoglobin screening test markedly reduces the probability of being a carrier, but does not completely eliminate it because rare non-deletional or regulatory mutations may not be captured by basic screening panels.",
+    partner_testing_guidance:
+      "If one partner is identified as a carrier of Beta Thalassemia or another hemoglobin variant, partner screening with CBC and Hemoglobin HPLC is strongly recommended before pregnancy. If both partners carry a mutation in the same gene, there is a 25% chance in each pregnancy of having a child with Beta Thalassemia Major or a severe sickling disorder.",
+    source_references: [
+      "ACOG Practice Bulletin No. 690: Carrier Screening for Genetic Conditions",
+      "GeneReviews: Beta-Hemoglobinopathies",
+      "NHGRI: Learning About Thalassemia",
+    ],
+    last_reviewed_date: "November 2025",
+  },
+  {
+    condition_name: "Sickle Cell Disease",
+    gene_symbol: "HBB (HbS variant)",
+    inheritance_pattern: "Autosomal Recessive",
+    who_should_consider: [
+      "Individuals of African, South Asian, Middle Eastern, and Mediterranean descent",
+      "Any individual with low hemoglobin or personal/family history of sickle cell anemia or trait",
+      "Couples planning preconception evaluation",
+    ],
+    screening_limitations: [
+      "Solubility tests (sickledex) only detect the presence of HbS; they cannot distinguish between sickle cell trait and sickle cell disease, nor do they quantify hemoglobin fractions.",
+      "Requires confirmatory HPLC or capillary electrophoresis.",
+    ],
+    residual_risk_explanation:
+      "A negative HPLC test reliably excludes common HbS and related beta-chain variants with high sensitivity (>99%), though rare novel mutations remain theoretically possible.",
+    partner_testing_guidance:
+      "If one partner has Sickle Cell Trait (HbAS), testing the biological partner for HbS, Beta Thalassemia, and other hemoglobin variants is critical to assess the risk of Sickle Cell Anemia or Sickle Beta-Thalassemia.",
+    source_references: [
+      "CDC: Sickle Cell Trait and Disease Clinical Guidelines",
+      "MedlinePlus: Sickle Cell Disease",
+    ],
+    last_reviewed_date: "October 2025",
+  },
+  {
+    condition_name: "Cystic Fibrosis (CF)",
+    gene_symbol: "CFTR",
+    inheritance_pattern: "Autosomal Recessive",
+    who_should_consider: [
+      "Universal recommendation: Offered to all individuals considering pregnancy or currently pregnant (ACOG/ACMG)",
+      "Individuals with a family history of cystic fibrosis, bronchiectasis, or male infertility due to CBAVD",
+    ],
+    screening_limitations: [
+      "Targeted mutation panels typically analyze 23 to 100+ common CFTR mutations. Rare private mutations and complex alleles may be missed unless full gene sequencing is performed.",
+      "Detection rate varies by ancestry (highest in Caucasian populations, lower in Asian and African ancestries).",
+    ],
+    residual_risk_explanation:
+      "Because variant panels do not sequence every base of the CFTR gene, a negative result means the person has a significantly reduced carrier risk (e.g. 1 in 200–500 rather than 1 in 25), but not zero.",
+    partner_testing_guidance:
+      "If one partner is a CF carrier, the biological partner should undergo CFTR screening promptly. If both are carriers, each pregnancy carries a 25% risk of cystic fibrosis.",
+    source_references: [
+      "ACMG Technical Standard: CFTR Carrier Testing (2023 update)",
+      "ACOG Committee Opinion No. 691: Carrier Screening for Cystic Fibrosis",
+    ],
+    last_reviewed_date: "September 2025",
+  },
+  {
+    condition_name: "Spinal Muscular Atrophy (SMA)",
+    gene_symbol: "SMN1",
+    inheritance_pattern: "Autosomal Recessive",
+    who_should_consider: [
+      "Offered universally to all reproductive-age women and couples (ACOG/ACMG standard)",
+      "Individuals with a family history of motor neuron disease, infant hypotonia, or early infant mortality",
+    ],
+    screening_limitations: [
+      "Standard screening measures SMN1 exon 7 copy number. Approximately 3-4% of carriers have two copies on one chromosome and zero on the other ('2+0 silent carriers'), which standard dosage assays cannot detect without linkage or specific SNP markers.",
+      "Approximately 2% of SMA cases arise from de novo mutations.",
+    ],
+    residual_risk_explanation:
+      "A 2-copy SMN1 result substantially lowers carrier risk but does not eliminate it due to silent carrier status and point mutations.",
+    partner_testing_guidance:
+      "If one partner has 1 copy of SMN1 (confirmed carrier), partner screening is essential to determine whether prenatal or pre-implantation genetic counseling is indicated.",
+    source_references: [
+      "ACMG Practice Guideline: Carrier Screening for Spinal Muscular Atrophy",
+      "Cure SMA Clinical Advisory Guidelines",
+    ],
+    last_reviewed_date: "August 2025",
+  },
+  {
+    condition_name: "Inherited Metabolic Disorders (Tay-Sachs, Gaucher, PKU)",
+    gene_symbol: "HEXA, GBA, PAH",
+    inheritance_pattern: "Autosomal Recessive",
+    who_should_consider: [
+      "Individuals of Ashkenazi Jewish, French Canadian, Cajun, or consanguineous heritage",
+      "Couples with unexplained neonatal losses or metabolic decompensations in family members",
+      "Patients requesting expanded carrier screening",
+    ],
+    screening_limitations: [
+      "Enzyme activity assays (e.g. Hexosaminidase A) can be influenced by pregnancy and oral contraceptives, requiring leukocyte rather than serum testing.",
+      "Pseudodeficiency alleles can cause false-positive biochemical testing without clinical disease.",
+    ],
+    residual_risk_explanation:
+      "Combining biochemical enzyme measurement with DNA molecular panels provides highest sensitivity, yet residual risk remains for uncharacterized intronic or novel variants.",
+    partner_testing_guidance:
+      "Sequential or concurrent partner screening should be performed when either partner has elevated risk or positive screening results.",
+    source_references: [
+      "ACMG Guidelines on Ashkenazi Jewish Carrier Screening",
+      "GeneReviews: Hexosaminidase A Deficiency",
+    ],
+    last_reviewed_date: "July 2025",
+  },
+  {
+    condition_name: "Expanded Carrier Screening Panels (ECS)",
+    gene_symbol: "Multi-gene panel (100–500+ genes)",
+    inheritance_pattern: "Autosomal Recessive & X-Linked",
+    who_should_consider: [
+      "Any couple desiring comprehensive preconception evaluation regardless of reported ethnicity",
+      "Couples with consanguineous marriages or shared geographic background",
+      "Individuals utilizing donor gametes (sperm/egg donation)",
+    ],
+    screening_limitations: [
+      "Increases the detection of Variants of Uncertain Significance (VUS) and conditions with mild, variable expressivity or late onset.",
+      "Does not screen for chromosomal aneuploidies, polygenic disorders, or epigenetic conditions.",
+    ],
+    residual_risk_explanation:
+      "Pan-ethnic ECS significantly reduces risk across hundreds of severe pediatric conditions, but cannot eliminate residual risk for every rare genetic disease.",
+    partner_testing_guidance:
+      "Both partners should be tested concurrently or sequentially. Genetic counseling is strongly advised whenever both partners carry mutations in the same recessive gene or a female carries an X-linked variant.",
+    source_references: [
+      "ACMG Consensus Statement: Expanded Carrier Screening (Genetics in Medicine)",
+      "ACOG Committee Opinion No. 690",
+    ],
+    last_reviewed_date: "November 2025",
+  },
+];
+
+export const INITIAL_COUNSELLORS: GeneticCounsellor[] = [
+  {
+    id: 1,
+    full_name: "Dr. Ananya Sen, PhD, CGC",
+    credentials: "Certified Genetic Counsellor (BGC / Board Certified)",
+    specialty: "Reproductive & Preconception Genetics",
+    affiliation: "National Institute of Genomic Medicine & Health (Demo)",
+    city: "Mumbai",
+    state: "Maharashtra",
+    telehealth_available: true,
+    in_person_available: true,
+    languages_spoken: ["English", "Hindi", "Bengali", "Marathi"],
+    consultation_fee_inr: 1500,
+    available_days: ["Monday", "Wednesday", "Friday"],
+    bio: "Specializing in hemoglobinopathy carrier screening, reproductive risk assessment, and family pedigree analysis with 12+ years of clinical experience.",
+  },
+  {
+    id: 2,
+    full_name: "Dr. Vikramaditya Rao, MD, DM",
+    credentials: "Clinical Geneticist & Pediatrician",
+    specialty: "Clinical Genetics & Inherited Metabolic Disorders",
+    affiliation: "Apollo Center for Rare Disease Genomics (Demo)",
+    city: "Bengaluru",
+    state: "Karnataka",
+    telehealth_available: true,
+    in_person_available: true,
+    languages_spoken: ["English", "Hindi", "Kannada", "Telugu"],
+    consultation_fee_inr: 2000,
+    available_days: ["Tuesday", "Thursday", "Saturday"],
+    bio: "Expertise in adult-onset hereditary conditions, dysmorphology, and metabolic carrier panels.",
+  },
+  {
+    id: 3,
+    full_name: "Dr. Priya Sundaram, MS, CGC",
+    credentials: "Board Certified Genetic Counsellor",
+    specialty: "Cancer Genetics & Familial Risk",
+    affiliation: "Tata Medical Genomics & Preventive Care Center (Demo)",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    telehealth_available: true,
+    in_person_available: false,
+    languages_spoken: ["English", "Tamil", "Telugu", "Hindi"],
+    consultation_fee_inr: 1400,
+    available_days: ["Monday", "Tuesday", "Thursday"],
+    bio: "Focuses on hereditary breast, ovarian, and colorectal cancer syndromes (BRCA1/2, Lynch Syndrome).",
+  },
+  {
+    id: 4,
+    full_name: "Dr. Arvind Mehta, MD, DGO",
+    credentials: "Maternal-Fetal Medicine (MFM) Specialist",
+    specialty: "Reproductive Genetics & High-Risk Obstetrics",
+    affiliation: "Max Healthcare Institute for Advanced Obstetrics (Demo)",
+    city: "New Delhi",
+    state: "Delhi",
+    telehealth_available: true,
+    in_person_available: true,
+    languages_spoken: ["English", "Hindi", "Punjabi"],
+    consultation_fee_inr: 2200,
+    available_days: ["Wednesday", "Friday", "Sunday"],
+    bio: "Pre-implantation genetic diagnosis consultation, non-invasive prenatal testing (NIPT), and carrier screening guidance.",
+  },
+];
+
+export const INITIAL_PRECONCEPTION_PLAN: PreconceptionPlan = {
+  partner_family_history_collected: false,
+  known_conditions_reviewed: true,
+  previous_genetic_tests_reviewed: true,
+  carrier_screening_discussed: false,
+  medications_reviewed: true,
+  vaccinations_reviewed: true,
+  folic_acid_initiated: true,
+  clinician_questions_prepared: false,
+  counsellor_consultation_scheduled: false,
+  partner_notes: "Partner has not had CBC or Hb HPLC done. Planning appointment next month.",
+  medication_notes: "Currently taking prenatal multivitamin with 800mcg folic acid. No teratogenic medications.",
+  vaccination_notes: "Rubella IgG positive (immune). Hepatitis B booster completed 2 years ago.",
+  custom_questions: [
+    "Should my partner take a carrier panel before we try to conceive?",
+    "Does my Beta Thalassemia trait require any specific maternal monitoring during pregnancy?",
+  ],
+  follow_up_checklist: [
+    { task: "Obtain partner's family health history (3 generations)", completed: false },
+    { task: "Schedule partner CBC and Hemoglobin HPLC test", completed: false },
+    { task: "Consult with a Certified Genetic Counsellor", completed: false },
+    { task: "Verify immunity to Varicella and CMV", completed: true },
+    { task: "Continue daily 400-800 mcg folic acid supplementation", completed: true },
+  ],
+};
+
+export const INITIAL_REFERRALS: SpecialistReferral[] = [
+  {
+    id: 1,
+    counsellor_id: 1,
+    counsellor_name: "Dr. Ananya Sen, PhD, CGC",
+    specialty: "Reproductive & Preconception Genetics",
+    referral_status: "requested",
+    preferred_date: "2026-11-25",
+    reason_for_referral: "Beta Thalassemia trait carrier preconception review & partner screening guidance.",
+    notes: "Patient is a known carrier (HBB:c.92+5G>C). Partner is scheduled for testing.",
+    consent_given: true,
+    created_at: "2026-11-18T10:00:00Z",
+  },
+];

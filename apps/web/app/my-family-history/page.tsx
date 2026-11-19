@@ -959,6 +959,31 @@ export default function MyFamilyHistoryPage() {
         <AppSidebar />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full animate-fade-in-up pb-28 md:pb-16">
+          {/* New Upgrade Announcement Banner */}
+          <div className="p-4 rounded-xl border border-teal-500/30 bg-gradient-to-r from-teal-500/10 via-cyan-500/10 to-teal-500/5 dark:from-teal-950/40 dark:via-cyan-950/30 dark:to-teal-950/20 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Dna className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-teal-700 dark:text-teal-300 bg-teal-100 dark:bg-teal-900/60 px-2 py-0.5 rounded-full">New Upgrade</span>
+                  <h3 className="text-sm font-bold text-foreground">Family Health & Genetic Risk Intelligence Center</h3>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Access 3-generation pedigree mapping, educational pattern detection (AD, AR, X-linked), carrier screening guides, preconception planner, and AI Genetic Assistant.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/family-genetics"
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-all whitespace-nowrap self-end sm:self-center"
+            >
+              <span>Open Intelligence Center</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
           {/* Header Banner */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border">
             <div className="space-y-1.5">

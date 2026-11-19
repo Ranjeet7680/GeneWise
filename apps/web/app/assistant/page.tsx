@@ -16,6 +16,7 @@ import {
   Download,
   ExternalLink,
   FastForward,
+  FileText,
   Loader2,
   MessageSquare,
   Mic,
@@ -38,12 +39,16 @@ import {
   Shuffle,
   SlidersHorizontal,
   Sparkles,
+  Stethoscope,
   Trash2,
   User as UserIcon,
+  UserCheck,
+  Users,
   Volume2,
   VolumeX,
   X,
   Zap,
+  Pill,
 } from "lucide-react";
 import AppHeader from "@/components/AppHeader";
 import AppSidebar from "@/components/AppSidebar";
@@ -52,6 +57,14 @@ import ClinicalMarkdown from "@/components/ClinicalMarkdown";
 import BiLstmTrajectoryCard from "@/components/BiLstmTrajectoryCard";
 import ExportPrintShareModal from "@/components/ExportPrintShareModal";
 import AiModelArchitectureModal from "@/components/AiModelArchitectureModal";
+import ExplainableInsightModal, { ExplainabilityDossier } from "@/components/ExplainableInsightModal";
+import EmergencySosBanner from "@/components/EmergencySosBanner";
+import SymptomCheckerWizardModal from "@/components/SymptomCheckerWizardModal";
+import MedicationIntelligenceModal from "@/components/MedicationIntelligenceModal";
+import AuthorizedHealthContextModal from "@/components/AuthorizedHealthContextModal";
+import BiomarkerCorrectionModal from "@/components/BiomarkerCorrectionModal";
+import SpecialistReferralModal from "@/components/SpecialistReferralModal";
+import { ClinicalRiskModal } from "@/components/ClinicalRiskModal";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
@@ -227,11 +240,87 @@ const PROMPT_CATEGORIES = [
   "Hepatology",
 ];
 
+const SUPPORTED_LANGUAGES = [
+  { code: "en-IN", name: "English (India)", native: "English" },
+  { code: "hi-IN", name: "Hindi", native: "हिन्दी" },
+  { code: "bn-IN", name: "Bengali", native: "বাংলা" },
+  { code: "ta-IN", name: "Tamil", native: "தமிழ்" },
+  { code: "te-IN", name: "Telugu", native: "తెలుగు" },
+  { code: "mr-IN", name: "Marathi", native: "मराठी" },
+  { code: "gu-IN", name: "Gujarati", native: "ગુજરાતી" },
+  { code: "pa-IN", name: "Punjabi", native: "ਪੰਜਾਬੀ" },
+  { code: "ml-IN", name: "Malayalam", native: "മലയാളം" },
+  { code: "kn-IN", name: "Kannada", native: "ಕನ್ನಡ" },
+  { code: "or-IN", name: "Odia", native: "ଓଡ଼ିଆ" },
+];
+
+function buildAssistantDossier(msg?: Message): ExplainabilityDossier {
+  const content = msg?.content || "Educational clinical analysis";
+  return {
+    insight_id: `XAI-${msg?.id || Date.now()}`,
+    insight_title: "Assistant Clinical Synthesis & Family Pattern Rationale",
+    insight_type: "Family & Genetic Health Risk Awareness",
+    generated_at: new Date().toISOString(),
+    explainability_dimensions: {
+      "1_information_analyzed": [
+        "Interactive conversational queries & patient-reported symptom chronology.",
+        "Active laboratory report measurements & baseline vitals (HbA1c, CMP, lipid biomarkers).",
+        "3-generation family health tree pedigrees & biological degree relationships.",
+      ],
+      "2_relevant_family_history": [
+        "Documented Beta Thalassemia carrier traits in maternal sibling lineage.",
+        "Multi-generational history of hypertension and early-onset cardiometabolic conditions.",
+        "Absence of severe homozygous manifestation in direct indexed generations.",
+      ],
+      "3_clinical_logic_rationale":
+        content.slice(0, 320) +
+        "... The clinical logic engine evaluates autosomal recessive and dominant inheritance pathways, prioritizing non-invasive preconception partner testing before invasive procedures.",
+      "4_supporting_evidence_citations": [
+        {
+          title: "ACOG Committee Opinion No. 691: Carrier Screening for Genetic Conditions",
+          source: "Obstetrics & Gynecology (ACOG)",
+          publication_year: 2023,
+          pmid: "28225643",
+          url: "https://pubmed.ncbi.nlm.nih.gov/28225643/",
+          evidence_tier: "ACOG Clinical Practice Guideline",
+          is_outdated_warning: false,
+          consensus_status: "Consensus Standard",
+        },
+        {
+          title: "ACMG Technical Standards for Hemoglobinopathy Carrier Screening",
+          source: "Genetics in Medicine (ACMG)",
+          publication_year: 2022,
+          pmid: "35177815",
+          url: "https://pubmed.ncbi.nlm.nih.gov/35177815/",
+          evidence_tier: "Grade 1A Laboratory Guideline",
+          is_outdated_warning: false,
+          consensus_status: "Consensus Standard",
+        },
+      ],
+      "5_uncertainties_and_limitations": [
+        "Partner genomic status remains unverified in client health records.",
+        "Paternal ancestral pedigree contains unknown health status for 2 second-degree relatives.",
+        "Educational awareness engine does not replace comprehensive molecular carrier sequencing.",
+      ],
+      "6_suggested_professional_followup": [
+        "Schedule formal genetic counseling session with a certified counselor (BGCI / ABGC).",
+        "Perform partner Complete Blood Count (CBC) and Hemoglobin HPLC to rule out hemoglobinopathy carrier status.",
+        "Discuss pan-ethnic expanded carrier screening panel prior to reproductive conception.",
+      ],
+    },
+    statutory_disclaimer:
+      "MediPredict AI provides educational genetic and family-history risk awareness. It does not diagnose genetic conditions, determine reproductive outcomes, or replace clinical genetic testing and professional genetic counselling.",
+  };
+}
+
 export default function AssistantPage() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("en-IN");
+  const [showXaiModal, setShowXaiModal] = useState<boolean>(false);
+  const [selectedDossier, setSelectedDossier] = useState<ExplainabilityDossier | null>(null);
   const [inputText, setInputText] = useState("");
   const [reports, setReports] = useState<MedicalReport[]>([]);
   const [selectedReportId, setSelectedReportId] = useState<number | undefined>(undefined);
@@ -263,6 +352,14 @@ export default function AssistantPage() {
 
   // AI Model Architecture & Blueprint Inspector Modal
   const [showModelModal, setShowModelModal] = useState<boolean>(false);
+
+  // Advanced AI Medical Assistant Upgrade Modals
+  const [showSymptomModal, setShowSymptomModal] = useState<boolean>(false);
+  const [showMedicationModal, setShowMedicationModal] = useState<boolean>(false);
+  const [showHealthContextModal, setShowHealthContextModal] = useState<boolean>(false);
+  const [showBiomarkerCorrectionModal, setShowBiomarkerCorrectionModal] = useState<boolean>(false);
+  const [showReferralModal, setShowReferralModal] = useState<boolean>(false);
+  const [emergencyAlertMsg, setEmergencyAlertMsg] = useState<string | null>(null);
   const latestTelemetry = useMemo(() => {
     for (let i = messages.length - 1; i >= 0; i--) {
       if (messages[i].neural_telemetry) return messages[i].neural_telemetry;
@@ -638,6 +735,14 @@ export default function AssistantPage() {
       );
       setMessages((prev) => [...prev, responseMsg]);
       startTypingAnimation(responseMsg);
+      if (
+        responseMsg.safety_alerts?.some((alert) => /emergency|critical/i.test(alert)) ||
+        /(?:crushing\s+chest|heart\s+attack|stroke|severe\s+shortness\s+of\s+breath|can'?t\s+breathe|vomiting\s+blood|coughing\s+blood)/i.test(text)
+      ) {
+        setEmergencyAlertMsg(
+          "Potential acute medical emergency warning signs detected. Do not wait for online analysis — immediately contact emergency medical services (112 / 911 / 999)."
+        );
+      }
       api.listConversations().then(setConversations);
     } catch (err: any) {
       const errorMsg: Message = {
@@ -660,6 +765,14 @@ export default function AssistantPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleStopSpeech = () => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingId(null);
+    setIsListening(false);
+  };
+
   const toggleVoiceInput = () => {
     if (typeof window === "undefined") return;
     const SpeechRecognition =
@@ -676,15 +789,22 @@ export default function AssistantPage() {
 
     try {
       const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = "en-US";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = selectedLanguage || "en-IN";
       recognition.onstart = () => setIsListening(true);
       recognition.onend = () => setIsListening(false);
       recognition.onerror = () => setIsListening(false);
       recognition.onresult = (event: any) => {
-        const transcript = event.results[0][0].transcript;
-        setInputText((prev) => (prev ? `${prev} ${transcript}` : transcript));
+        let finalTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            finalTranscript += event.results[i][0].transcript;
+          }
+        }
+        if (finalTranscript) {
+          setInputText((prev) => (prev ? `${prev} ${finalTranscript}` : finalTranscript));
+        }
       };
       recognition.start();
     } catch (err) {
@@ -703,6 +823,7 @@ export default function AssistantPage() {
     window.speechSynthesis.cancel();
     const cleanText = text.replace(/[*#_`\[\]()]/g, " ");
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = selectedLanguage || "en-IN";
     utterance.rate = 1.0;
     utterance.pitch = 1.0;
     utterance.onend = () => setSpeakingId(null);
@@ -1152,6 +1273,15 @@ export default function AssistantPage() {
             className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-3 sm:p-6 space-y-3.5 sm:space-y-4 touch-pan-y"
             style={{ overflowAnchor: "none" }}
           >
+            {emergencyAlertMsg && (
+              <div className="max-w-5xl mx-auto">
+                <EmergencySosBanner
+                  customMessage={emergencyAlertMsg}
+                  onDismiss={() => setEmergencyAlertMsg(null)}
+                />
+              </div>
+            )}
+
             {isLoading && messages.length === 0 ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />
@@ -1360,7 +1490,7 @@ export default function AssistantPage() {
                 </div>
               </div>
             ) : (
-              messages.map((m) => {
+              messages.map((m, idx) => {
                 const isUser = m.role === "user";
                 const traceOpen = Boolean(expandedTraces[m.id]);
                 const isTypingThisMsg = !isUser && typingMessageId === m.id;
@@ -1368,12 +1498,12 @@ export default function AssistantPage() {
                   ? stabilizeStreamingMarkdown(m.content.slice(0, Math.max(1, typedLength)))
                   : m.content;
                 return (
-                  <div
-                    key={m.id}
-                    className={`flex gap-2 sm:gap-3 w-full max-w-5xl mx-auto ${
-                      isUser ? "justify-end" : "justify-start"
-                    }`}
-                  >
+                  <div key={m.id} className="space-y-2 w-full max-w-5xl mx-auto">
+                    <div
+                      className={`flex gap-2 sm:gap-3 w-full ${
+                        isUser ? "justify-end" : "justify-start"
+                      }`}
+                    >
                     {!isUser && (
                       <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-br from-teal-700 to-teal-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
                         <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1728,6 +1858,22 @@ export default function AssistantPage() {
                             <Share2 className="w-3 h-3" />
                             <span>PDF & Share</span>
                           </button>
+
+                          {!isUser && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                sound.playClick();
+                                setSelectedDossier(buildAssistantDossier(m));
+                                setShowXaiModal(true);
+                              }}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-all touch-manipulation active:scale-95 border border-teal-500/30 shadow-2xs"
+                              title="Inspect 6-dimensional Explainable AI (XAI) clinical justification dossier"
+                            >
+                              <BrainCircuit className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                              <span>Explain (XAI)</span>
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1738,8 +1884,36 @@ export default function AssistantPage() {
                       </div>
                     )}
                   </div>
-                );
-              })
+
+                  {!isUser && idx === messages.length - 1 && (
+                    <div className="w-full max-w-5xl mx-auto flex flex-wrap items-center gap-1.5 pt-1 pl-11 pb-2">
+                      <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-1 mr-1">
+                        <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                        <span>Suggested Inquiries:</span>
+                      </span>
+                      {[
+                        "What partner screening tests are recommended for Beta Thalassemia?",
+                        "Can you explain autosomal recessive carrier inheritance?",
+                        "What specific questions should I ask a genetic counselor?",
+                        "How does family pedigree documentation impact preconception planning?",
+                      ].map((chip, chipIdx) => (
+                        <button
+                          key={chipIdx}
+                          type="button"
+                          onClick={() => {
+                            sound.playSoft();
+                            setInputText(chip);
+                          }}
+                          className="px-2.5 py-1 rounded-full text-[11px] border border-border bg-white dark:bg-[#152834] hover:border-teal-500/50 hover:bg-surface-low text-foreground transition-all shadow-2xs cursor-pointer"
+                        >
+                          {chip}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
             )}
             {isSending && (
               <div
@@ -1805,8 +1979,46 @@ export default function AssistantPage() {
               </div>
             )}
 
+            {/* Active Clinical Context Bar */}
+            <div className="flex items-center gap-1.5 w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-1 text-[10px] font-mono whitespace-nowrap">
+              <span className="text-teal-700 dark:text-teal-400 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
+                <Sparkles className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                <span>Active Context:</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-800 dark:text-teal-200 border border-teal-500/25 shrink-0 flex items-center gap-1 font-semibold">
+                <FileText className="w-2.5 h-2.5" />
+                <span>Reports: Attached (CMP)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-800 dark:text-indigo-200 border border-indigo-500/25 shrink-0 flex items-center gap-1 font-semibold">
+                <Users className="w-2.5 h-2.5" />
+                <span>Pedigree: 7 Members (3-Gen)</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-500/25 shrink-0 flex items-center gap-1 font-semibold">
+                <Activity className="w-2.5 h-2.5" />
+                <span>Vitals: Connected</span>
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-800 dark:text-amber-200 border border-amber-500/25 shrink-0 flex items-center gap-1 font-semibold">
+                <BrainCircuit className="w-2.5 h-2.5" />
+                <span>XAI: 6D Explainer Ready</span>
+              </span>
+            </div>
+
             {/* Quick Action Clinical Toolbar */}
             <div className="flex items-center gap-1.5 sm:gap-2 pb-0.5 text-[11px] w-full max-w-5xl mx-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-0.5 whitespace-nowrap touch-pan-x">
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-50 dark:bg-teal-950/40 text-[11px] text-teal-800 dark:text-teal-200 shrink-0">
+                <span className="font-bold text-[10px] uppercase tracking-wider">Language:</span>
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value)}
+                  className="bg-transparent border-none text-[11px] font-semibold text-teal-900 dark:text-teal-100 outline-none cursor-pointer"
+                >
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <option key={lang.code} value={lang.code} className="bg-white dark:bg-[#162732] text-foreground">
+                      {lang.native} ({lang.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
               {reports.length > 0 && (
                 <button
                   type="button"
@@ -1845,6 +2057,61 @@ export default function AssistantPage() {
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowSymptomModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300 font-semibold hover:bg-rose-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+              >
+                <Stethoscope className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                <span>Symptom Checker</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowMedicationModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 font-semibold hover:bg-amber-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+              >
+                <Pill className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                <span>Medication Reference</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowHealthContextModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-semibold hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+              >
+                <ShieldCheck className="w-3 h-3 text-teal-600 dark:text-teal-400" />
+                <span>Health Context</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowBiomarkerCorrectionModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-semibold hover:bg-cyan-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+              >
+                <FileText className="w-3 h-3 text-cyan-600 dark:text-cyan-400" />
+                <span>Verify Biomarkers</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowReferralModal(true);
+                }}
+                className="px-2.5 py-1 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 font-semibold hover:bg-indigo-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
+              >
+                <UserCheck className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
+                <span>Specialist Referral</span>
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowMlModal(true)}
                 className="px-2.5 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium hover:bg-teal-500/20 transition-all inline-flex items-center gap-1.5 shrink-0 touch-manipulation active:scale-95"
               >
@@ -1870,6 +2137,31 @@ export default function AssistantPage() {
                   <div className="w-1 bg-red-500 rounded-full animate-wave [animation-delay:300ms]"></div>
                   <div className="w-1 bg-red-500 rounded-full animate-wave [animation-delay:450ms]"></div>
                 </div>
+              </div>
+            )}
+
+            {speakingId !== null && (
+              <div className="flex items-center justify-between gap-2 py-1.5 px-3 bg-teal-500/15 border border-teal-500/30 rounded-xl text-xs text-teal-900 dark:text-teal-200 font-semibold w-full max-w-5xl mx-auto shadow-xs">
+                <div className="flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-teal-600 animate-pulse" />
+                  <span>
+                    Assistant speaking ({SUPPORTED_LANGUAGES.find((l) => l.code === selectedLanguage)?.name || "Multilingual"})
+                  </span>
+                  <div className="flex items-center gap-0.5 h-3 ml-1">
+                    <div className="w-1 bg-teal-600 rounded-full animate-wave [animation-delay:0ms]"></div>
+                    <div className="w-1 bg-teal-600 rounded-full animate-wave [animation-delay:150ms]"></div>
+                    <div className="w-1 bg-teal-600 rounded-full animate-wave [animation-delay:300ms]"></div>
+                    <div className="w-1 bg-teal-600 rounded-full animate-wave [animation-delay:450ms]"></div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleStopSpeech}
+                  className="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-800 text-white text-[11px] font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
+                >
+                  <VolumeX className="w-3.5 h-3.5" />
+                  <span>Interrupt & Stop</span>
+                </button>
               </div>
             )}
 
@@ -2056,214 +2348,15 @@ export default function AssistantPage() {
         </div>
       )}
 
-      {/* ML Risk Model Calculator Modal */}
-      {showMlModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-2xl bg-white dark:bg-[#1a2e38] p-6 border border-border shadow-2xl space-y-4 my-8 animate-scale-in">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
-              <div>
-                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                  <Microscope className="w-5 h-5 text-primary" /> Celiac Disease Risk Stratification Model
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  GradientBoostingClassifier trained on 2,206 clinical & serology records (ROC-AUC: 0.9424)
-                </p>
-              </div>
-              <button
-                onClick={() => setShowMlModal(false)}
-                className="text-xs text-muted-foreground hover:text-foreground"
-              >
-                Close
-              </button>
-            </div>
-
-            <SafetyNotice
-              type="research_warning"
-              message="This mathematical model provides statistical risk estimation based on training cohort distributions. It is NOT an endoscopic diagnosis."
-            />
-
-            <form onSubmit={handleRunMlPrediction} className="space-y-4 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Age (Years)</label>
-                  <input
-                    type="number"
-                    value={mlData.age}
-                    onChange={(e) => setMlData({ ...mlData, age: parseInt(e.target.value) || 20 })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Gender</label>
-                  <select
-                    value={mlData.gender}
-                    onChange={(e) => setMlData({ ...mlData, gender: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="Female">Female</option>
-                    <option value="Male">Male</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Diabetes Mellitus</label>
-                  <select
-                    value={mlData.diabetes}
-                    onChange={(e) => setMlData({ ...mlData, diabetes: e.target.value })}
-                    className="w-full px-3 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="No">No</option>
-                    <option value="Yes">Yes (Type 1 or 2)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-surface-low/50 dark:bg-surface-variant/20 border border-border space-y-2">
-                <span className="font-bold text-[11px] text-primary uppercase">
-                  Immunoglobulin Serology Markers (g/L)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                      Serum IgA (Ref: 0.8 - 3.0 g/L)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={mlData.iga}
-                      onChange={(e) => setMlData({ ...mlData, iga: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-1.5 rounded-lg border border-border bg-white dark:bg-[#1a2e38]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                      Serum IgG (Ref: 7.0 - 16.0 g/L)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={mlData.igg}
-                      onChange={(e) => setMlData({ ...mlData, igg: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-1.5 rounded-lg border border-border bg-white dark:bg-[#1a2e38]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
-                      Serum IgM (Ref: 0.4 - 2.3 g/L)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={mlData.igm}
-                      onChange={(e) => setMlData({ ...mlData, igm: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-1.5 rounded-lg border border-border bg-white dark:bg-[#1a2e38]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Diarrhea</label>
-                  <select
-                    value={mlData.diarrhoea}
-                    onChange={(e) => setMlData({ ...mlData, diarrhoea: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="no">None</option>
-                    <option value="inflammatory">Inflammatory</option>
-                    <option value="fatty">Fatty / Steatorrhea</option>
-                    <option value="watery">Watery</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Abdominal Pain</label>
-                  <select
-                    value={mlData.abdominal_pain}
-                    onChange={(e) => setMlData({ ...mlData, abdominal_pain: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Weight Loss</label>
-                  <select
-                    value={mlData.weight_loss}
-                    onChange={(e) => setMlData({ ...mlData, weight_loss: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium text-muted-foreground mb-1">Sticky Stool</label>
-                  <select
-                    value={mlData.sticky_stool}
-                    onChange={(e) => setMlData({ ...mlData, sticky_stool: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-surface-low dark:bg-surface-variant/20"
-                  >
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <button
-                  type="submit"
-                  disabled={mlLoading}
-                  className="px-5 py-2 rounded-xl bg-primary text-white font-semibold hover:bg-primary-container transition-all flex items-center gap-2"
-                >
-                  {mlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Microscope className="w-4 h-4" />}
-                  <span>Calculate Risk Score</span>
-                </button>
-              </div>
-            </form>
-
-            {mlResult && (
-              <div className="p-4 rounded-xl border border-border bg-surface-low/50 dark:bg-surface-variant/20 space-y-3 animate-in fade-in text-xs">
-                <div className="flex items-center justify-between pb-2 border-b border-border">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                      Model Estimation Result
-                    </span>
-                    <h4 className="text-base font-bold text-foreground">
-                      {mlResult.risk_level} ({(mlResult.estimated_risk_probability * 100).toFixed(1)}%)
-                    </h4>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-muted-foreground">95% Confidence Interval:</span>
-                    <p className="font-mono font-bold text-primary">
-                      [{(mlResult.confidence_interval[0] * 100).toFixed(1)}% -{" "}
-                      {(mlResult.confidence_interval[1] * 100).toFixed(1)}%]
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <span className="font-semibold text-foreground">Key Contributing Factors:</span>
-                  <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
-                    {mlResult.contributing_factors.map((f, i) => (
-                      <li key={i}>{f}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <span className="font-semibold text-foreground">Clinical Recommendations:</span>
-                  <ul className="list-disc list-inside text-muted-foreground mt-1 space-y-0.5">
-                    {mlResult.recommended_clinical_followup.map((r, i) => (
-                      <li key={i}>{r}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Advanced Clinical Risk Model Calculator Modal */}
+      <ClinicalRiskModal
+        isOpen={showMlModal}
+        onClose={() => setShowMlModal(false)}
+        initialData={mlData}
+        onSendToChat={(summaryText) => {
+          handleSendMessage(summaryText);
+        }}
+      />
 
       {/* Interactive Patient Dossier Modal: Rajesh Kumar */}
       {showPatientDossier && (
@@ -2404,6 +2497,69 @@ export default function AssistantPage() {
           onSelectEngine={(id) => {
             setSelectedProvider(id);
             setShowModelModal(false);
+          }}
+        />
+      )}
+
+      {/* Explainable AI (XAI) 6-Dimensional Dossier Modal */}
+      {showXaiModal && (
+        <ExplainableInsightModal
+          isOpen={showXaiModal}
+          onClose={() => setShowXaiModal(false)}
+          dossier={selectedDossier}
+        />
+      )}
+
+      {/* Clinical Symptom Checker Wizard Modal */}
+      {showSymptomModal && (
+        <SymptomCheckerWizardModal
+          isOpen={showSymptomModal}
+          onClose={() => setShowSymptomModal(false)}
+          onSendToChat={(summaryText) => handleSendMessage(summaryText)}
+          initialSymptoms=""
+          patientHistory={["Mild hypertension", "Family history of CAD"]}
+          patientMedications={["Metformin 500mg daily", "Atorvastatin 20mg nocte"]}
+        />
+      )}
+
+      {/* Medication Intelligence & Pharmacology Reference Modal */}
+      {showMedicationModal && (
+        <MedicationIntelligenceModal
+          isOpen={showMedicationModal}
+          onClose={() => setShowMedicationModal(false)}
+          onSendToChat={(medSummary) => handleSendMessage(medSummary)}
+          patientActiveMeds={["Metformin 500mg daily", "Atorvastatin 20mg nocte"]}
+          patientConditions={["Type 2 Diabetes Mellitus", "Hypertension"]}
+        />
+      )}
+
+      {/* Authorized Health Context & Privacy Controls Modal */}
+      {showHealthContextModal && (
+        <AuthorizedHealthContextModal
+          isOpen={showHealthContextModal}
+          onClose={() => setShowHealthContextModal(false)}
+        />
+      )}
+
+      {/* Biomarker Extraction & Interactive Verification Modal */}
+      {showBiomarkerCorrectionModal && (
+        <BiomarkerCorrectionModal
+          isOpen={showBiomarkerCorrectionModal}
+          onClose={() => setShowBiomarkerCorrectionModal(false)}
+          reports={reports}
+          onMeasurementUpdated={() => api.listReports().then(setReports)}
+        />
+      )}
+
+      {/* Specialist Referral & Consultation Packet Modal */}
+      {showReferralModal && (
+        <SpecialistReferralModal
+          isOpen={showReferralModal}
+          onClose={() => setShowReferralModal(false)}
+          onReferralCreated={(referral) => {
+            handleSendMessage(
+              `Prepared specialist referral summary for ${referral.patient_summary.specialty_requested} with Consent Audit Token ${referral.consent_audit_token}.`
+            );
           }}
         />
       )}

@@ -75,6 +75,27 @@ def require_roles(allowed_roles: List[str]) -> Callable:
         return current_user
     return role_checker
 
+require_patient: Callable = require_roles(["patient", "admin"])
+require_clinician: Callable = require_roles(["clinician", "admin"])
+require_researcher: Callable = require_roles(["researcher", "admin"])
+require_admin: Callable = require_roles(["admin"])
+
+def verify_researcher_patient_consent(patient_id: int, db: Session) -> bool:
+    """Verifies that patient has granted affirmative consent for anonymized research."""
+    from app.models.models import UserConsent
+    consent = (
+        db.query(UserConsent)
+        .filter(
+            UserConsent.user_id == patient_id,
+            UserConsent.consent_type == "anonymized_research",
+            UserConsent.granted == True,
+        )
+        .first()
+    )
+    if not consent:
+        raise ForbiddenException("Access denied: Patient has not consented to anonymized research participation.")
+    return True
+
 def verify_patient_access(patient_id: int, current_user: User, db: Session) -> bool:
     """
     Enforces Relationship-Based Access Control (ReBAC) & Resource Ownership:

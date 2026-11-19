@@ -24,6 +24,14 @@ class User(Base):
     role = Column(String(50), default="patient")  # patient, clinician, researcher, admin
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=True)
+    mfa_enabled = Column(Boolean, default=False)
+    mfa_secret = Column(String(255), nullable=True)
+    mfa_backup_codes = Column(JSON, nullable=True)
+    mfa_type = Column(String(50), default="totp")
+    email_verification_token = Column(String(255), nullable=True)
+    email_verified_at = Column(DateTime, nullable=True)
+    failed_login_attempts = Column(Integer, default=0)
+    locked_until = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -53,8 +61,24 @@ class UserSession(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     expires_at = Column(DateTime, nullable=False)
+    last_activity_at = Column(DateTime, default=datetime.datetime.utcnow)
+    revoked_at = Column(DateTime, nullable=True)
+    device_info = Column(JSON, nullable=True)
 
     user = relationship("User", back_populates="sessions")
+
+class SuspiciousActivity(Base):
+    __tablename__ = "suspicious_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    threat_type = Column(String(100), nullable=False, index=True)
+    ip_address = Column(String(100), nullable=True)
+    user_agent = Column(String(255), nullable=True)
+    severity = Column(String(50), default="medium")  # low, medium, high, critical
+    details = Column(JSON, nullable=True)
+    resolved = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class UserConsent(Base):
     __tablename__ = "user_consents"
@@ -115,6 +139,13 @@ class MedicalReport(Base):
     clinician_reviewed_at = Column(DateTime, nullable=True)
     extraction_confidence = Column(Float, default=0.95)
     requires_verification = Column(Boolean, default=False)
+    laboratory_name = Column(String(255), default="Metropolis Reference Laboratory")
+    patient_mrn = Column(String(100), default="MRN-92041")
+    file_hash_sha256 = Column(String(64), nullable=True, index=True)
+    triage_priority = Column(String(50), default="routine")
+    audit_token = Column(String(255), nullable=True)
+    escalation_reason = Column(String(255), nullable=True)
+    escalation_department = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
 
@@ -137,6 +168,13 @@ class LaboratoryMeasurement(Base):
     is_abnormal = Column(Boolean, default=False)
     flag = Column(String(20), default="normal")  # normal, low, high, critical
     user_verified = Column(Boolean, default=False)
+    original_value = Column(Float, nullable=True)
+    original_unit = Column(String(50), nullable=True)
+    previous_value = Column(Float, nullable=True)
+    change_pct = Column(Float, nullable=True)
+    verification_status = Column(String(50), default="pending")  # pending, verified, corrected, uncertain, rejected
+    verified_by = Column(String(255), nullable=True)
+    verified_at = Column(DateTime, nullable=True)
     confidence = Column(Float, default=0.95)
     notes = Column(Text, nullable=True)
 
@@ -424,6 +462,25 @@ class AgentRun(Base):
     completed_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="agent_runs")
+
+# Ensure Family Health & Genetics models are registered on Base
+from app.models.family_genetics import (
+    FamilyGroup,
+    FamilyMemberModel,
+    FamilyRelationshipModel,
+    FamilyHealthConditionModel,
+    GeneticTestRecord,
+    GeneticVariant,
+    InheritanceObservation,
+    CarrierScreeningInfo,
+    PreconceptionPlan,
+    GeneticRiskSummary,
+    GeneticEvidenceSource,
+    GeneticCounsellor,
+    SpecialistReferral,
+    GeneticDataConsent,
+)
+
 
 class MLExperiment(Base):
     __tablename__ = "ml_experiments"

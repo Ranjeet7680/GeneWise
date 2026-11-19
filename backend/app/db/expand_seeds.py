@@ -227,8 +227,11 @@ EXPANDED_REFERENCES = [
     }
 ]
 
-def run_seed():
-    db = SessionLocal()
+def run_seed(db: Session = None):
+    should_close = False
+    if db is None:
+        db = SessionLocal()
+        should_close = True
     print("Beginning expanded evidence seeding...")
 
     # 1. Expand Conditions
@@ -343,7 +346,8 @@ def run_seed():
         db.commit()
         print(f"Added personal records for user {demo_user.id}. Total: {db.query(PersonalRecord).count()}")
 
-    db.close()
+    if should_close:
+        db.close()
     print("Expanded evidence database seeding successfully completed.")
 
 if __name__ == "__main__":
