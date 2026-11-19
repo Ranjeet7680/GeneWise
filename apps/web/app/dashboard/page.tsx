@@ -1290,63 +1290,106 @@ export default function GeneWiseDashboardPage() {
 
           {/* Interactive Modal: Active Guide (Hemophilia F8/F9) */}
           {showModuleModal && (
-            <div className="fixed inset-0 z-50 bg-slate-950/70 dark:bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-              <div className="bg-white dark:bg-[#14262f] rounded-2xl border border-border shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-in">
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
-                      Module In Progress • 65% Completed
+            <div
+              className="fixed inset-0 z-50 bg-slate-950/60 dark:bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+              onClick={() => setShowModuleModal(false)}
+            >
+              <div
+                className="bg-white dark:bg-[#14262f] rounded-3xl border border-border shadow-2xl max-w-xl w-full p-6 sm:p-7 space-y-5 animate-scale-in"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between pb-3.5 border-b border-border/80">
+                  <div className="flex items-start gap-3">
+                    <span className="p-2.5 rounded-2xl bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 shrink-0 mt-0.5">
+                      <BookOpen className="w-5 h-5" />
                     </span>
-                    <h3 className="font-bold text-base sm:text-lg text-foreground mt-0.5">
-                      X-Linked Recessive Inheritance in Hemophilia
-                    </h3>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400 font-mono">
+                          GEN-103 · Chapter 1, Lesson 1
+                        </span>
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-teal-500/15 text-teal-800 dark:text-teal-200">
+                          65% Completed
+                        </span>
+                      </div>
+                      <h3 className="font-extrabold text-base sm:text-lg text-foreground mt-0.5 leading-snug">
+                        X-Linked Recessive Inheritance in Hemophilia
+                      </h3>
+                    </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowModuleModal(false)}
-                    className="p-1 rounded-lg text-muted-foreground hover:bg-surface-low hover:text-foreground transition-colors cursor-pointer"
+                    aria-label="Close dialog"
+                    className="p-1.5 rounded-xl text-muted-foreground hover:bg-surface-low hover:text-foreground transition-colors cursor-pointer"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="space-y-3 text-xs leading-relaxed">
-                  <div className="p-3.5 rounded-xl bg-surface-low dark:bg-black/30 border border-border space-y-1.5">
-                    <span className="text-[10px] font-bold text-teal-800 dark:text-teal-300 uppercase tracking-wider block">
-                      Key Biological Findings
-                    </span>
-                    <p className="text-foreground">
-                      Hemophilia A is caused by pathogenic variants in the <strong className="text-teal-700 dark:text-teal-300">F8 gene (Xq28)</strong>, while Hemophilia B affects <strong className="text-teal-700 dark:text-teal-300">F9 (Xq27.1)</strong>.
+                {/* Content */}
+                <div className="space-y-3.5 text-xs leading-relaxed">
+                  <div className="p-4 rounded-2xl bg-surface-low/80 dark:bg-black/30 border border-border/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-extrabold text-teal-800 dark:text-teal-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <Dna className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                        Key Biological Findings
+                      </span>
+                      <span className="text-[10px] font-mono text-muted-foreground">
+                        Coagulation Cascade
+                      </span>
+                    </div>
+                    <p className="text-foreground text-[12px] leading-relaxed">
+                      Hemophilia A is caused by pathogenic loss-of-function variants in the <strong className="text-teal-700 dark:text-teal-300">F8 gene (locus Xq28)</strong>, while Hemophilia B affects <strong className="text-teal-700 dark:text-teal-300">F9 (locus Xq27.1)</strong>.
                     </p>
-                    <p className="text-[11px] text-muted-foreground leading-normal">
-                      Because males are hemizygous (XY), possessing one mutant X chromosome produces a severe bleeding phenotype. Female carriers (XX) have a 50% carrier risk transmission to daughters.
+                    <p className="text-[11.5px] text-muted-foreground leading-relaxed pt-0.5">
+                      Because biological males are hemizygous (<code className="text-teal-700 dark:text-teal-300 font-bold">XY</code>), possessing one mutant X chromosome produces a severe bleeding phenotype. Female carriers (<code className="text-teal-700 dark:text-teal-300 font-bold">XX</code>) have a 50% carrier transmission risk to each daughter and a 50% disease transmission risk to each son.
                     </p>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/60 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                    <span className="text-[11px] text-teal-900 dark:text-teal-200 font-medium">
-                      Your progress has been auto-saved to your local client vault.
+                  {/* Progress Auto-save Badge */}
+                  <div className="p-3.5 rounded-2xl bg-teal-50/80 dark:bg-teal-950/30 border border-teal-500/25 flex items-center justify-between gap-2 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span className="text-[11.5px] text-teal-950 dark:text-teal-100 font-medium">
+                        Your progress has been auto-saved to your local client vault.
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-teal-700 dark:text-teal-300 shrink-0 hidden sm:inline">
+                      Verified
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between gap-2">
+                {/* Footer Controls */}
+                <div className="pt-2 flex items-center justify-between gap-3 border-t border-border/80">
                   <Link
                     href="/academy/course/course-03-x-linked-inheritance"
                     onClick={() => setShowModuleModal(false)}
-                    className="text-xs font-semibold text-teal-700 dark:text-teal-400 hover:underline"
+                    className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 hover:underline inline-flex items-center gap-1 transition-colors"
                   >
-                    View Full Syllabus →
-                  </Link>
-                  <Link
-                    href="/academy/course/course-03-x-linked-inheritance/lesson/c3-ch1-l1"
-                    onClick={() => setShowModuleModal(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white transition-all shadow-xs flex items-center gap-1.5"
-                  >
-                    <span>Continue Reading</span>
+                    <span>View Course Syllabus</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowModuleModal(false)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-surface-low transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                    <Link
+                      href="/academy/course/course-03-x-linked-inheritance/lesson/c3-ch1-l1"
+                      onClick={() => setShowModuleModal(false)}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 text-white transition-all shadow-xs flex items-center gap-1.5"
+                    >
+                      <span>Continue Reading</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
