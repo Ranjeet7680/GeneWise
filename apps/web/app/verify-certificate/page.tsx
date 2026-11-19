@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -19,7 +19,7 @@ import { api } from "@/lib/api";
 import { CertificateVerificationResult } from "@/types/academy";
 import { sound } from "@/lib/sound";
 
-export default function VerifyCertificatePage() {
+function VerifyCertificateContent() {
   const searchParams = useSearchParams();
   const initialId = searchParams.get("id") || "";
 
@@ -218,5 +218,19 @@ export default function VerifyCertificatePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyCertificatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center text-xs text-gray-500">
+          Loading Verification Portal...
+        </div>
+      }
+    >
+      <VerifyCertificateContent />
+    </Suspense>
   );
 }
