@@ -133,9 +133,9 @@ export default function CounselorBookingModal({
           className="fixed inset-0 z-[99999] bg-slate-950/80 dark:bg-black/90 backdrop-blur-xl flex items-center justify-center p-3 sm:p-5 animate-fade-in transition-all"
           style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
         >
-          <div className="bg-white/98 dark:bg-[#112128]/98 backdrop-blur-2xl rounded-2xl sm:rounded-3xl border border-teal-500/30 dark:border-teal-500/40 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.5)] max-w-xl w-full max-h-[92dvh] flex flex-col overflow-hidden animate-scale-in">
+          <div className="bg-white dark:bg-[#112128] rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-teal-500/30 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.6)] max-w-xl w-full max-h-[90dvh] flex flex-col overflow-hidden animate-scale-in">
             {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-border bg-surface-low/50 flex items-center justify-between shrink-0">
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-[#162731] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <span className="p-2.5 rounded-xl bg-teal-500/10 text-teal-700 dark:text-teal-400 border border-teal-500/25">
                   <Calendar className="w-5 h-5" />
@@ -144,7 +144,7 @@ export default function CounselorBookingModal({
                   <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
                     Clinical Consultation Request
                   </span>
-                  <h3 className="text-base font-extrabold text-foreground tracking-tight">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight">
                     {bookingResult ? "Appointment Confirmed" : `Schedule with ${counselor.name}`}
                   </h3>
                 </div>
@@ -154,14 +154,14 @@ export default function CounselorBookingModal({
                   sound.playSoft();
                   onClose();
                 }}
-                className="p-1.5 rounded-xl text-muted-foreground hover:bg-surface-low hover:text-foreground transition-all"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-white dark:bg-[#112128]">
               {bookingResult ? (
                 /* Booking Success Confirmation */
                 <div className="space-y-5 text-center py-3">
@@ -170,54 +170,54 @@ export default function CounselorBookingModal({
                   </div>
 
                   <div className="space-y-1">
-                    <h4 className="font-extrabold text-lg text-foreground">
+                    <h4 className="font-extrabold text-lg text-slate-900 dark:text-white">
                       Clinical Consultation Intake Transmitted
                     </h4>
-                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 max-w-sm mx-auto">
                       Your referral has been securely dispatched to {counselor.name} at {counselor.institution}.
                     </p>
                   </div>
 
                   {/* Booking Receipt Card */}
-                  <div className="p-4 rounded-2xl bg-surface-low border border-border text-left space-y-2.5 text-xs">
-                    <div className="flex justify-between items-center pb-2 border-b border-border/60">
-                      <span className="text-muted-foreground">Booking Confirmation ID:</span>
-                      <span className="font-mono font-bold text-foreground">{bookingResult.id}</span>
+                  <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#162731] border border-slate-200 dark:border-slate-800 text-left space-y-2.5 text-xs">
+                    <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                      <span className="text-slate-500 dark:text-slate-400">Booking Confirmation ID:</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{bookingResult.id}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Attending Specialist:</span>
-                      <span className="font-bold text-foreground">{bookingResult.counsellor_name}</span>
+                      <span className="text-slate-500 dark:text-slate-400">Attending Specialist:</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{bookingResult.counsellor_name}</span>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Requested Schedule:</span>
-                      <span className="font-bold text-foreground">
+                      <span className="text-slate-500 dark:text-slate-400">Requested Schedule:</span>
+                      <span className="font-bold text-slate-900 dark:text-white">
                         {bookingResult.preferred_date} · {bookingResult.preferred_time_slot}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <span className="text-muted-foreground">Format &amp; Time Zone:</span>
-                      <span className="text-foreground capitalize">
+                      <span className="text-slate-500 dark:text-slate-400">Format &amp; Time Zone:</span>
+                      <span className="text-slate-900 dark:text-slate-200 capitalize">
                         {bookingResult.consultation_format} ({bookingResult.time_zone})
                       </span>
                     </div>
 
                     {bookingResult.telehealth_link && (
-                      <div className="pt-2 border-t border-border/60 space-y-1.5">
+                      <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-1.5">
                         <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wider block">
                           Secure Telehealth Room Link:
                         </span>
-                        <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-[#182d37] border border-border">
+                        <div className="flex items-center gap-2 p-2 rounded-xl bg-white dark:bg-[#1d3340] border border-slate-200 dark:border-slate-700">
                           <Video className="w-4 h-4 text-teal-600 shrink-0" />
-                          <span className="text-[11px] font-mono text-foreground truncate flex-1">
+                          <span className="text-[11px] font-mono text-slate-900 dark:text-slate-100 truncate flex-1">
                             {bookingResult.telehealth_link}
                           </span>
                           <button
                             type="button"
                             onClick={handleCopyLink}
-                            className="px-2.5 py-1 rounded-lg bg-teal-700 text-white text-[11px] font-bold shrink-0 shadow-2xs flex items-center gap-1"
+                            className="px-2.5 py-1 rounded-lg bg-teal-700 hover:bg-teal-600 text-white text-[11px] font-bold shrink-0 shadow-2xs flex items-center gap-1"
                           >
                             {copiedLink ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                             <span>{copiedLink ? "Copied" : "Copy"}</span>
@@ -226,19 +226,19 @@ export default function CounselorBookingModal({
                       </div>
                     )}
 
-                    <div className="flex justify-between items-center text-[11px] pt-1 text-muted-foreground font-mono">
+                    <div className="flex justify-between items-center text-[11px] pt-1 text-slate-500 dark:text-slate-400 font-mono">
                       <span>Audit Verification:</span>
                       <span className="text-teal-700 dark:text-teal-400">{bookingResult.audit_token}</span>
                     </div>
                   </div>
 
                   {/* Pre-Consultation Instructions */}
-                  <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/60 text-left space-y-2">
+                  <div className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 text-left space-y-2">
                     <h5 className="text-xs font-bold text-teal-950 dark:text-teal-200 flex items-center gap-1.5">
-                      <ShieldCheck className="w-4 h-4 text-teal-600" />
+                      <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                       Pre-Consultation Preparation Instructions
                     </h5>
-                    <ul className="text-xs text-teal-900/80 dark:text-teal-200/80 space-y-1">
+                    <ul className="text-xs text-teal-900/90 dark:text-teal-200/90 space-y-1">
                       {(bookingResult.pre_consultation_instructions || [
                         "Gather 3 generations of family medical history before your visit.",
                         "Bring or upload any relevant genetic or molecular pathology lab reports.",
@@ -246,7 +246,7 @@ export default function CounselorBookingModal({
                         "Log into the secure telehealth portal 5 minutes before your scheduled appointment.",
                       ]).map((inst, i) => (
                         <li key={i} className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold">•</span>
+                          <span className="text-teal-600 dark:text-teal-400 font-bold">•</span>
                           <span>{inst}</span>
                         </li>
                       ))}
@@ -258,7 +258,7 @@ export default function CounselorBookingModal({
                       sound.playSoft();
                       onClose();
                     }}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white transition-all shadow-xs"
+                    className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-600 text-white transition-all shadow-xs"
                   >
                     Close &amp; Return to Directory
                   </button>
@@ -267,27 +267,27 @@ export default function CounselorBookingModal({
                 /* Booking Form */
                 <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                   {/* Counselor Mini Header */}
-                  <div className="p-3.5 rounded-2xl bg-surface-low border border-border flex items-center gap-3">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#162731] border border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     <img
                       src={counselor.avatar || "/images/counselors/maya-lin.jpg"}
                       alt={counselor.name}
                       className="w-14 h-14 rounded-xl object-cover ring-2 ring-teal-500/30 shrink-0"
                     />
                     <div className="min-w-0 flex-1 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-foreground text-xs">{counselor.name}</span>
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-extrabold text-slate-900 dark:text-white text-xs">{counselor.name}</span>
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
                           {counselor.specialty}
                         </span>
                       </div>
-                      <p className="text-[11px] text-muted-foreground truncate">{counselor.institution}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{counselor.credentials}</p>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 truncate">{counselor.institution}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{counselor.credentials}</p>
                     </div>
                   </div>
 
                   {/* Consultation Format */}
                   <div className="space-y-1.5">
-                    <label className="text-[11px] font-bold text-foreground uppercase tracking-wider">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                       Consultation Format
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -299,11 +299,11 @@ export default function CounselorBookingModal({
                         }}
                         className={`p-2.5 rounded-xl border text-center transition-all flex items-center justify-center gap-2 ${
                           format === "telehealth"
-                            ? "bg-teal-50 dark:bg-teal-950/40 border-teal-600 text-teal-800 dark:text-teal-200 font-bold ring-1 ring-teal-500"
-                            : "bg-surface-low border-border text-muted-foreground"
+                            ? "bg-teal-50 dark:bg-teal-950/60 border-teal-600 text-teal-900 dark:text-teal-200 font-bold ring-1 ring-teal-500"
+                            : "bg-slate-50 dark:bg-[#162731] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <Video className="w-4 h-4 text-teal-600" />
+                        <Video className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                         <span>Telehealth Video</span>
                       </button>
 
@@ -315,11 +315,11 @@ export default function CounselorBookingModal({
                         }}
                         className={`p-2.5 rounded-xl border text-center transition-all flex items-center justify-center gap-2 ${
                           format === "in_person"
-                            ? "bg-teal-50 dark:bg-teal-950/40 border-teal-600 text-teal-800 dark:text-teal-200 font-bold ring-1 ring-teal-500"
-                            : "bg-surface-low border-border text-muted-foreground"
+                            ? "bg-teal-50 dark:bg-teal-950/60 border-teal-600 text-teal-900 dark:text-teal-200 font-bold ring-1 ring-teal-500"
+                            : "bg-slate-50 dark:bg-[#162731] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         }`}
                       >
-                        <MapPin className="w-4 h-4 text-teal-600" />
+                        <MapPin className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                         <span>In-Person Clinic</span>
                       </button>
                     </div>
@@ -328,22 +328,22 @@ export default function CounselorBookingModal({
                   {/* Date & Time Slot */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-foreground">Preferred Date</label>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Preferred Date</label>
                       <input
                         type="date"
                         value={preferredDate}
                         onChange={(e) => setPreferredDate(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs"
+                        className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-foreground">Preferred Time Slot</label>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Preferred Time Slot</label>
                       <select
                         value={preferredTimeSlot}
                         onChange={(e) => setPreferredTimeSlot(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs"
+                        className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                       >
                         {TIME_SLOTS.map((slot) => (
                           <option key={slot} value={slot}>
@@ -357,23 +357,23 @@ export default function CounselorBookingModal({
                   {/* Patient Details */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-foreground">Patient Full Name</label>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Patient Full Name</label>
                       <input
                         type="text"
                         value={patientName}
                         onChange={(e) => setPatientName(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs"
+                        className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-bold text-foreground">Contact Email</label>
+                      <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Contact Email</label>
                       <input
                         type="email"
                         value={patientEmail}
                         onChange={(e) => setPatientEmail(e.target.value)}
-                        className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs"
+                        className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                         required
                       />
                     </div>
@@ -381,26 +381,26 @@ export default function CounselorBookingModal({
 
                   {/* Primary Consultation Reason */}
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-foreground">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
                       Primary Consultation Purpose
                     </label>
                     <select
                       value={consultationPurpose}
                       onChange={(e) => setConsultationPurpose(e.target.value)}
-                      className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs"
+                      className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none"
                     >
                       <option>Review multi-generational family disease patterns</option>
                       <option>Follow up on a ClinVar variant classification</option>
                       <option>Discuss reproductive carrier screening (CFTR, SMN1)</option>
                       <option>Hereditary cardiovascular early-onset surveillance</option>
                       <option>General hereditary cancer risk evaluation (BRCA1/2)</option>
-                      <option>Pharmacogenomics & Adverse Drug Reaction Guidance</option>
+                      <option>Pharmacogenomics &amp; Adverse Drug Reaction Guidance</option>
                     </select>
                   </div>
 
                   {/* Clinical Context / Notes */}
                   <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-foreground">
+                    <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
                       Clinical Context / Specific Symptoms (Optional)
                     </label>
                     <textarea
@@ -408,47 +408,47 @@ export default function CounselorBookingModal({
                       value={intakeNotes}
                       onChange={(e) => setIntakeNotes(e.target.value)}
                       placeholder="e.g. Any specific test results, symptoms, or upcoming family planning decisions..."
-                      className="w-full p-2 rounded-xl border border-border bg-white dark:bg-[#182d37] text-foreground text-xs leading-relaxed resize-none"
+                      className="w-full p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-[#182d37] text-slate-900 dark:text-white text-xs leading-relaxed resize-none focus:ring-2 focus:ring-teal-500 focus:outline-none"
                     />
                   </div>
 
                   {/* Privacy & Pedigree Attachment Checkbox */}
-                  <div className="space-y-2 pt-1 border-t border-border">
-                    <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                  <div className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+                    <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={includePedigree}
                         onChange={(e) => setIncludePedigree(e.target.checked)}
-                        className="rounded border-border text-teal-700 focus:ring-teal-700"
+                        className="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-teal-600 focus:ring-teal-500 h-4 w-4 shrink-0"
                       />
-                      <span>
+                      <span className="leading-tight">
                         Attach my encrypted GeneWise Pedigree Checklist (FIPS 140-3 Zero Raw DNA).
                       </span>
                     </label>
 
-                    <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer">
+                    <label className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={consentDataSharing}
                         onChange={(e) => setConsentDataSharing(e.target.checked)}
-                        className="rounded border-border text-teal-700 focus:ring-teal-700"
+                        className="mt-0.5 rounded border-slate-300 dark:border-slate-600 text-teal-600 focus:ring-teal-500 h-4 w-4 shrink-0"
                         required
                       />
-                      <span className="font-medium text-teal-900 dark:text-teal-200">
+                      <span className="leading-tight font-medium text-teal-900 dark:text-teal-300">
                         I explicitly consent to sharing this intake record with {counselor.name}.
                       </span>
                     </label>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="pt-2 flex items-center justify-end gap-2 border-t border-border">
+                  <div className="pt-3 pb-1 flex items-center justify-end gap-2.5 border-t border-slate-200 dark:border-slate-800">
                     <button
                       type="button"
                       onClick={() => {
                         sound.playSoft();
                         onClose();
                       }}
-                      className="px-4 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-surface-low"
+                      className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                     >
                       Cancel
                     </button>
@@ -456,7 +456,7 @@ export default function CounselorBookingModal({
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white transition-all shadow-2xs flex items-center gap-1.5 disabled:opacity-50"
+                      className="px-5 py-2.5 rounded-xl text-xs font-bold bg-teal-700 hover:bg-teal-600 text-white transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
                     >
                       {isSubmitting ? (
                         <span>Transmitting Packet...</span>
