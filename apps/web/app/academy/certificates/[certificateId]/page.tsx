@@ -143,35 +143,45 @@ export default function CertificatePage() {
     !isEditingName;
 
   return (
-    <div className="min-h-screen bg-[#f4fbfa] text-[#112128] pb-24 print:bg-white print:p-0 print:pb-0 print:m-0">
+    <div className="min-h-screen bg-[#f4fbfa] text-[#112128] pb-24 print:bg-white print:p-0 print:pb-0 print:m-0 print:min-h-0 print:overflow-hidden">
       {/* Precision PDF & Landscape Print Styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         @page {
-          size: A4 landscape;
-          margin: 0 !important;
+          size: 297mm 210mm;
+          margin: 0;
         }
         @media print {
-          html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            background: #ffffff !important;
+          *, *:before, *:after {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 297mm !important;
+            height: 210mm !important;
+            max-width: 297mm !important;
+            max-height: 210mm !important;
+            background: #ffffff !important;
             overflow: hidden !important;
           }
+          /* Hide everything outside the certificate */
+          body > *:not(#__next),
+          header, nav, footer,
+          .print-hide {
+            display: none !important;
+          }
           .print-certificate-container {
-            width: 100vw !important;
-            height: 100vh !important;
-            max-width: 100vw !important;
-            max-height: 100vh !important;
+            width: 297mm !important;
+            height: 210mm !important;
+            max-width: 297mm !important;
+            max-height: 210mm !important;
             box-sizing: border-box !important;
             margin: 0 !important;
-            padding: 8mm 12mm !important;
+            padding: 7mm 10mm 5mm 10mm !important;
             box-shadow: none !important;
-            border: 5px double #00837b !important;
+            border: 4px double #00837b !important;
             border-radius: 0 !important;
             page-break-after: avoid !important;
             page-break-inside: avoid !important;
@@ -180,9 +190,11 @@ export default function CertificatePage() {
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
-          }
-          .print-hide {
-            display: none !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            z-index: 99999 !important;
+            background: #ffffff !important;
           }
         }
       `}} />
