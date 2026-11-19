@@ -40,6 +40,9 @@ import AppHeader from "@/components/AppHeader";
 import AppSidebar from "@/components/AppSidebar";
 import SafetyNotice from "@/components/SafetyNotice";
 import DoctorPrepWizardModal from "@/components/DoctorPrepWizardModal";
+import GeneticsSelfAssessment from "@/components/GeneticsSelfAssessment";
+import InteractiveCarrierPedigree from "@/components/InteractiveCarrierPedigree";
+import ClinicalActionKit from "@/components/ClinicalActionKit";
 import { sound } from "@/lib/sound";
 import { buildClinicalPdfBlob, triggerBlobDownload } from "@/lib/export-share";
 
@@ -428,191 +431,24 @@ This document is for educational preparation and does not constitute medical adv
           {/* Interactive Checkpoint & Carrier Pedigree Punnett Square */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             {/* Interactive Self-Assessment (7 cols) */}
-            <div className="lg:col-span-7 bg-surface-lowest dark:bg-slate-900/60 rounded-3xl border border-border/80 shadow-2xs p-6 sm:p-8 space-y-5 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-800 dark:text-teal-300 text-xs font-bold uppercase tracking-wider">
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  INTERACTIVE SELF-ASSESSMENT • Clinical Checkpoint
-                </div>
-
-                <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                  Does having a first-degree relative with an autosomal recessive condition mean you will develop the condition?
-                </h3>
-
-                <p className="text-xs text-muted-foreground">
-                  Select the most accurate clinical conclusion based on classical Mendelian inheritance laws:
-                </p>
-
-                {/* Multiple Choice Options */}
-                <div className="space-y-3 pt-2">
-                  {[
-                    { key: "A", label: "A", text: "Yes, inevitably." },
-                    {
-                      key: "B",
-                      label: "B",
-                      text: "No, not necessarily (depends on maternal/paternal carrier status).",
-                    },
-                    {
-                      key: "C",
-                      label: "C",
-                      text: "Only if you are male due to chromosomal hemizygosity.",
-                    },
-                  ].map((option) => {
-                    const isSelected = quizAnswer === option.key;
-                    const isCorrect = option.key === "B";
-                    return (
-                      <button
-                        key={option.key}
-                        onClick={() => handleSelectQuiz(option.key)}
-                        className={`w-full text-left p-4 rounded-2xl border transition-all text-xs sm:text-sm flex items-start gap-3 ${
-                          isSelected
-                            ? isCorrect
-                              ? "bg-emerald-500/10 border-emerald-500 text-emerald-900 dark:text-emerald-200 shadow-sm"
-                              : "bg-rose-500/10 border-rose-500 text-rose-900 dark:text-rose-200"
-                            : "bg-surface-container-low dark:bg-slate-800/60 border-border hover:border-teal-500/50 text-foreground"
-                        }`}
-                      >
-                        <span
-                          className={`w-6 h-6 rounded-lg font-bold text-xs flex items-center justify-center shrink-0 ${
-                            isSelected
-                              ? isCorrect
-                                ? "bg-emerald-600 text-white"
-                                : "bg-rose-600 text-white"
-                              : "bg-muted text-muted-foreground"
-                          }`}
-                        >
-                          {option.label}
-                        </span>
-                        <span className="pt-0.5 font-medium leading-snug">{option.text}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Feedback Box */}
-                {quizAnswer && (
-                  <div
-                    className={`p-4 rounded-2xl border text-xs sm:text-sm animate-in fade-in duration-200 ${
-                      quizAnswer === "B"
-                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200"
-                        : "bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200"
-                    }`}
-                  >
-                    {quizAnswer === "B" ? (
-                      <div className="space-y-1">
-                        <span className="font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
-                          <CheckCircle2 className="w-4 h-4" /> Correct clinical conclusion!
-                        </span>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                          Autosomal recessive disorders require pathogenic alleles from both biological parents. An individual with an affected first-degree relative is typically an obligate or potential carrier, but will not manifest disease unless both alleles are mutated.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-1">
-                        <span className="font-bold flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
-                          <AlertCircle className="w-4 h-4" /> Not clinically accurate.
-                        </span>
-                        <p className="text-xs leading-relaxed text-muted-foreground">
-                          Review Mendelian segregation: having a relative with an autosomal recessive condition does not guarantee disease onset. Option B is correct because transmission requires alleles from both maternal and paternal lineages.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+            <div className="lg:col-span-7 flex flex-col">
+              <GeneticsSelfAssessment />
             </div>
 
             {/* Carrier Pedigree Model 2x2 Punnett Square (5 cols) */}
-            <div className="lg:col-span-5 bg-surface-lowest dark:bg-slate-900/60 rounded-3xl border border-border/80 shadow-2xs p-6 sm:p-8 space-y-4 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold uppercase tracking-wider text-teal-700 dark:text-teal-400">
-                    CARRIER PEDIGREE MODEL
-                  </span>
-                  <span className="font-mono text-muted-foreground font-semibold">Aa × Aa</span>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Two carrier parents (Aa) transmission breakdown:
-                </p>
-              </div>
-
-              {/* Punnett Square Diagram */}
-              <div className="bg-surface-container-low/60 dark:bg-slate-800/40 p-4 rounded-2xl border border-border/80">
-                <div className="grid grid-cols-3 gap-2 text-center text-xs font-mono font-bold">
-                  {/* Row 1 Header */}
-                  <div className="p-2" />
-                  <div className="p-2 rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-300">A</div>
-                  <div className="p-2 rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-300">a</div>
-
-                  {/* Row 2 */}
-                  <div className="p-2 rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-300 flex items-center justify-center">
-                    A
-                  </div>
-                  <div className="p-3 rounded-xl bg-surface-lowest dark:bg-slate-900 border border-border flex flex-col items-center justify-center space-y-0.5">
-                    <span className="text-foreground text-sm font-extrabold">AA</span>
-                    <span className="text-[10px] text-muted-foreground font-sans">25% Unaff.</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-500/20 flex flex-col items-center justify-center space-y-0.5">
-                    <span className="text-teal-800 dark:text-teal-300 text-sm font-extrabold">Aa</span>
-                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-sans">Carrier</span>
-                  </div>
-
-                  {/* Row 3 */}
-                  <div className="p-2 rounded-lg bg-teal-500/10 text-teal-800 dark:text-teal-300 flex items-center justify-center">
-                    a
-                  </div>
-                  <div className="p-3 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-500/20 flex flex-col items-center justify-center space-y-0.5">
-                    <span className="text-teal-800 dark:text-teal-300 text-sm font-extrabold">aA</span>
-                    <span className="text-[10px] text-teal-600 dark:text-teal-400 font-sans">Carrier</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-teal-600 text-white shadow-sm flex flex-col items-center justify-center space-y-0.5">
-                    <span className="text-white text-sm font-extrabold">aa</span>
-                    <span className="text-[10px] text-teal-100 font-sans">25% Affect.</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-[11px] text-muted-foreground leading-relaxed">
-                Only homozygous recessive (<strong className="text-foreground">aa</strong>) manifests disease. Heterozygous carriers (<strong className="text-foreground">Aa</strong>) remain clinically unaffected in classic recessive inheritance.
-              </div>
+            <div className="lg:col-span-5 flex flex-col">
+              <InteractiveCarrierPedigree />
             </div>
           </div>
 
           {/* Clinical Action Kit: Prepare Questions for Your Doctor */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-surface-lowest via-surface-lowest to-teal-500/5 dark:from-slate-900/80 dark:to-teal-950/20 rounded-3xl border border-teal-500/20 dark:border-teal-500/30 shadow-md p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="space-y-2 text-left">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 text-xs font-bold uppercase tracking-wider border border-teal-500/20">
-                <ClipboardList className="w-3.5 h-3.5" />
-                CLINICAL ACTION KIT · PDF EXPORT
-              </div>
-              <h3 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                Prepare Questions for Your Doctor
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl leading-relaxed">
-                Take clinical ownership. Download a concise evidence-based consultation checklist formatted with professional ACMG &amp; NSGC guidance for primary care physicians and clinical geneticists.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 shrink-0 flex-wrap">
-              <button
-                onClick={() => {
-                  sound.playPop();
-                  setShowDoctorPrepModal(true);
-                }}
-                className="px-4 py-2.5 rounded-xl border border-border bg-surface-lowest text-xs font-semibold hover:bg-muted text-foreground transition-all flex items-center gap-1.5 shadow-2xs"
-              >
-                <Eye className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-                <span>Preview Prompts</span>
-              </button>
-              <button
-                onClick={handleDownloadPDF}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00635e] to-[#004e4a] text-white text-xs font-bold hover:brightness-110 shadow-sm transition-all flex items-center gap-1.5 ring-2 ring-teal-500/20"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Download PDF Guide</span>
-              </button>
-            </div>
-          </div>
+          <ClinicalActionKit
+            onOpenDoctorPrep={() => {
+              sound.playPop();
+              setShowDoctorPrepModal(true);
+            }}
+            onDownloadPdf={handleDownloadPDF}
+          />
         </main>
 
         <SafetyNotice />

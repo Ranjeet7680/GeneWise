@@ -85,6 +85,7 @@ export interface MessageSource {
   evidence_level?: string;
   url?: string;
   abstract?: string;
+  authors?: string;
 }
 
 export interface LstmStepPoint {

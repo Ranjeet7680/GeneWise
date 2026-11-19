@@ -225,7 +225,7 @@ export default function AppHeader() {
           <div className="hidden md:flex items-center gap-3">
             <button
               onClick={handleOpenTelemetryModal}
-              title="Click to view Live ICU Telemetry Node #409 waveform stream"
+              title="Click to view Live ICU Telemetry Node #409 waveform stream (Simulated Educational Transducer)"
               className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-98 border border-emerald-500/25 text-emerald-700 dark:text-emerald-400 text-xs font-medium shadow-2xs transition-all cursor-pointer group"
             >
               <span className="relative flex h-2 w-2">
@@ -233,14 +233,14 @@ export default function AppHeader() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span className="font-semibold tracking-wide group-hover:underline">
-                ICU Telemetry Node #409: ACTIVE
+                ICU Telemetry Node #409: ACTIVE (Simulation)
               </span>
               <span className="text-emerald-500/40">·</span>
-              <span className="text-muted-foreground text-[11px] font-mono">FIPS 140-3 Zero-Trust</span>
+              <span className="text-muted-foreground text-[11px] font-mono">FIPS 140-3 Compliant Sandbox</span>
               <span className="text-emerald-500/40">·</span>
               <span className="text-primary font-semibold text-[11px] font-mono flex items-center gap-1">
                 <Activity className="w-3 h-3 text-emerald-500 animate-pulse" />
-                93.9% ROC-AUC
+                Validation Benchmark: 93.9% ROC-AUC
               </span>
             </button>
           </div>
