@@ -573,23 +573,23 @@ export default function AppSidebar() {
           style={{ top: `${hoveredItem.top}px` }}
           className="fixed left-[4.5rem] -translate-y-1/2 z-50 pointer-events-none animate-in fade-in zoom-in-95 duration-100 print:hidden"
         >
-          <div className="rounded-xl bg-slate-900/95 dark:bg-[#162732]/95 backdrop-blur-md text-white border border-slate-700/60 dark:border-border/80 shadow-2xl p-2.5 whitespace-nowrap min-w-[130px]">
+          <div className="rounded-xl bg-white/95 dark:bg-[#162732]/95 backdrop-blur-md text-foreground dark:text-white border border-border/80 dark:border-border/80 shadow-xl dark:shadow-2xl p-2.5 whitespace-nowrap min-w-[130px] transition-colors">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-bold leading-tight">
+              <span className="text-xs font-bold leading-tight text-gray-900 dark:text-white">
                 {hoveredItem.label}
               </span>
               {hoveredItem.badge && (
-                <span className="px-1.5 py-0.2 rounded text-[9px] font-bold uppercase bg-primary text-white">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-teal-600 dark:bg-primary text-white tracking-wider">
                   {hoveredItem.badge}
                 </span>
               )}
             </div>
-            <span className="text-[10px] text-slate-400 block mt-0.5">
+            <span className="text-[10px] text-gray-500 dark:text-slate-400 block mt-0.5 font-medium">
               {hoveredItem.category}
             </span>
             {hoveredItem.href && isItemActive(hoveredItem.href) && (
-              <span className="text-[9px] font-semibold text-emerald-400 block mt-1 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 block mt-1 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                 Current View
               </span>
             )}
