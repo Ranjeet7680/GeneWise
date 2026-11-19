@@ -148,28 +148,30 @@ export default function CertificatePage() {
       <style dangerouslySetInnerHTML={{ __html: `
         @page {
           size: A4 landscape;
-          margin: 0mm;
+          margin: 0 !important;
         }
         @media print {
           html, body {
             margin: 0 !important;
             padding: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
             background: #ffffff !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
             color-adjust: exact !important;
-            font-size: 12pt;
+            overflow: hidden !important;
           }
           .print-certificate-container {
-            width: 297mm !important;
-            height: 210mm !important;
-            max-width: 297mm !important;
-            max-height: 210mm !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
             box-sizing: border-box !important;
-            margin: 0 auto !important;
-            padding: 10mm 14mm !important;
+            margin: 0 !important;
+            padding: 8mm 12mm !important;
             box-shadow: none !important;
-            border: 6px double #00837b !important;
+            border: 5px double #00837b !important;
             border-radius: 0 !important;
             page-break-after: avoid !important;
             page-break-inside: avoid !important;

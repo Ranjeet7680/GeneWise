@@ -448,12 +448,18 @@ export default function AcademyHubPage() {
                 >
                   {/* Course Banner Cover Image */}
                   <div className="relative h-36 w-full overflow-hidden bg-slate-900 border-b border-gray-100">
-                    <Image
+                    <img
                       src={`/images/courses/${course.id}.jpg`}
                       alt={course.title}
-                      fill
-                      className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      onError={(e) => {
+                        const target = e.currentTarget as HTMLImageElement;
+                        if (!target.src.includes(`${course.code}.jpg`)) {
+                          target.src = `/images/courses/${course.code}.jpg`;
+                        } else if (!target.src.includes("GEN-101.jpg")) {
+                          target.src = "/images/courses/GEN-101.jpg";
+                        }
+                      }}
+                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
                     <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
