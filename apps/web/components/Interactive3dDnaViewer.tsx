@@ -286,35 +286,91 @@ export default function Interactive3dDnaViewer() {
       nodes.forEach((node) => node.draw());
 
       // Major / Minor groove indicator callout if enabled
-      if (showGrooves && width > 480) {
+      if (showGrooves && width > 520) {
         ctx.save();
-        ctx.fillStyle = "rgba(45, 212, 191, 0.15)";
-        ctx.strokeStyle = "rgba(45, 212, 191, 0.4)";
-        ctx.lineWidth = 1;
 
-        // Major Groove Callout
+        // Helper for sleek frosted glass badge with pointer line
+        const drawCallout = (
+          x: number,
+          y: number,
+          title: string,
+          subtitle: string,
+          accentColor: string,
+          targetX: number,
+          targetY: number
+        ) => {
+          // Pointer dotted line to helix
+          ctx.beginPath();
+          ctx.setLineDash([3, 3]);
+          ctx.moveTo(targetX, targetY);
+          ctx.lineTo(x + (x > targetX ? 0 : 170), y + 22);
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Glowing target anchor ring
+          ctx.beginPath();
+          ctx.arc(targetX, targetY, 4, 0, Math.PI * 2);
+          ctx.fillStyle = accentColor;
+          ctx.fill();
+
+          // Card Background
+          ctx.fillStyle = "rgba(10, 22, 28, 0.88)";
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 1;
+
+          // Rounded Rect path
+          const bx = x, by = y, bw = 170, bh = 44, r = 10;
+          ctx.beginPath();
+          ctx.moveTo(bx + r, by);
+          ctx.lineTo(bx + bw - r, by);
+          ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+          ctx.lineTo(bx + bw, by + bh - r);
+          ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+          ctx.lineTo(bx + r, by + bh);
+          ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+          ctx.lineTo(bx, by + r);
+          ctx.quadraticCurveTo(bx, by, bx + r, by);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          // Title
+          ctx.fillStyle = accentColor;
+          ctx.font = "bold 11px ui-sans-serif, system-ui, -apple-system";
+          ctx.textAlign = "left";
+          ctx.fillText(title, bx + 12, by + 18);
+
+          // Subtitle
+          ctx.fillStyle = "#cbd5e1";
+          ctx.font = "10px ui-sans-serif, system-ui, -apple-system";
+          ctx.fillText(subtitle, bx + 12, by + 33);
+        };
+
+        // Major Groove Callout (Right side)
         const mgY = startY + 4 * verticalSpacing;
-        ctx.strokeRect(centerX + helixRadius + 15, mgY - 24, 150, 48);
-        ctx.fillRect(centerX + helixRadius + 15, mgY - 24, 150, 48);
-        ctx.fillStyle = "#2dd4bf";
-        ctx.font = "bold 11px ui-sans-serif, system-ui";
-        ctx.textAlign = "left";
-        ctx.fillText("Major Groove (2.2 nm)", centerX + helixRadius + 25, mgY - 6);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "9px ui-sans-serif, system-ui";
-        ctx.fillText("TF & Polymerase Binding Site", centerX + helixRadius + 25, mgY + 10);
+        drawCallout(
+          centerX + helixRadius + 40,
+          mgY - 22,
+          "Major Groove (2.2 nm)",
+          "TF & Polymerase Binding Loci",
+          "#2dd4bf",
+          centerX + helixRadius,
+          mgY
+        );
 
-        // Minor Groove Callout
+        // Minor Groove Callout (Left side)
         const minY = startY + 9 * verticalSpacing;
-        ctx.strokeRect(centerX - helixRadius - 165, minY - 24, 150, 48);
-        ctx.fillRect(centerX - helixRadius - 165, minY - 24, 150, 48);
-        ctx.fillStyle = "#38bdf8";
-        ctx.font = "bold 11px ui-sans-serif, system-ui";
-        ctx.textAlign = "left";
-        ctx.fillText("Minor Groove (1.2 nm)", centerX - helixRadius - 155, minY - 6);
-        ctx.fillStyle = "#94a3b8";
-        ctx.font = "9px ui-sans-serif, system-ui";
-        ctx.fillText("Histone Core Interaction Loci", centerX - helixRadius - 155, minY + 10);
+        drawCallout(
+          centerX - helixRadius - 210,
+          minY - 22,
+          "Minor Groove (1.2 nm)",
+          "Histone Octamer Core Interface",
+          "#38bdf8",
+          centerX - helixRadius,
+          minY
+        );
 
         ctx.restore();
       }
