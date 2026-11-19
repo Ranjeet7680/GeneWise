@@ -265,7 +265,7 @@ export default function AppSidebar() {
         aria-label="Clinical Navigation"
         className={cn(
           "fixed top-16 left-0 bottom-0 z-30 border-r border-border bg-surface-low/95 dark:bg-[#111d24]/95 backdrop-blur-md hidden md:flex flex-col justify-between shrink-0 select-none shadow-xs transition-all duration-300 ease-in-out print:hidden",
-          isCollapsed ? "w-16" : "w-[18rem]"
+          isCollapsed ? "w-16" : "w-[19.5rem]"
         )}
       >
         {/* Top Header with Expand / Shorten Toggle Button */}
@@ -561,7 +561,7 @@ export default function AppSidebar() {
       <div
         className={cn(
           "shrink-0 hidden md:block transition-all duration-300 ease-in-out print:hidden",
-          isCollapsed ? "w-16" : "w-[18rem]"
+          isCollapsed ? "w-16" : "w-[19.5rem]"
         )}
         aria-hidden="true"
       />
