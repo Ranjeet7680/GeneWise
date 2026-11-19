@@ -61,6 +61,7 @@
 
 ## Table of Contents
 
+- [MVP Platform Live Showcase (Production Screenshots)](#mvp-platform-live-showcase-production-screenshots)
 - [Platform Knowledge Base & GitHub Wiki (23 Technical Chapters)](#platform-knowledge-base--github-wiki)
 - [Clinical Data Visualizations & Process Pipeline Atlas](#clinical-data-visualizations--process-pipeline-atlas)
 - [1. Enterprise System Architecture](#1-enterprise-system-architecture)
@@ -78,6 +79,47 @@
 - [13. Full-Stack Production Deployment (Vercel & Render)](#13-full-stack-production-deployment-vercel--render)
 - [14. Security Architecture v2.0 & Regulatory Compliance](#14-security-architecture-v20--regulatory-compliance)
 - [15. Statutory Clinical & Legal Disclaimer](#15-statutory-clinical--legal-disclaimer)
+
+---
+
+## MVP Platform Live Showcase (Production Screenshots)
+
+The GeneWise clinical web platform delivers a unified, reactive UI designed with our custom **Clinical Calm** design system. Below are high-resolution screenshots captured directly from our verified production release:
+
+### 1. Clinical Entry & Interactive Pedigree Intelligence
+
+| Landing Page & Interactive Pedigree Model | Clinician Analytics Workspace & Telemetry Command Center |
+|:---:|:---:|
+| <a href="assets/mvp/01-landing-page-hero.jpg"><img src="assets/mvp/01-landing-page-hero.jpg" alt="GeneWise Landing Page Hero" width="100%" /></a> | <a href="assets/mvp/02-clinician-analytics-dashboard.jpg"><img src="assets/mvp/02-clinician-analytics-dashboard.jpg" alt="Clinician Analytics Workspace" width="100%" /></a> |
+| **Interactive Variant Trace**: Real-time Mendelian penetrance modeling (Autosomal Recessive/Dominant/X-Linked) with ClinVar 2024 curation metrics. | **Clinician Command Center**: Live physiological trends (74 BPM, 98.6% SpO2), ICU Node #409 telemetry, and preconception referral tracking. |
+
+### 2. Genetics Intelligence & Multi-Disorder Exploration
+
+| Family Health History & Genetic Risk Intelligence | 3D Cryo-EM Protein Structure & Exon Map (CFTR) |
+|:---:|:---:|
+| <a href="assets/mvp/03-family-genetics-pedigree-risk.jpg"><img src="assets/mvp/03-family-genetics-pedigree-risk.jpg" alt="Family Health History & Genetic Risk" width="100%" /></a> | <a href="assets/mvp/04-genetics-explorer-3d-protein-cftr.jpg"><img src="assets/mvp/04-genetics-explorer-3d-protein-cftr.jpg" alt="3D Protein Structure CFTR" width="100%" /></a> |
+| **3-Gen Pedigree Risk Engine**: 82% pedigree depth tracking, carrier screening guides, and DPDP Act / HIPAA compliant client vault. | **Genetics Explorer**: Interactive Three.js/WebGL Cryo-EM rendering of `CFTR 7q31.2` with ClinVar variant pathogenicity categorization. |
+
+### 3. Comprehensive Disease Catalog & Genomics Academy
+
+| Curated Mendelian Disease Catalog (1,428 Entries) | Genomics Learning Academy Hub (12 Accredited Courses) |
+|:---:|:---:|
+| <a href="assets/mvp/05-disease-genetics-catalog.jpg"><img src="assets/mvp/05-disease-genetics-catalog.jpg" alt="Mendelian Disease Catalog" width="100%" /></a> | <a href="assets/mvp/06-genomics-academy-curriculum.jpg"><img src="assets/mvp/06-genomics-academy-curriculum.jpg" alt="Genomics Learning Academy" width="100%" /></a> |
+| **Genetic Disease Explorer**: Searchable directory across Cystic Fibrosis, Marfan, Huntington, and Sickle Cell with inheritance badges. | **Genomics Academy**: Curriculum metrics, active module resume tracker, clinical genetics benchmarks, and CME accredited course tracks. |
+
+### 4. Cryptographic Certification & AI Medical Assistant
+
+| Cryptographic Certificate of Completion | GeneWise AI Medical Assistant & Bi-LSTM Longitudinal Forecaster |
+|:---:|:---:|
+| <a href="assets/mvp/07-cryptographic-certificate-completion.jpg"><img src="assets/mvp/07-cryptographic-certificate-completion.jpg" alt="Cryptographic Certificate of Completion" width="100%" /></a> | <a href="assets/mvp/08-genewise-ai-medical-assistant.jpg"><img src="assets/mvp/08-genewise-ai-medical-assistant.jpg" alt="AI Medical Assistant Workspace" width="100%" /></a> |
+| **Verifiable Credentials**: Official gold seal certificate (`GW-CERT-2026-MENDEL02`) with QR verification code and clinical directorate signatures. | **Evidence-Grounded Assistant**: Multi-Agent PubMed RAG + Guideline Verifier, Bi-LSTM lab forecaster (AUC 0.958), and 13 Indian languages voice mode. |
+
+### 5. High-Throughput Healthcare Analytics & Education Center
+
+| Healthcare Analytics Engine & Real-Time Telemetry Stream | Genetics Education Center & Clinical Report Guide |
+|:---:|:---:|
+| <a href="assets/mvp/09-healthcare-analytics-telemetry-engine.jpg"><img src="assets/mvp/09-healthcare-analytics-telemetry-engine.jpg" alt="Healthcare Analytics Engine" width="100%" /></a> | <a href="assets/mvp/10-genetics-education-center.jpg"><img src="assets/mvp/10-genetics-education-center.jpg" alt="Genetics Education Center" width="100%" /></a> |
+| **Real-Time ICU Telemetry**: Continuous dynamic Recharts vital streams (HR, SpO2, NIBP), PiP overlay graphs, and multi-lead ECG presets. | **Education Hub**: Comprehensive guides for reading genetic test reports, interpreting VUS (Variants of Uncertain Significance), and clinical pedigree construction. |
 
 ---
 
