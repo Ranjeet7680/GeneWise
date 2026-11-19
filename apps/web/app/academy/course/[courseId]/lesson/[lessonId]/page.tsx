@@ -44,6 +44,7 @@ import {
   QuizSubmitResult,
 } from "@/types/academy";
 import ClinicalMarkdown from "@/components/ClinicalMarkdown";
+import Interactive3dDnaViewer from "@/components/Interactive3dDnaViewer";
 import { sound } from "@/lib/sound";
 
 type TabMode = "video" | "text" | "3d" | "audio" | "quiz" | "lab";
@@ -611,34 +612,29 @@ export default function LessonPlayerPage() {
           {/* TAB 3: 3D Animation Viewer */}
           {activeTab === "3d" && (
             <div className="bg-white border border-gray-200/80 rounded-2xl p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h3 className="text-base font-bold text-gray-900">Interactive 3D Molecular Simulation</h3>
-                  <p className="text-xs text-gray-500">DNA Double-Helix Base-Pairing Topology (Watson-Crick)</p>
-                </div>
-                <span className="bg-teal-50 text-teal-800 text-xs px-2.5 py-1 rounded-full font-mono">
-                  WebGL Interactive Canvas
-                </span>
-              </div>
-
-              <div className="aspect-video bg-gradient-to-br from-[#0c181e] to-[#162e38] rounded-xl flex flex-col items-center justify-center p-8 text-white text-center space-y-4 relative overflow-hidden shadow-inner">
-                <div className="w-24 h-24 rounded-full border-4 border-teal-400/40 border-t-teal-400 animate-spin flex items-center justify-center">
-                  <Layers className="w-10 h-10 text-teal-300" />
-                </div>
-                <div className="space-y-1 z-10">
-                  <h4 className="text-lg font-bold text-white">DNA Double-Helix B-Form Model</h4>
-                  <p className="text-xs text-teal-200 max-w-md">
-                    10 base pairs per helical turn (3.4 nm pitch). Major groove and minor groove accessibility for transcription factors.
+                  <p className="text-xs text-gray-500">
+                    B-DNA Double-Helix Base-Pairing Topology (Watson-Crick Model)
                   </p>
                 </div>
-                <Link
-                  href="/academy/labs"
-                  className="inline-flex items-center gap-1.5 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-xs transition-all shadow"
-                >
-                  <FlaskConical className="w-3.5 h-3.5" />
-                  Open Full Interactive Lab 01
-                </Link>
+                <div className="flex items-center gap-2">
+                  <span className="bg-teal-50 text-teal-800 text-xs px-2.5 py-1 rounded-full font-mono border border-teal-200">
+                    Interactive 3D Engine
+                  </span>
+                  <Link
+                    href="/academy/labs"
+                    className="inline-flex items-center gap-1.5 bg-teal-50 hover:bg-teal-100 text-[#00837b] border border-teal-200 font-semibold px-3 py-1.5 rounded-xl text-xs transition-all"
+                  >
+                    <FlaskConical className="w-3.5 h-3.5" />
+                    Open Lab 01
+                  </Link>
+                </div>
               </div>
+
+              {/* Live Rendered Canvas Component */}
+              <Interactive3dDnaViewer />
             </div>
           )}
 
