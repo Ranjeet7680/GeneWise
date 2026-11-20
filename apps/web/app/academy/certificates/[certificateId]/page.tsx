@@ -565,7 +565,7 @@ export default function CertificatePage() {
 
             {/* Mandatory Statutory Notice */}
             <div className="pt-4 border-t border-gray-100 text-[9px] text-gray-400 leading-relaxed max-w-3xl mx-auto">
-              This credential certifies successful educational assessment aligned with American College of Medical Genetics and Genomics (ACMG) and National Society of Genetic Counselors (NSGC) core genomic competency frameworks. It constitutes an educational completion credential, authenticated via cryptographic record digest {cert.signature_digest.slice(0, 16)}...
+              This credential certifies successful educational assessment aligned with American College of Medical Genetics and Genomics (ACMG) and National Society of Genetic Counselors (NSGC) core genomic competency frameworks. It constitutes an educational completion credential, not a medical license, professional genetic counselling qualification, or diagnostic authority, authenticated via cryptographic record digest {cert.signature_digest.slice(0, 16)}...
             </div>
           </div>
         </div>

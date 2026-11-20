@@ -71,19 +71,19 @@ export default function GlobalError({
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Try Again & Recover</span>
           </button>
-          <Link
+          <a
             href="/dashboard"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-surface-low dark:hover:bg-[#111d24] transition-all"
           >
             <Home className="w-3.5 h-3.5" />
             <span>Dashboard</span>
-          </Link>
-          <Link
+          </a>
+          <a
             href="/health-metrics"
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-surface-low dark:hover:bg-[#111d24] transition-all"
           >
             <span>Vitals</span>
-          </Link>
+          </a>
         </div>
       </div>
     </div>

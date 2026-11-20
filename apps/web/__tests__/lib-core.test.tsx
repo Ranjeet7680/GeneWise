@@ -140,9 +140,9 @@ describe("Core Utilities, Theme, Sound Engine & UserAvatar", () => {
       expect(screen.getByText("Diastolic BP (mmHg)")).toBeInTheDocument();
       expect(screen.getByText("81")).toBeInTheDocument();
 
-      // Label uses bright slate-200 instead of low-contrast dark teal ink
-      expect(screen.getByText("Systolic BP (mmHg)")).toHaveClass("text-slate-200");
-      expect(screen.getByText("126")).toHaveClass("text-white");
+      // Label uses bright slate-200 in dark mode instead of low-contrast dark teal ink
+      expect(screen.getByText("Systolic BP (mmHg)")).toHaveClass("dark:text-slate-200");
+      expect(screen.getByText("126")).toHaveClass("dark:text-white");
       expect(container.querySelector('[style*="rgb(45, 212, 191)"]')).toBeTruthy();
     });
   });
