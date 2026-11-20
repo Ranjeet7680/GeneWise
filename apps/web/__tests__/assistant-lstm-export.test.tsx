@@ -238,7 +238,7 @@ describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Me
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("renders Voice Assistant without cut-off dialect scrollbar and with Bi-LSTM & Print/Share controls", () => {
+  it("renders Voice Assistant without cut-off dialect scrollbar and with Bi-LSTM & Print/Share controls", async () => {
     setMockPathname("/assistant/voice");
     render(
       <ThemeProvider>
@@ -257,6 +257,16 @@ describe("Advanced AI Engines, Bi-LSTM Sequence Model, Question Suggestions & Me
     fireEvent.click(screen.getByRole("button", { name: /Transcript \(1\)/i }));
     expect(screen.getAllByText(/GeneWise AI/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/मेडीप्रेडिक्ट/i)).not.toBeInTheDocument();
+
+    // Trigger one-tap voice inquiry scenario and verify Bi-LSTM trajectory card renders without error
+    const scenarioBtn = screen.getByRole("button", { name: /Bi-LSTM 90d HbA1c Velocity/i });
+    fireEvent.click(scenarioBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Bi-LSTM Sequence Forecast/i).length).toBeGreaterThan(0);
+      expect(screen.getByTestId("lstm-trajectory-card")).toBeInTheDocument();
+      expect(screen.getByText(/90-Day Projection/i)).toBeInTheDocument();
+    });
   });
 
   it("tailors clinical answers dynamically for user lab values, multi-system topics, and paired HbA1c/Glucose Bi-LSTM", () => {

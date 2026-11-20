@@ -17,6 +17,10 @@ export default function BiLstmTrajectoryCard({
   forecast,
   compact = false,
 }: BiLstmTrajectoryCardProps) {
+  if (!forecast || !forecast.sequence || forecast.sequence.length === 0) {
+    return null;
+  }
+
   const pts = forecast.sequence;
   const allVals = pts.flatMap((p) => [
     p.value,
@@ -37,7 +41,7 @@ export default function BiLstmTrajectoryCard({
   const innerH = h - padY * 2;
 
   // Parse optional upper clinical reference cutoff (e.g., "< 10.0 U/mL" or "4.0 - 5.6 %")
-  const refMatches = forecast.referenceRange.match(/\d+(?:\.\d+)?/g);
+  const refMatches = forecast.referenceRange ? String(forecast.referenceRange).match(/\d+(?:\.\d+)?/g) : null;
   const refLimitVal =
     refMatches && refMatches.length > 0
       ? Number(refMatches[refMatches.length - 1])
@@ -294,13 +298,13 @@ export default function BiLstmTrajectoryCard({
           <div className="flex items-center justify-between font-semibold text-muted-foreground">
             <span>LSTM Cell Gate Weights</span>
             <span className="font-mono text-indigo-600 dark:text-indigo-400">
-              F {forecast.gateWeights.forget}% / I {forecast.gateWeights.input}% / O {forecast.gateWeights.output}%
+              F {forecast.gateWeights?.forget ?? 33}% / I {forecast.gateWeights?.input ?? 33}% / O {forecast.gateWeights?.output ?? 34}%
             </span>
           </div>
           <div className="w-full h-1.5 rounded-full overflow-hidden flex bg-slate-200 dark:bg-slate-800">
-            <div style={{ width: `${forecast.gateWeights.forget}%` }} className="bg-amber-500" />
-            <div style={{ width: `${forecast.gateWeights.input}%` }} className="bg-teal-600" />
-            <div style={{ width: `${forecast.gateWeights.output}%` }} className="bg-indigo-600" />
+            <div style={{ width: `${forecast.gateWeights?.forget ?? 33}%` }} className="bg-amber-500" />
+            <div style={{ width: `${forecast.gateWeights?.input ?? 33}%` }} className="bg-teal-600" />
+            <div style={{ width: `${forecast.gateWeights?.output ?? 34}%` }} className="bg-indigo-600" />
           </div>
         </div>
       </div>
