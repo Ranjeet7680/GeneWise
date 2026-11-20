@@ -44,6 +44,12 @@ import { ExportableMessageItem, normalizeMessagesForExport } from "@/lib/export-
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { sound } from "@/lib/sound";
+import {
+  CLINICAL_VOICE_SUGGESTIONS,
+  SUGGESTION_CATEGORIES,
+  getLocalizedSuggestionQuery,
+  getContextualFollowUps,
+} from "@/lib/voice-suggestions";
 
 interface LanguageItem {
   code: string;
@@ -168,7 +174,71 @@ export default function VoiceAssistantPage() {
   const [isEmergency, setIsEmergency] = useState<boolean>(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [customQuery, setCustomQuery] = useState<string>("");
+  const [customQuery, setCustomQuery] = useState<string>("" );
+  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [availableVoices, setAvailableVoices] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const loadVoices = () => {
+      try {
+        const v = window.speechSynthesis.getVoices();
+        if (v && v.length > 0) setAvailableVoices(v);
+      } catch {}
+    };
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
+
+  const selectBestVoice = (langCode: string) => {
+    if (!availableVoices || availableVoices.length === 0) {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        const directVoices = window.speechSynthesis.getVoices();
+        if (directVoices && directVoices.length > 0) {
+          const matchExact = directVoices.find((v) => v.lang.toLowerCase() === langCode.toLowerCase());
+          if (matchExact) return matchExact;
+          const matchPrefix = directVoices.find((v) => v.lang.toLowerCase().startsWith(langCode.slice(0, 2).toLowerCase()));
+          if (matchPrefix) return matchPrefix;
+        }
+      }
+      return undefined;
+    }
+    const code = langCode.toLowerCase();
+    const prefix = langCode.slice(0, 2).toLowerCase();
+
+    let match = availableVoices.find(
+      (v) => v.lang.toLowerCase() === code || v.lang.toLowerCase().replace("_", "-") === code
+    );
+    if (match) return match;
+
+    match = availableVoices.find((v) => v.lang.toLowerCase().startsWith(prefix));
+    if (match) return match;
+
+    if (code.startsWith("en")) {
+      match = availableVoices.find((v) => v.lang.toLowerCase().includes("in") && v.lang.toLowerCase().startsWith("en"));
+      if (match) return match;
+    }
+
+    return undefined;
+  };
+
+  const handleTestVoice = (langCode: string) => {
+    sound.playClick();
+    const meta = INDIAN_LANGUAGES.find((l) => l.code === langCode) || currentLang;
+    speakText(meta.greeting, langCode);
+  };
+
+  const handleRandomQuestion = () => {
+    sound.playClick();
+    const list =
+      activeCategory === "all"
+        ? CLINICAL_VOICE_SUGGESTIONS
+        : CLINICAL_VOICE_SUGGESTIONS.filter((s) => s.category === activeCategory);
+    const chosen = list[Math.floor(Math.random() * list.length)] || CLINICAL_VOICE_SUGGESTIONS[0];
+    const localized = getLocalizedSuggestionQuery(chosen, selectedLang);
+    setTranscript(localized.native);
+    handleProcessVoiceQuery(localized.native, selectedLang);
+  };
   const [audioVolume, setAudioVolume] = useState<number>(15);
   const [copiedSubtitle, setCopiedSubtitle] = useState<boolean>(false);
   const [showHistory, setShowHistory] = useState<boolean>(false);
@@ -573,10 +643,15 @@ export default function VoiceAssistantPage() {
     utterance.lang = langCode || "hi-IN";
     utterance.rate = speechRate;
 
-    const voices = window.speechSynthesis.getVoices();
-    const match = voices.find((v) => v.lang.startsWith(langCode.slice(0, 2)));
-    if (match) {
-      utterance.voice = match;
+    const bestVoice = selectBestVoice(langCode);
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+    } else {
+      const voices = window.speechSynthesis.getVoices();
+      const match = voices.find((v) => v.lang.startsWith(langCode.slice(0, 2)));
+      if (match) {
+        utterance.voice = match;
+      }
     }
 
     utterance.onstart = () => {
@@ -1083,6 +1158,40 @@ export default function VoiceAssistantPage() {
               </div>
             )}
 
+            {/* Contextual Smart Follow-Up Suggestions in Selected Dialect */}
+            {(() => {
+              const followUps = getContextualFollowUps(transcript || subtitles.native, selectedLang);
+              if (!followUps || followUps.length === 0) return null;
+              return (
+                <div className="relative z-10 w-full max-w-2xl p-3 sm:p-4 rounded-2xl border border-teal-500/25 bg-teal-50/70 dark:bg-teal-950/25 backdrop-blur-md shadow-xs space-y-2 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between text-xs font-bold text-teal-800 dark:text-teal-200">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                      Suggested Follow-Up Inquiries ({currentLang.native}):
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-normal">One-tap voice consult</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {followUps.map((f, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          setTranscript(f.query);
+                          handleProcessVoiceQuery(f.query, selectedLang);
+                        }}
+                        className="px-3 py-1.5 rounded-xl border border-teal-500/30 bg-white dark:bg-[#14262f] hover:border-teal-600 hover:bg-teal-50 dark:hover:bg-teal-900/40 text-foreground text-xs font-medium transition-all shadow-2xs hover:shadow-xs active:scale-95 flex items-center gap-1.5 group"
+                      >
+                        <Mic className="w-3 h-3 text-teal-600 group-hover:scale-110 transition-transform shrink-0" />
+                        <span className="truncate max-w-[280px] sm:max-w-none">{f.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Active Medical Tools Badges */}
             {activeTools.length > 0 && (
               <div className="relative z-10 flex flex-wrap items-center justify-center gap-2 text-xs">
@@ -1101,7 +1210,7 @@ export default function VoiceAssistantPage() {
           </div>
 
           {/* Patient Context & One-Tap Indian-Language Inquiries */}
-          <div className="pt-4 border-t border-border space-y-2.5">
+          <div className="pt-4 border-t border-border space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 px-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -1112,32 +1221,108 @@ export default function VoiceAssistantPage() {
               </span>
             </div>
 
-            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block text-center">
-              One-Tap Clinical Voice Scenarios
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
-              {CLINICAL_VOICE_SCENARIOS.map((sc) => (
-                <button
-                  key={sc.title}
-                  onClick={() => {
-                    sound.playClick();
-                    const queryLang = selectedLang !== "hi-IN" ? selectedLang : sc.lang;
-                    setSelectedLang(queryLang);
-                    setTranscript(sc.native);
-                    handleProcessVoiceQuery(sc.native, queryLang);
-                  }}
-                  className="p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">
-                      {sc.badge}
-                    </span>
-                    <Mic className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 transition-transform" />
-                  </div>
-                  <p className="text-xs font-bold text-foreground truncate">{sc.title}</p>
-                  <p className="text-[11px] text-muted-foreground truncate">{sc.native}</p>
-                </button>
-              ))}
+            {/* Multilingual Clinical Question Suggestions & Scenarios */}
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                    <span>Clinical Question Suggestions ({currentLang.native} • {currentLang.name})</span>
+                  </h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Explore curated clinical inquiries adapted to {currentLang.native} with synchronized 3-tier speech, transliteration & Bi-LSTM curves.
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleRandomQuestion}
+                    className="px-2.5 py-1.5 rounded-xl border border-teal-500/30 bg-teal-50/80 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/60 text-teal-800 dark:text-teal-200 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95"
+                    title="Ask a random clinical question in selected dialect"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                    <span>Surprise Me</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTestVoice(selectedLang)}
+                    className="px-2.5 py-1.5 rounded-xl border border-border bg-white dark:bg-[#14262f] hover:bg-surface-low text-foreground text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95"
+                    title="Test audio speech output in this dialect"
+                  >
+                    <Volume2 className="w-3.5 h-3.5 text-teal-600" />
+                    <span>Test Audio</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Category Filter Tabs with Native Labels */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+                {SUGGESTION_CATEGORIES.map((cat) => {
+                  const isActive = activeCategory === cat.id;
+                  const nativeLabel = cat.nativeLabels[selectedLang] || cat.nativeLabels["hi-IN"] || cat.label;
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        setActiveCategory(cat.id);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all text-xs shrink-0 touch-manipulation active:scale-95 ${
+                        isActive
+                          ? "bg-teal-700 text-white font-bold shadow-xs"
+                          : "bg-surface-low dark:bg-[#14262f] text-muted-foreground hover:text-foreground border border-border/70"
+                      }`}
+                    >
+                      <span>{nativeLabel}</span>
+                      {cat.id !== "all" && <span className="opacity-75 text-[10px] ml-1">({cat.label})</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Dynamic Multilingual Suggestion Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+                {(activeCategory === "all"
+                  ? CLINICAL_VOICE_SUGGESTIONS
+                  : CLINICAL_VOICE_SUGGESTIONS.filter((s) => s.category === activeCategory)
+                ).map((sug) => {
+                  const localized = getLocalizedSuggestionQuery(sug, selectedLang);
+                  return (
+                    <button
+                      key={sug.id}
+                      type="button"
+                      onClick={() => {
+                        sound.playClick();
+                        setTranscript(localized.native);
+                        handleProcessVoiceQuery(localized.native, selectedLang);
+                      }}
+                      className="p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">
+                          {sug.badge}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
+                            {currentLang.native}
+                          </span>
+                          <Mic className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 transition-transform" />
+                        </div>
+                      </div>
+                      <p className="text-xs font-bold text-foreground truncate">{sug.title}</p>
+                      <p className="text-xs font-semibold text-teal-900 dark:text-teal-200 line-clamp-2 leading-snug">
+                        {localized.native}
+                      </p>
+                      {localized.romanized && (
+                        <p className="text-[11px] text-muted-foreground italic truncate">
+                          {localized.romanized}
+                        </p>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Custom Clinical Voice/Text Inquiry Composer */}
