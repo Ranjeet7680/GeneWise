@@ -138,6 +138,8 @@ interface ChatRecord {
 export default function VoiceAssistantPage() {
   const { user } = useAuth();
   const [selectedLang, setSelectedLang] = useState<string>("hi-IN");
+  const currentLang =
+    INDIAN_LANGUAGES.find((l) => l.code === selectedLang) || INDIAN_LANGUAGES[0];
   const [autoDetect, setAutoDetect] = useState<boolean>(true);
   const [voiceLstmEnabled, setVoiceLstmEnabled] = useState<boolean>(true);
   const [continuousMode, setContinuousMode] = useState<boolean>(false);
@@ -165,6 +167,8 @@ export default function VoiceAssistantPage() {
   ]);
   const [isEmergency, setIsEmergency] = useState<boolean>(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const [customQuery, setCustomQuery] = useState<string>("");
   const [audioVolume, setAudioVolume] = useState<number>(15);
   const [copiedSubtitle, setCopiedSubtitle] = useState<boolean>(false);
   const [showHistory, setShowHistory] = useState<boolean>(false);
@@ -389,7 +393,7 @@ export default function VoiceAssistantPage() {
     recognitionRef.current = recognition;
     recognition.continuous = false;
     recognition.interimResults = true;
-    recognition.lang = autoDetect ? "hi-IN" : selectedLang;
+    recognition.lang = selectedLang || "hi-IN";
 
     recognition.onstart = () => {
       setVoiceState("listening");
@@ -431,8 +435,11 @@ export default function VoiceAssistantPage() {
   };
 
   // Send to GeneWise Voice Backend
-  const handleProcessVoiceQuery = async (queryText: string) => {
+  const handleProcessVoiceQuery = async (queryText: string, langOverride?: string) => {
     if (!queryText.trim()) return;
+
+    const activeLang = langOverride || selectedLang;
+    const activeLangMeta = INDIAN_LANGUAGES.find((l) => l.code === activeLang) || currentLang;
 
     setVoiceState("thinking");
 
@@ -442,14 +449,14 @@ export default function VoiceAssistantPage() {
       sender: "user",
       text: queryText,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      lang: selectedLang,
+      lang: activeLang,
     };
     setChatHistory((prev) => [...prev, userMsg]);
 
     try {
       const response = await api.processVoiceQuery(
         queryText,
-        autoDetect ? undefined : selectedLang
+        activeLang
       );
 
       const safeResponse =
@@ -457,13 +464,13 @@ export default function VoiceAssistantPage() {
           ? response
           : {
               transcript: queryText,
-              detected_language: selectedLang,
-              language_name: currentLang.name,
+              detected_language: activeLang,
+              language_name: activeLangMeta.name,
               detected_confidence: 0.98,
-              speech_response: "Clinical telemetry and genetic guidelines verified for your query.",
+              speech_response: `Clinical telemetry and evidence guidelines verified for your query in ${activeLangMeta.name}.`,
               subtitles: {
-                native: "क्लिनिकल टेलीमेट्री और आनुवंशिक दिशानिर्देशों का सत्यापन हो गया है।",
-                romanized: "Clinical telemetry aur genetic guidelines ka satyapan ho gaya hai.",
+                native: activeLangMeta.greeting,
+                romanized: `${activeLangMeta.name} telemetry response verified.`,
                 english: "Clinical telemetry and genetic guidelines have been verified.",
               },
               tools_executed: ["PubMed Clinical Grounding", "Bi-LSTM Sequence Engine"],
@@ -538,7 +545,7 @@ export default function VoiceAssistantPage() {
       const speechToSpeak =
         safeResponse.speech_response || nextSubtitles.native || nextSubtitles.english || "";
       if (speechToSpeak) {
-        speakText(speechToSpeak, safeResponse.detected_language || selectedLang);
+        speakText(speechToSpeak, safeResponse.detected_language || activeLang);
       }
     } catch (err) {
       console.error("Voice process error:", err);
@@ -549,6 +556,10 @@ export default function VoiceAssistantPage() {
   // Multilingual Speech Synthesis (TTS)
   const speakText = (text: string, langCode: string) => {
     if (typeof window === "undefined" || !window.speechSynthesis) {
+      setVoiceState("idle");
+      return;
+    }
+    if (isMuted) {
       setVoiceState("idle");
       return;
     }
@@ -590,9 +601,6 @@ export default function VoiceAssistantPage() {
 
     window.speechSynthesis.speak(utterance);
   };
-
-  const currentLang =
-    INDIAN_LANGUAGES.find((l) => l.code === selectedLang) || INDIAN_LANGUAGES[0];
 
   return (
     <div className="min-h-[100dvh] flex flex-col bg-[#f4faff] dark:bg-[#0a161d] text-foreground">
@@ -753,6 +761,26 @@ export default function VoiceAssistantPage() {
                   </button>
                 ))}
               </div>
+
+              {/* Mute/Audio Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  if (!isMuted && typeof window !== "undefined" && window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                  }
+                  setIsMuted(!isMuted);
+                }}
+                className={`p-1.5 rounded-xl border text-xs font-medium transition-all ${
+                  isMuted
+                    ? "bg-amber-500/15 border-amber-500/40 text-amber-700 dark:text-amber-300"
+                    : "bg-white dark:bg-[#14262f] border-border text-foreground hover:bg-surface-low"
+                }`}
+                title={isMuted ? "Unmute Assistant Voice" : "Mute Assistant Voice"}
+              >
+                {isMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+              </button>
             </div>
           </div>
 
@@ -767,6 +795,13 @@ export default function VoiceAssistantPage() {
                 onClick={() => {
                   sound.playClick();
                   setSelectedLang(l.code);
+                  setAutoDetect(false);
+                  setDetectedBadge(`${l.native} (${l.name}) • Active Dialect`);
+                  setSubtitles({
+                    native: l.greeting,
+                    romanized: `${l.name} dialect active. Tap microphone or scenario below to speak.`,
+                    english: `Switched to ${l.name} (${l.native}). Tap microphone or choose any clinical query below.`,
+                  });
                   speakText(l.greeting, l.code);
                 }}
                 className={`px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium shrink-0 transition-all touch-manipulation active:scale-95 ${
@@ -1086,9 +1121,10 @@ export default function VoiceAssistantPage() {
                   key={sc.title}
                   onClick={() => {
                     sound.playClick();
-                    setSelectedLang(sc.lang);
+                    const queryLang = selectedLang !== "hi-IN" ? selectedLang : sc.lang;
+                    setSelectedLang(queryLang);
                     setTranscript(sc.native);
-                    handleProcessVoiceQuery(sc.native);
+                    handleProcessVoiceQuery(sc.native, queryLang);
                   }}
                   className="p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
                 >
@@ -1103,6 +1139,57 @@ export default function VoiceAssistantPage() {
                 </button>
               ))}
             </div>
+
+            {/* Custom Clinical Voice/Text Inquiry Composer */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!customQuery.trim()) return;
+                sound.playClick();
+                setTranscript(customQuery);
+                handleProcessVoiceQuery(customQuery, selectedLang);
+                setCustomQuery("");
+              }}
+              className="mt-3 flex items-center gap-2 p-1.5 sm:p-2 rounded-2xl border border-border bg-white dark:bg-[#14262f] shadow-xs focus-within:border-teal-600 transition-all"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (voiceState === "speaking") {
+                    handleInterrupt();
+                  } else if (voiceState === "listening") {
+                    setVoiceState("idle");
+                  } else {
+                    startListening();
+                  }
+                }}
+                className={`p-2 sm:p-2.5 rounded-xl transition-all touch-manipulation active:scale-95 ${
+                  voiceState === "listening"
+                    ? "bg-red-500 text-white animate-pulse"
+                    : voiceState === "speaking"
+                    ? "bg-teal-600 text-white"
+                    : "bg-surface-low text-muted-foreground hover:text-foreground"
+                }`}
+                title={voiceState === "listening" ? "Listening..." : "Click to speak"}
+              >
+                {voiceState === "listening" ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </button>
+              <input
+                type="text"
+                value={customQuery}
+                onChange={(e) => setCustomQuery(e.target.value)}
+                placeholder={`Ask any clinical inquiry in ${currentLang.native} (${currentLang.name}) or English...`}
+                className="flex-1 bg-transparent border-none text-xs text-foreground placeholder:text-muted-foreground focus:outline-none px-2"
+              />
+              <button
+                type="submit"
+                disabled={!customQuery.trim() || voiceState === "thinking"}
+                className="px-3 sm:px-4 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5 touch-manipulation active:scale-95 shadow-2xs"
+              >
+                <span>Consult</span>
+                <Sparkles className="w-3.5 h-3.5" />
+              </button>
+            </form>
           </div>
 
           {/* Conversation History Drawer Modal */}

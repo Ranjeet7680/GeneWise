@@ -23,6 +23,8 @@ export default function GlobalError({
       // Safe state recovery: clear any corrupt temporary session variables without wiping auth
       if (typeof window !== "undefined") {
         sessionStorage.clear();
+        window.location.reload();
+        return;
       }
     } catch {}
     reset();
