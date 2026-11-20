@@ -183,4 +183,62 @@ describe("Multilingual Clinical Question Suggestions Engine Test Suite", () => {
       expect(globalThis.speechSynthesis.speak).toHaveBeenCalled();
     });
   });
+
+  it("filters clinical questions in real-time using live search input", async () => {
+    render(
+      <AuthProvider>
+        <ThemeProvider>
+          <VoiceAssistantPage />
+        </ThemeProvider>
+      </AuthProvider>
+    );
+
+    const searchInput = screen.getByPlaceholderText(/Search questions in English/i);
+    expect(searchInput).toBeInTheDocument();
+
+    // Type "Celiac"
+    fireEvent.change(searchInput, { target: { value: "Celiac" } });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Celiac Disease tTG-IgA/i)).toBeInTheDocument();
+      // Unrelated items should be filtered out
+      expect(screen.queryByText(/Check ICU Vitals & BP/i)).not.toBeInTheDocument();
+    });
+
+    // Clear search
+    const clearBtn = screen.getByTitle(/Clear filter/i);
+    fireEvent.click(clearBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Check ICU Vitals & BP/i)).toBeInTheDocument();
+    });
+  });
+
+  it("renders Audio Tuning settings panel and adjusts speech rate and pitch", async () => {
+    render(
+      <AuthProvider>
+        <ThemeProvider>
+          <VoiceAssistantPage />
+        </ThemeProvider>
+      </AuthProvider>
+    );
+
+    // Click Audio Tuning button
+    const tuningBtn = screen.getByRole("button", { name: /Audio Tuning/i });
+    fireEvent.click(tuningBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Speech Synthesizer & Visualizer Controls/i)).toBeInTheDocument();
+      expect(screen.getByText(/Speed \(Rate\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Pitch \(Tone\)/i)).toBeInTheDocument();
+    });
+
+    // Click 1.25x speed
+    const rateBtn = screen.getByRole("button", { name: /1.25x/i });
+    fireEvent.click(rateBtn);
+
+    // Click Deep pitch
+    const deepBtn = screen.getByRole("button", { name: /Deep/i });
+    fireEvent.click(deepBtn);
+  });
 });

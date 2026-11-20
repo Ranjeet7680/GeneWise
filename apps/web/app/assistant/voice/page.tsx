@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   Activity,
@@ -25,10 +25,12 @@ import {
   Printer,
   Radio,
   RotateCcw,
+  Search,
   Settings2,
   Share2,
   ShieldAlert,
   ShieldCheck,
+  Sliders,
   Sparkles,
   Volume2,
   VolumeX,
@@ -176,6 +178,47 @@ export default function VoiceAssistantPage() {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [customQuery, setCustomQuery] = useState<string>("" );
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [speechPitch, setSpeechPitch] = useState<number>(1.0);
+  const [showAudioTuning, setShowAudioTuning] = useState<boolean>(false);
+  const [suggestionSearch, setSuggestionSearch] = useState<string>("");
+  const [previewingSugId, setPreviewingSugId] = useState<string | null>(null);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: CLINICAL_VOICE_SUGGESTIONS.length };
+    for (const sug of CLINICAL_VOICE_SUGGESTIONS) {
+      counts[sug.category] = (counts[sug.category] || 0) + 1;
+    }
+    return counts;
+  }, []);
+
+  const filteredSuggestions = useMemo(() => {
+    let list =
+      activeCategory === "all"
+        ? CLINICAL_VOICE_SUGGESTIONS
+        : CLINICAL_VOICE_SUGGESTIONS.filter((s) => s.category === activeCategory);
+
+    if (suggestionSearch.trim()) {
+      const term = suggestionSearch.toLowerCase();
+      list = list.filter((s) => {
+        const localized = getLocalizedSuggestionQuery(s, selectedLang);
+        return (
+          s.title.toLowerCase().includes(term) ||
+          s.badge.toLowerCase().includes(term) ||
+          localized.native.toLowerCase().includes(term) ||
+          (localized.romanized && localized.romanized.toLowerCase().includes(term)) ||
+          localized.english.toLowerCase().includes(term)
+        );
+      });
+    }
+    return list;
+  }, [activeCategory, suggestionSearch, selectedLang]);
+
+  const handlePreviewSuggestion = (e: React.MouseEvent, sugId: string, text: string) => {
+    e.stopPropagation();
+    sound.playClick();
+    setPreviewingSugId(sugId);
+    speakText(text, selectedLang);
+  };
   const [availableVoices, setAvailableVoices] = useState<any[]>([]);
 
   useEffect(() => {
@@ -642,6 +685,7 @@ export default function VoiceAssistantPage() {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = langCode || "hi-IN";
     utterance.rate = speechRate;
+    utterance.pitch = speechPitch;
 
     const bestVoice = selectBestVoice(langCode);
     if (bestVoice) {
@@ -660,6 +704,7 @@ export default function VoiceAssistantPage() {
 
     utterance.onend = () => {
       setVoiceState("idle");
+      setPreviewingSugId(null);
       // Hands-free continuous auto-listening
       if (continuousModeRef.current) {
         setTimeout(() => {
@@ -672,6 +717,7 @@ export default function VoiceAssistantPage() {
 
     utterance.onerror = () => {
       setVoiceState("idle");
+      setPreviewingSugId(null);
     };
 
     window.speechSynthesis.speak(utterance);
@@ -837,6 +883,24 @@ export default function VoiceAssistantPage() {
                 ))}
               </div>
 
+              {/* Audio Tuning & Voice Settings Toggle */}
+              <button
+                type="button"
+                onClick={() => {
+                  sound.playClick();
+                  setShowAudioTuning(!showAudioTuning);
+                }}
+                className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs hover:scale-105 active:scale-95 ${
+                  showAudioTuning
+                    ? "bg-teal-700 text-white font-bold border-teal-600"
+                    : "bg-white dark:bg-[#14262f] border-border text-foreground hover:bg-surface-low"
+                }`}
+                title="Voice Speed, Pitch & Visualizer Settings"
+              >
+                <Sliders className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                <span className="hidden sm:inline">Audio Tuning</span>
+              </button>
+
               {/* Mute/Audio Toggle */}
               <button
                 type="button"
@@ -858,6 +922,115 @@ export default function VoiceAssistantPage() {
               </button>
             </div>
           </div>
+
+          {/* Interactive Audio Tuning & Voice Synthesizer Control Panel */}
+          {showAudioTuning && (
+            <div className="p-3.5 my-2 rounded-2xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/20 backdrop-blur-md shadow-sm space-y-2.5 animate-sheet-slide-up text-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-500/20 pb-2">
+                <div className="flex items-center gap-1.5 font-bold text-teal-800 dark:text-teal-200 text-xs">
+                  <Sliders className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                  <span>Speech Synthesizer & Visualizer Controls</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{selectBestVoice(selectedLang)?.name || "Browser Indic Neural Speech Engine"}</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {/* Speech Speed */}
+                <div className="space-y-1 bg-white dark:bg-[#14262f] p-2.5 rounded-xl border border-border">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-foreground">
+                    <span>Speed (Rate)</span>
+                    <span className="text-teal-600 font-mono">{speechRate}x</span>
+                  </div>
+                  <div className="flex items-center gap-1 pt-1">
+                    {[0.8, 1.0, 1.25, 1.5].map((rate) => (
+                      <button
+                        key={rate}
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          setSpeechRate(rate);
+                        }}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
+                          speechRate === rate
+                            ? "bg-teal-700 text-white shadow-2xs font-bold"
+                            : "bg-surface-low dark:bg-[#111d24] text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {rate}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Speech Pitch */}
+                <div className="space-y-1 bg-white dark:bg-[#14262f] p-2.5 rounded-xl border border-border">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-foreground">
+                    <span>Pitch (Tone)</span>
+                    <span className="text-teal-600 font-mono">
+                      {speechPitch === 0.9 ? "Deep" : speechPitch === 1.15 ? "Bright" : "Natural"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 pt-1">
+                    {[
+                      { val: 0.9, label: "Deep" },
+                      { val: 1.0, label: "Natural" },
+                      { val: 1.15, label: "Bright" },
+                    ].map((item) => (
+                      <button
+                        key={item.val}
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          setSpeechPitch(item.val);
+                        }}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
+                          speechPitch === item.val
+                            ? "bg-teal-700 text-white shadow-2xs font-bold"
+                            : "bg-surface-low dark:bg-[#111d24] text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Visualizer Mode */}
+                <div className="space-y-1 bg-white dark:bg-[#14262f] p-2.5 rounded-xl border border-border">
+                  <div className="flex items-center justify-between text-[11px] font-bold text-foreground">
+                    <span>Waveform Style</span>
+                    <span className="text-teal-600 font-mono uppercase text-[10px]">{visualizerMode}</span>
+                  </div>
+                  <div className="flex items-center gap-1 pt-1">
+                    {[
+                      { id: "waves", label: "Waves" },
+                      { id: "spectrum", label: "Spectrum" },
+                      { id: "ecg", label: "ECG" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => {
+                          sound.playClick();
+                          setVisualizerMode(item.id as any);
+                        }}
+                        className={`flex-1 py-1 rounded-lg text-xs font-semibold transition-all ${
+                          visualizerMode === item.id
+                            ? "bg-teal-700 text-white shadow-2xs font-bold"
+                            : "bg-surface-low dark:bg-[#111d24] text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 13 Indian Languages Clean Wrapping Ribbon (touch snapping with zero clipped pills) */}
           <div className="py-2 sm:py-2.5 flex items-center gap-1.5 border-b border-border/60 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden whitespace-nowrap touch-pan-x">
@@ -1255,11 +1428,12 @@ export default function VoiceAssistantPage() {
                 </div>
               </div>
 
-              {/* Category Filter Tabs with Native Labels */}
+              {/* Category Filter Tabs with Native Labels & Count Badges */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
                 {SUGGESTION_CATEGORIES.map((cat) => {
                   const isActive = activeCategory === cat.id;
                   const nativeLabel = cat.nativeLabels[selectedLang] || cat.nativeLabels["hi-IN"] || cat.label;
+                  const count = categoryCounts[cat.id] ?? 0;
                   return (
                     <button
                       key={cat.id}
@@ -1268,61 +1442,136 @@ export default function VoiceAssistantPage() {
                         sound.playClick();
                         setActiveCategory(cat.id);
                       }}
-                      className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all text-xs shrink-0 touch-manipulation active:scale-95 ${
+                      className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all text-xs shrink-0 touch-manipulation active:scale-95 flex items-center gap-1.5 ${
                         isActive
                           ? "bg-teal-700 text-white font-bold shadow-xs"
                           : "bg-surface-low dark:bg-[#14262f] text-muted-foreground hover:text-foreground border border-border/70"
                       }`}
                     >
                       <span>{nativeLabel}</span>
-                      {cat.id !== "all" && <span className="opacity-75 text-[10px] ml-1">({cat.label})</span>}
+                      <span
+                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                          isActive
+                            ? "bg-white/25 text-white"
+                            : "bg-surface dark:bg-[#111d24] text-muted-foreground"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                      {cat.id !== "all" && <span className="opacity-75 text-[10px] ml-0.5 hidden md:inline">({cat.label})</span>}
                     </button>
                   );
                 })}
               </div>
 
-              {/* Dynamic Multilingual Suggestion Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
-                {(activeCategory === "all"
-                  ? CLINICAL_VOICE_SUGGESTIONS
-                  : CLINICAL_VOICE_SUGGESTIONS.filter((s) => s.category === activeCategory)
-                ).map((sug) => {
-                  const localized = getLocalizedSuggestionQuery(sug, selectedLang);
-                  return (
-                    <button
-                      key={sug.id}
-                      type="button"
-                      onClick={() => {
-                        sound.playClick();
-                        setTranscript(localized.native);
-                        handleProcessVoiceQuery(localized.native, selectedLang);
-                      }}
-                      className="p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] hover:border-teal-600 text-left transition-all shadow-2xs hover:shadow-xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">
-                          {sug.badge}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
-                            {currentLang.native}
-                          </span>
-                          <Mic className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 transition-transform" />
-                        </div>
-                      </div>
-                      <p className="text-xs font-bold text-foreground truncate">{sug.title}</p>
-                      <p className="text-xs font-semibold text-teal-900 dark:text-teal-200 line-clamp-2 leading-snug">
-                        {localized.native}
-                      </p>
-                      {localized.romanized && (
-                        <p className="text-[11px] text-muted-foreground italic truncate">
-                          {localized.romanized}
-                        </p>
-                      )}
-                    </button>
-                  );
-                })}
+              {/* Live Search & Inquiry Filter Input */}
+              <div className="flex items-center gap-2 p-1.5 sm:p-2 rounded-xl border border-border bg-white dark:bg-[#14262f] shadow-2xs">
+                <Search className="w-3.5 h-3.5 text-muted-foreground ml-1.5 shrink-0" />
+                <input
+                  type="text"
+                  value={suggestionSearch}
+                  onChange={(e) => setSuggestionSearch(e.target.value)}
+                  placeholder={`Search questions in English, ${currentLang.native}, or romanized phonetics...`}
+                  className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground outline-none"
+                />
+                {suggestionSearch && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      setSuggestionSearch("");
+                    }}
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-low transition-all shrink-0"
+                    title="Clear filter"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                <span className="text-[10px] text-muted-foreground font-mono shrink-0 px-1.5">
+                  {filteredSuggestions.length} {filteredSuggestions.length === 1 ? "question" : "questions"}
+                </span>
               </div>
+
+              {/* Dynamic Multilingual Suggestion Cards */}
+              {filteredSuggestions.length === 0 ? (
+                <div className="p-6 text-center rounded-2xl border border-dashed border-border bg-surface-low/50 dark:bg-[#14262f]/50 space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    No clinical suggestions match &ldquo;{suggestionSearch}&rdquo; in {currentLang.name}.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      sound.playClick();
+                      setSuggestionSearch("");
+                      setActiveCategory("all");
+                    }}
+                    className="text-xs text-teal-600 font-bold hover:underline"
+                  >
+                    Clear Filter & View All Topics
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-2.5">
+                  {filteredSuggestions.map((sug) => {
+                    const localized = getLocalizedSuggestionQuery(sug, selectedLang);
+                    const isPreviewing = previewingSugId === sug.id;
+                    return (
+                      <div
+                        key={sug.id}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          sound.playClick();
+                          setTranscript(localized.native);
+                          handleProcessVoiceQuery(localized.native, selectedLang);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            sound.playClick();
+                            setTranscript(localized.native);
+                            handleProcessVoiceQuery(localized.native, selectedLang);
+                          }
+                        }}
+                        className="voice-card-interactive cursor-pointer p-3 rounded-2xl border border-border bg-white dark:bg-[#14262f] text-left shadow-2xs group space-y-1.5 touch-manipulation active:scale-[0.98]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-teal-700 dark:text-teal-400">
+                            {sug.badge}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {/* Pronunciation Audio Preview Button */}
+                            <button
+                              type="button"
+                              onClick={(e) => handlePreviewSuggestion(e, sug.id, localized.native)}
+                              className={`p-1 rounded-lg border transition-all ${
+                                isPreviewing
+                                  ? "bg-teal-600 text-white border-teal-600 animate-pulse shadow-xs"
+                                  : "bg-surface-low dark:bg-[#111d24] text-muted-foreground hover:text-teal-600 hover:border-teal-500 border-border"
+                              }`}
+                              title={`Listen to pronunciation in ${currentLang.native} (${currentLang.name})`}
+                            >
+                              <Volume2 className="w-3 h-3" />
+                            </button>
+                            <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-mono">
+                              {currentLang.native}
+                            </span>
+                            <Mic className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 transition-transform" />
+                          </div>
+                        </div>
+                        <p className="text-xs font-bold text-foreground truncate">{sug.title}</p>
+                        <p className="text-xs font-semibold text-teal-900 dark:text-teal-200 line-clamp-2 leading-snug">
+                          {localized.native}
+                        </p>
+                        {localized.romanized && (
+                          <p className="text-[11px] text-muted-foreground italic truncate">
+                            {localized.romanized}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Custom Clinical Voice/Text Inquiry Composer */}

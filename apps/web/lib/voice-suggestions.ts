@@ -1156,6 +1156,176 @@ export const CLINICAL_VOICE_SUGGESTIONS: ClinicalSuggestionItem[] = [
       ],
     },
   },
+  {
+    id: "sug-celiac",
+    category: "genetics",
+    categoryLabel: "Immunogenetics",
+    title: "Celiac Disease tTG-IgA & HLA-DQ2/8",
+    badge: "Immunology • tTG-IgA & Gluten",
+    iconName: "dna",
+    translations: {
+      "hi-IN": {
+        native: "सीलिएक रोग में tTG-IgA एंटीबॉडी और ग्लूटेन संवेदनशीलता समझाइए",
+        romanized: "Celiac rog me tTG-IgA antibody aur gluten samvedansheelta samjhayein",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "bn-IN": {
+        native: "সিলিয়াক রোগে tTG-IgA অ্যান্টিবডি এবং গ্লুটেন সংবেদনশীলতা ব্যাখ্যা করুন",
+        romanized: "Celiac roge tTG-IgA antibody ebong gluten songbedonshilota byakhya korun",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "ta-IN": {
+        native: "சீலியாக் நோயில் tTG-IgA ஆன்டிபாடி மற்றும் பசையம் உணர்திறனை விளக்குங்கள்",
+        romanized: "Celiac noyil tTG-IgA antibody matrum gluten unarthiranai vilakkungal",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "te-IN": {
+        native: "ఉదరకుహర (సీలియాక్) వ్యాధిలో tTG-IgA యాంటీబాడీ మరియు గ్లూటెన్ సున్నితత్వాన్ని వివరించండి",
+        romanized: "Celiac vyadhilo tTG-IgA antibody mariyu gluten sunnithatwanni vivarinchandi",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "kn-IN": {
+        native: "ಉದರದ ಕಾಯಿಲೆಯಲ್ಲಿ (ಸಿಲಿಯಾಕ್) tTG-IgA ಪ್ರತಿಕಾಯ ಮತ್ತು ಅಂಟು ಸಂವೇದನೆ ವಿವರಿಸಿ",
+        romanized: "Celiac kayileyalli tTG-IgA prathikaya mattu gluten samvedane vivarisi",
+        english: "Explain Celiac disease tTG-IgA and gluten sensitivity.",
+      },
+      "ml-IN": {
+        native: "സീലിയാക് രോഗത്തിൽ tTG-IgA ആന്റിബോഡിയും ഗ്ലൂട്ടൻ അലർജിയും വിശദീകരിക്കുക",
+        romanized: "Celiac rogathil tTG-IgA antibody yum gluten allergy yum vishadheekarikkuka",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "mr-IN": {
+        native: "सिलियाक आजारामध्ये tTG-IgA ॲन्टीबॉडी आणि ग्लूटेन संवेदनशीलता स्पष्ट करा",
+        romanized: "Celiac aajaaramadhye tTG-IgA antibody aani gluten samvedanshilta spashta kara",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "gu-IN": {
+        native: "સેલિયાક રોગમાં tTG-IgA એન્ટિબોડી અને ગ્લુટેન સંવેદનશીલતા સમજાવો",
+        romanized: "Celiac rogma tTG-IgA antibody ane gluten samvedanshilta samjaavo",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "pa-IN": {
+        native: "ਸੀਲੀਏਕ ਰੋਗ ਵਿੱਚ tTG-IgA ਐਂਟੀਬਾਡੀ ਅਤੇ ਗਲੂਟਨ ਸੰਵੇਦਨਸ਼ੀਲਤਾ ਸਮਝਾਓ",
+        romanized: "Celiac rog vich tTG-IgA antibody ate gluten samvedansheelta samjhao",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "od-IN": {
+        native: "ସିଲିଆକ୍ ରୋଗରେ tTG-IgA ଆଣ୍ଟିବଡି ଏବଂ ଗ୍ଲୁଟେନ୍ ସମ୍ବେଦନଶୀଳତା ବୁଝାନ୍ତୁ",
+        romanized: "Celiac rogare tTG-IgA antibody ebong gluten sambedansheelata bujhantu",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "as-IN": {
+        native: "চেলিয়াক ৰোগত tTG-IgA এন্টিবডি আৰু গ্লুটেন সংবেদনশীলতা বুজাই দিয়ক",
+        romanized: "Celiac rogot tTG-IgA antibody aru gluten songbedonshilota bujai diyok",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "ur-IN": {
+        native: "سیلیک بیماری میں tTG-IgA اینٹی باڈی اور گلوٹین الرجی کی وضاحت کریں",
+        romanized: "Celiac bimari mein tTG-IgA antibody aur gluten allergy ki wazahat karein",
+        english: "Explain Celiac disease tTG-IgA antibody and gluten sensitivity.",
+      },
+      "en-IN": {
+        native: "What does elevated tissue transglutaminase tTG-IgA indicate in Celiac enteropathy?",
+        romanized: "ACG guidelines on HLA-DQ2/DQ8 and duodenal enteropathy assessment.",
+        english: "What does elevated tissue transglutaminase tTG-IgA indicate in Celiac enteropathy?",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "ग्लूटेन-मुक्त आहार दिशानिर्देश", query: "सीलिएक रोग में कौन से अनाज सुरक्षित हैं?" },
+        { title: "HLA आनुवंशिक परीक्षण", query: "क्या सीलिएक के लिए HLA-DQ2/DQ8 जीन जांच जरूरी है?" },
+      ],
+      "en-IN": [
+        { title: "Strict Gluten Elimination", query: "What are the safe grains and cross-contamination rules for celiac?" },
+        { title: "HLA-DQ2/8 Genetic Screen", query: "What is the negative predictive value of HLA-DQ2/DQ8 genotyping?" },
+      ],
+    },
+  },
+  {
+    id: "sug-kidney-ckd",
+    category: "thyroid",
+    categoryLabel: "Nephrology",
+    title: "Diabetic Kidney Disease & Microalbuminuria",
+    badge: "Renal Function • eGFR & ACR",
+    iconName: "shield",
+    translations: {
+      "hi-IN": {
+        native: "डायबिटीज में यूरिन माइक्रोएल्बुमिन और eGFR कम होने का क्या खतरा है?",
+        romanized: "Diabetes me urine microalbumin aur eGFR kam hone ka kya khatra hai?",
+        english: "What is the risk of urine microalbuminuria and low eGFR in diabetes?",
+      },
+      "bn-IN": {
+        native: "ডায়াবেটিসে প্রস্রাবে মাইক্রোঅ্যালবুমিন এবং eGFR কমার ঝুঁকি কী?",
+        romanized: "Diabetes-e prosrabe microalbumin ebong eGFR komar jhuki ki?",
+        english: "What is the risk of microalbuminuria and declining eGFR in diabetes?",
+      },
+      "ta-IN": {
+        native: "நீரிழிவு நோயில் சிறுநீர் மைக்ரோஅல்புமின் மற்றும் குறைந்த eGFR இன் ஆபத்து என்ன?",
+        romanized: "Neerizhivu noyil siruneer microalbumin matrum kuraindha eGFR in aabathu enna?",
+        english: "What is the risk of urine microalbumin and low eGFR in diabetes?",
+      },
+      "te-IN": {
+        native: "డయాబెటిస్‌లో మూత్రంలో మైక్రోఅల్బుమిన్ మరియు eGFR తగ్గడం వల్ల వచ్చే ప్రమాదం ఏమిటి?",
+        romanized: "Diabetes lo mootramlo microalbumin mariyu eGFR thaggadam valla vache pramadam emiti?",
+        english: "What does microalbuminuria and reduced eGFR indicate in diabetes?",
+      },
+      "kn-IN": {
+        native: "ಮಧುಮೇಹದಲ್ಲಿ ಮೂತ್ರದ ಮೈಕ್ರೊಅಲ್ಬುಮಿನ್ ಮತ್ತು ಕಡಿಮೆ eGFR ಅಪಾಯವೇನು?",
+        romanized: "Madhumēhadalli mootrada microalbumin mattu kadime eGFR apayavenu?",
+        english: "What is the risk of urine microalbumin and low eGFR in diabetes?",
+      },
+      "ml-IN": {
+        native: "പ്രമേഹത്തിൽ മൂത്രത്തിലെ മൈക്രോആൽബുമിനും കുറഞ്ഞ eGFR ഉം എന്ത് അപകടമാണ് സൂചിപ്പിക്കുന്നത്?",
+        romanized: "Pramehathil moothrathile microalbumin um kuranja eGFR um enthu apakadamaanu soochippikkunnathu?",
+        english: "What is the risk of microalbuminuria and low eGFR in diabetes?",
+      },
+      "mr-IN": {
+        native: "मधुमेहामध्ये युरिन मायक्रोअल्ब्युमिन आणि कमी eGFR चा काय धोका असतो?",
+        romanized: "Madhughamadhye urine microalbumin aani kami eGFR cha kaay dhoka asto?",
+        english: "What is the clinical risk of microalbuminuria and reduced eGFR in diabetes?",
+      },
+      "gu-IN": {
+        native: "ડાયાબિટીસમાં પેશાબમાં માઇક્રોઆલ્બ્યુમિન અને ઓછું eGFR શું જોખમ દર્શાવે છે?",
+        romanized: "Diabetes ma peshabma microalbumin ane ochhu eGFR shu jokham darshave chhe?",
+        english: "What does urine microalbumin and reduced eGFR signify in diabetes?",
+      },
+      "pa-IN": {
+        native: "ਸ਼ੂਗਰ ਵਿੱਚ ਪਿਸ਼ਾਬ ਵਿੱਚ ਮਾਈਕ੍ਰੋਐਲਬਿਊਮਿਨ ਅਤੇ ਘੱਟ eGFR ਦਾ ਕੀ ਖਤਰਾ ਹੈ?",
+        romanized: "Sugar vich pishab vich microalbumin ate ghatt eGFR da ki khatra hai?",
+        english: "What does microalbuminuria and low eGFR indicate in diabetic nephropathy?",
+      },
+      "od-IN": {
+        native: "ମଧୁମେହରେ ପରିସ୍ରାରେ ମାଇକ୍ରୋଆଲବୁମିନ୍ ଏବଂ କମ୍ eGFR ର ବିପଦ କଣ?",
+        romanized: "Madhumēhare parisrāre microalbumin ebong kam eGFR ra bipada kana?",
+        english: "What is the risk of urine microalbumin and low eGFR in diabetes?",
+      },
+      "as-IN": {
+        native: "ডায়াবেটিচত প্ৰস্ৰাৱত মাইক্ৰ'এলবুমিন আৰু কম eGFR ৰ বিপদ কি?",
+        romanized: "Diabetisot prosrawot microalbumin aru kom eGFR r bipod ki?",
+        english: "What does microalbuminuria and low eGFR indicate in diabetes?",
+      },
+      "ur-IN": {
+        native: "ذیابیطس میں پیشاب میں مائیکرو البومین اور کم eGFR کے کیا خطرات ہیں؟",
+        romanized: "Diabetes mein peshab mein microalbumin aur kam eGFR ke kya khatraat hain?",
+        english: "What are the risks of microalbuminuria and low eGFR in diabetes?",
+      },
+      "en-IN": {
+        native: "What are the clinical implications of urinary albumin-creatinine ratio (ACR) elevation and declining eGFR?",
+        romanized: "KDIGO 2024 guidelines on diabetic kidney disease progression and SGLT2i nephroprotection.",
+        english: "What are the clinical implications of urinary albumin-creatinine ratio (ACR) elevation and declining eGFR?",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "KDIGO किडनी सुरक्षा", query: "किडनी को नुकसान से बचाने के लिए SGLT2i और ACEi दवाएं कैसे काम करती हैं?" },
+        { title: "नमक और प्रोटीन सीमा", query: "डायबिटिक किडनी रोग में नमक और प्रोटीन का कितना सेवन करना चाहिए?" },
+      ],
+      "en-IN": [
+        { title: "KDIGO Nephroprotection", query: "How do SGLT2 inhibitors and ARBs slow chronic kidney disease progression?" },
+        { title: "Dietary Sodium & Protein", query: "What are the KDIGO recommended daily sodium and protein intake limits?" },
+      ],
+    },
+  },
 ];
 
 /**
@@ -1191,6 +1361,8 @@ export function getContextualFollowUps(
       item.id === "sug-marfan" && (qLower.includes("marfan") || qLower.includes("fbn1") || qLower.includes("genetic") || qLower.includes("dominant")) ||
       item.id === "sug-thalassemia" && (qLower.includes("thalassemia") || qLower.includes("sickle") || qLower.includes("hbb") || qLower.includes("carrier") || qLower.includes("थैलेसीमिया")) ||
       item.id === "sug-brca" && (qLower.includes("brca") || qLower.includes("cancer") || qLower.includes("कैंसर") || qLower.includes("புற்றுநோய்")) ||
+      item.id === "sug-celiac" && (qLower.includes("celiac") || qLower.includes("ttg") || qLower.includes("gluten") || qLower.includes("ग्लूटेन")) ||
+      item.id === "sug-kidney-ckd" && (qLower.includes("kidney") || qLower.includes("egfr") || qLower.includes("microalbumin") || qLower.includes("acr") || qLower.includes("किडनी")) ||
       item.id === "sug-fatty-liver" && (qLower.includes("fatty") || qLower.includes("liver") || qLower.includes("masld") || qLower.includes("alt") || qLower.includes("लिवर")) ||
       item.id === "sug-b12-anemia" && (qLower.includes("b12") || qLower.includes("ferritin") || qLower.includes("anemia") || qLower.includes("एनीमिया")) ||
       item.id === "sug-thyroid" && (qLower.includes("thyroid") || qLower.includes("tsh") || qLower.includes("थायराइड")) ||

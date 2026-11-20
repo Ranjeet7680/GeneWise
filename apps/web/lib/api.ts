@@ -786,6 +786,62 @@ class ApiClient {
         speechResp = sel.speech;
         subNative = sel.native;
         subRoman = sel.roman;
+      } else if (
+        qLower.includes("celiac") ||
+        qLower.includes("ttg") ||
+        qLower.includes("gluten") ||
+        qLower.includes("ग्लूटेन")
+      ) {
+        tools.push("ACG Clinical Celiac Guidelines", "tTG-IgA Antibody Evaluation Engine");
+        subEng = "Elevated tTG-IgA (>10 U/mL) strongly indicates Celiac Disease enteropathy. Total serum IgA must be verified to exclude IgA deficiency, followed by strict gluten elimination.";
+        const celiacMap: VoiceDialectMap = {
+          "hi-IN": { speech: "सीलिएक रोग में बढ़ा हुआ tTG-IgA एंटीबॉडी ग्लूटेन संवेदनशीलता और आंतों की सूजन दर्शाता है। डॉक्टर की देखरेख में सख्त ग्लूटेन-मुक्त आहार आवश्यक है।", native: "सीलिएक रोग और tTG-IgA एंटीबॉडी: आंतों की ग्लूटेन संवेदनशीलता। सख्त ग्लूटेन-मुक्त आहार अनुशंसित।", roman: "Celiac rog aur tTG-IgA antibody: Gluten samvedansheelta." },
+          "bn-IN": { speech: "সিলিয়াক রোগে বর্ধিত tTG-IgA অ্যান্টিবডি গ্লুটেন সংবেদনশীলতা নির্দেশ করে। চিকিৎসকের পরামর্শে কঠোর গ্লুটেন-মুক্ত খাদ্য বাঞ্ছনীয়।", native: "সিলিয়াক রোগ ও tTG-IgA অ্যান্টিবডি: গ্লুটেন সংবেদনশীলতা ও খাদ্যবিধি।", roman: "Celiac rog ebong tTG-IgA antibody: Gluten songbedonshilota." },
+          "ta-IN": { speech: "சீலியாக் நோயில் உயர்ந்த tTG-IgA ஆன்டிபாடி பசையம் உணர்திறனைக் காட்டுகிறது. கடுமையான பசையமில்லா உணவுமுறை பின்பற்றப்பட வேண்டும்.", native: "சீலியாக் நோய் மற்றும் tTG-IgA ஆன்டிபாடி: பசையம் உணர்திறன் மதிப்பீடு.", roman: "Celiac noi matrum tTG-IgA antibody: Gluten unarthiran." },
+          "te-IN": { speech: "సీలియాక్ వ్యాధిలో పెరిగిన tTG-IgA యాంటీబాడీ గ్లూటెన్ సున్నితత్వాన్ని సూచిస్తుంది. కఠినమైన గ్లూటెన్-రహిత ఆహారం అవసరం.", native: "సీలియాక్ వ్యాధి మరియు tTG-IgA యాంటీబాడీ: గ్లూటెన్ సున్నితత్వ విశ్లేషణ.", roman: "Celiac vyadhi mariyu tTG-IgA antibody: Gluten sunnithatwam." },
+          "kn-IN": { speech: "ಸಿಲಿಯಾಕ್ ಕಾಯಿಲೆಯಲ್ಲಿ ಹೆಚ್ಚಿದ tTG-IgA ಪ್ರತಿಕಾಯವು ಅಂಟು ಅಲರ್ಜಿಯನ್ನು ಸೂಚಿಸುತ್ತದೆ. ಕಟ್ಟುನಿಟ್ಟಾದ ಅಂಟು-ಮುಕ್ತ ಆಹಾರ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.", native: "ಸಿಲಿಯಾಕ್ ಕಾಯಿಲೆ ಮತ್ತು tTG-IgA ಪ್ರತಿಕಾಯ: ಅಂಟು ಸಂವೇದನೆ ಪರೀಕ್ಷೆ.", roman: "Celiac kayile mattu tTG-IgA: Gluten allergy." },
+          "ml-IN": { speech: "സീലിയാക് രോഗത്തിൽ ഉയർന്ന tTG-IgA ആന്റിബോഡി ഗ്ലൂട്ടൻ അലർജിയെ സൂചിപ്പിക്കുന്നു. കർശനമായ ഗ്ലൂട്ടൻ രഹിത ഭക്ഷണം ആവശ്യമാണ്.", native: "സീലിയാക് രോഗവും tTG-IgA ആന്റിബോഡിയും: ഗ്ലൂട്ടൻ അലർജി വിശകലനം.", roman: "Celiac rogavum tTG-IgA antibody yum." },
+          "mr-IN": { speech: "सिलियाक आजारात वाढलेली tTG-IgA ॲन्टीबॉडी ग्लूटेन संवेदनशीलता दर्शवते. डॉक्टरांच्या सल्ल्याने ग्लूटेन-मुक्त आहार घ्यावा.", native: "सिलियाक आजार आणि tTG-IgA ॲन्टीबॉडी: ग्लूटेन संवेदनशीलता विश्लेषण.", roman: "Celiac aajar aani tTG-IgA antibody." },
+          "gu-IN": { speech: "સેલિયાક રોગમાં વધેલી tTG-IgA એન્ટિબોડી ગ્લુટેન સંવેદનશીલતા દર્શાવે છે. કડક ગ્લુટેન-મુક્ત આહારનું પાલન કરવું જરૂરી છે.", native: "સેલિયાક રોગ અને tTG-IgA એન્ટિબોડી: ગ્લુટેન સંવેદનશીલતા વિશ્લેષણ.", roman: "Celiac rog ane tTG-IgA antibody." },
+          "pa-IN": { speech: "ਸੀਲੀਏਕ ਰੋਗ ਵਿੱਚ ਵਧੀ ਹੋਈ tTG-IgA ਐਂਟੀਬਾਡੀ ਗਲੂਟਨ ਸੰਵੇਦਨਸ਼ੀਲਤਾ ਦਰਸਾਉਂਦੀ ਹੈ। ਸਖ਼ਤ ਗਲੂਟਨ-ਮੁਕਤ ਖੁਰਾਕ ਦੀ ਸਲਾਹ ਦਿੱਤੀ ਜਾਂਦੀ ਹੈ।", native: "ਸੀਲੀਏਕ ਰੋਗ ਅਤੇ tTG-IgA ਐਂਟੀਬਾਡੀ: ਗਲੂਟਨ ਸੰਵੇਦਨਸ਼ੀਲਤਾ ਮੁਲਾਂਕਣ।", roman: "Celiac rog ate tTG-IgA antibody." },
+          "od-IN": { speech: "ସିଲିଆକ୍ ରୋଗରେ ବଢ଼ିଥିବା tTG-IgA ଆଣ୍ଟିବଡି ଗ୍ଲୁଟେନ୍ ସମ୍ବେଦନଶୀଳତାକୁ ସୂଚାଏ। କଠୋର ଗ୍ଲୁଟେନ୍-ମୁକ୍ତ ଖାଦ୍ୟ ଗ୍ରହଣ ଆବଶ୍ୟକ।", native: "ସିଲିଆକ୍ ରୋଗ ଏବଂ tTG-IgA ଆଣ୍ଟିବଡି: ଗ୍ଲୁଟେନ୍ ସମ୍ବେଦନଶୀଳତା।", roman: "Celiac rog ebong tTG-IgA antibody." },
+          "as-IN": { speech: "চেলিয়াক ৰোগত বৃদ্ধি পোৱা tTG-IgA এন্টিবডিয়ে গ্লুটেন সংবেদনশীলতাক বুজায়। কঠোৰ গ্লুটেন-মুক্ত খাদ্য গ্ৰহণৰ পৰামৰ্শ দিয়া হৈছে।", native: "চেলিয়াক ৰোগ আৰু tTG-IgA এন্টিবডি: গ্লুটেন সংবেদনশীলতা বিশ্লেষণ।", roman: "Celiac rog aru tTG-IgA antibody." },
+          "ur-IN": { speech: "سیلیک بیماری میں بڑھی ہوئی tTG-IgA اینٹی باڈی گلوٹین الرجی کی علامت ہے۔ سخت گلوٹین سے پاک غذا کی سفارش کی جاتی ہے۔", native: "سیلیک بیماری اور tTG-IgA اینٹی باڈی: گلوٹین الرجی کا جائزہ۔", roman: "Celiac bimari aur tTG-IgA antibody." },
+          "en-IN": { speech: "Elevated tissue transglutaminase tTG-IgA signifies Celiac disease enteropathy; total serum IgA confirmation and strict lifelong gluten avoidance are clinically advised.", native: "Celiac panel: Elevated tTG-IgA indicates mucosal gluten sensitivity. Serological total IgA confirmation and strict gluten elimination advised.", roman: "Immunogenetic celiac panel: tTG-IgA and mucosal enteropathy evaluation." },
+        };
+        const sel = celiacMap[lang] || celiacMap["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
+      } else if (
+        qLower.includes("kidney") ||
+        qLower.includes("ckd") ||
+        qLower.includes("egfr") ||
+        qLower.includes("microalbumin") ||
+        qLower.includes("acr") ||
+        qLower.includes("किडनी")
+      ) {
+        tools.push("KDIGO 2024 CKD Staging Protocol", "Nephrology eGFR & ACR Risk Engine");
+        subEng = "Elevated urine microalbumin-to-creatinine ratio (ACR) and declining eGFR (<60 mL/min) indicate diabetic nephropathy progression. KDIGO recommends SGLT2 inhibitor nephroprotection and blood pressure optimization.";
+        const ckdMap: VoiceDialectMap = {
+          "hi-IN": { speech: "किडनी स्वास्थ्य: यूरिन माइक्रोएल्बुमिन और घटता हुआ eGFR डायबिटिक किडनी रोग का संकेत है। KDIGO के अनुसार SGLT2i दवाएं और ब्लड प्रेशर नियंत्रण जरूरी है।", native: "किडनी रोग और माइक्रोएल्बुमिन / eGFR: डायबिटिक नेफ्रोपैथी रोकथाम और KDIGO दिशानिर्देश।", roman: "Kidney rog aur microalbumin / eGFR: Diabetic nephropathy rokkham." },
+          "bn-IN": { speech: "কিডনি মূল্যায়ন: প্রস্রাবে মাইক্রোঅ্যালবুমিন এবং কম eGFR ডায়াবেটিক কিডনি রোগের লক্ষণ। KDIGO নির্দেশিকা অনুযায়ী রক্তচাপ ও গ্লুকোজ নিয়ন্ত্রণ জরুরি।", native: "কিডনি স্বাস্থ্য ও মাইক্রোঅ্যালবুমিন / eGFR: ডায়াবেটিক নেফ্রোপ্যাথি মূল্যায়ন।", roman: "Kidney sastho ebong microalbumin / eGFR: Diabetic nephropathy." },
+          "ta-IN": { speech: "சிறுநீரக மதிப்பீடு: மைக்ரோஅல்புமின் மற்றும் குறைந்து வரும் eGFR நீரிழிவு சிறுநீரக நோயைக் குறிக்கிறது. KDIGO படி இரத்த அழுத்தக் கட்டுப்பாடு அவசியம்.", native: "சிறுநீரக செயல்பாடு மற்றும் மைக்ரோஅல்புமின் / eGFR: நீரிழிவு நெஃப்ரோபதி தடுப்பு.", roman: "Siruneeraga seyalpaadu matrum microalbumin / eGFR." },
+          "te-IN": { speech: "కిడ్నీ ఆరోగ్యం: మైక్రోఅల్బుమిన్ మరియు తగ్గుతున్న eGFR డయాబెటిక్ కిడ్నీ వ్యాధిని సూచిస్తుంది. KDIGO ప్రకారం రక్తపోటు నియంత్రణ అవసరం.", native: "కిడ్నీ పనితీరు మరియు మైక్రోఅల్బుమిన్ / eGFR: డయాబెటిక్ నెఫ్రోపతీ నివారణ.", roman: "Kidney panitheeru mariyu microalbumin / eGFR." },
+          "kn-IN": { speech: "ಮೂತ್ರಪಿಂಡದ ಆರೋಗ್ಯ: ಮೈಕ್ರೊಅಲ್ಬುಮಿನ್ ಮತ್ತು ಕಡಿಮೆಯಾಗುತ್ತಿರುವ eGFR ಮಧುಮೇಹ ಮೂತ್ರಪಿಂಡದ ಕಾಯಿಲೆಯನ್ನು ಸೂಚಿಸುತ್ತದೆ. KDIGO ಮಾರ್ಗಸೂಚಿ ಪಾಲನೆ ಅಗತ್ಯ.", native: "ಮೂತ್ರಪಿಂಡ ಕಾರ್ಯ ಮತ್ತು ಮೈಕ್ರೊಅಲ್ಬುಮಿನ್ / eGFR: ನೆಫ್ರೋಪತಿ ತಡೆಗಟ್ಟುವಿಕೆ.", roman: "Mootrapinda karya mattu microalbumin / eGFR." },
+          "ml-IN": { speech: "വൃക്ക പരിശോധന: മൈക്രോആൽബുമിനും കുറയുന്ന eGFR ഉം ഡയബറ്റിക് വൃക്കരോഗത്തെ സൂചിപ്പിക്കുന്നു. KDIGO പ്രകാരം രക്തസമ്മർദ്ദം നിയന്ത്രിക്കണം.", native: "വൃക്ക പ്രവർത്തനം, മൈക്രോആൽബുമിൻ / eGFR: ഡയബറ്റിക് നെഫ്രോപതി വിശകലനം.", roman: "Vrukka pravarthanam, microalbumin / eGFR." },
+          "mr-IN": { speech: "किडनी आरोग्य: युरिन मायक्रोअल्ब्युमिन आणि कमी eGFR डायबेटिक किडनी आजार दर्शवते. KDIGO नुसार रक्तदाब नियंत्रण व औषधोपचार आवश्यक.", native: "किडनी कार्य आणि मायक्रोअल्ब्युमिन / eGFR: डायबेटिक नेफ्रोपॅथी विश्लेषण.", roman: "Kidney kaarya aani microalbumin / eGFR." },
+          "gu-IN": { speech: "કિડની તપાસ: માઇક્રોઆલ્બ્યુમિન અને ઘટતું eGFR ડાયાબિટીક કિડની રોગ દર્શાવે છે. KDIGO અનુસાર બ્લડ પ્રેશર અને શુગર નિયંત્રણ જરૂરી.", native: "કિડની કાર્ય અને માઇક્રોઆલ્બ્યુમિન / eGFR: ડાયાબિટીક નેફ્રોપથી તપાસ.", roman: "Kidney kaarya ane microalbumin / eGFR." },
+          "pa-IN": { speech: "ਗੁਰਦਿਆਂ ਦੀ ਸਿਹਤ: ਮਾਈਕ੍ਰੋਐਲਬਿਊਮਿਨ ਅਤੇ ਘਟਦਾ eGFR ਸ਼ੂਗਰ ਕਾਰਨ ਗੁਰਦੇ ਦੇ ਨੁਕਸਾਨ ਨੂੰ ਦਰਸਾਉਂਦਾ ਹੈ। KDIGO ਅਨੁਸਾਰ ਇਲਾਜ ਜ਼ਰੂਰੀ ਹੈ।", native: "ਗੁਰਦੇ ਦੀ ਜਾਂਚ ਅਤੇ ਮਾਈਕ੍ਰੋਐਲਬਿਊਮਿਨ / eGFR: ਡਾਇਬਿਟਿਕ ਨੈਫ੍ਰੋਪੈਥੀ ਰੋਕਥਾਮ।", roman: "Gurde di jaanch ate microalbumin / eGFR." },
+          "od-IN": { speech: "ବୃକ୍‌କ ସ୍ୱାସ୍ଥ୍ୟ: ପରିସ୍ରାରେ ମାଇକ୍ରୋଆଲବୁମିନ୍ ଏବଂ କମୁଥିବା eGFR ଡାଏବେଟିକ୍ କିଡନୀ ରୋଗର ସଙ୍କେତ। KDIGO ଅନୁଯାୟୀ ରକ୍ତଚାପ ନିୟନ୍ତ୍ରଣ ଆବଶ୍ୟକ।", native: "ବୃକ୍‌କ କାର୍ଯ୍ୟ ଏବଂ ମାଇକ୍ରୋଆଲବୁମିନ୍ / eGFR: ଡାଏବେଟିକ୍ ନେଫ୍ରୋପାଥି।", roman: "Brukka kaarjya ebong microalbumin / eGFR." },
+          "as-IN": { speech: "বৃক্কৰ স্বাস্থ্য: প্ৰস্ৰাৱত মাইক্ৰ'এলবুমিন আৰু কমি অহা eGFR এ ডায়াবেটিচজনিত বৃক্কৰ ৰোগ বুজায়। KDIGO অনুসৰি সঠিক চিকিৎসা বাঞ্ছনীয়।", native: "বৃক্কৰ কাৰ্য আৰু মাইক্ৰ'এলবুমিন / eGFR: ডায়াবেটিক নেফ্ৰোপেথী প্ৰতিৰোধ।", roman: "Brikkor karjya aru microalbumin / eGFR." },
+          "ur-IN": { speech: "گردے کی صحت: پیشاب میں مائیکرو البومین اور کم ہوتا eGFR ذیابیطس کے باعث گردے کی خرابی کی علامت ہے۔ KDIGO کے مطابق بلڈ پریشر قابو میں رکھیں۔", native: "گردوں کا فعل اور مائیکرو البومین / eGFR: ذیابیطس نیفروپیتھی کا تجزیہ۔", roman: "Gurdon ka fe'al aur microalbumin / eGFR." },
+          "en-IN": { speech: "Elevated urine microalbumin ACR and declining eGFR reflect diabetic kidney disease progression; KDIGO guidelines recommend SGLT2 inhibitor nephroprotection and strict blood pressure control.", native: "Renal profile: Elevated ACR and declining eGFR indicate diabetic nephropathy. KDIGO nephroprotective therapy advised.", roman: "Nephrological index: eGFR clearance and microalbuminuria progression." },
+        };
+        const sel = ckdMap[lang] || ckdMap["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
       } else {
         const generalMap: VoiceDialectMap = {
           "hi-IN": { speech: "मैंने आपका स्वास्थ्य प्रश्न समझ लिया है। साक्ष्य-आधारित क्लिनिकल दिशानिर्देशों के अनुसार मुख्य निष्कर्ष तैयार हैं।", native: `"${q}" के लिए साक्ष्य-आधारित विश्लेषण पूरा हो गया है।`, roman: `"${q}" ke liye clinical vishleshan poora ho gaya hai.` },

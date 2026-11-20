@@ -881,6 +881,57 @@ body {
   transform: translateY(0) scale(1);
 }
 
+/* Voice Assistant Advanced Audio, EQ and Visualizer Animation Suite */
+@keyframes voiceAuraSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes voiceEqBarDynamic {
+  0%, 100% {
+    height: 6px;
+    opacity: 0.6;
+  }
+  50% {
+    height: 32px;
+    opacity: 1;
+  }
+}
+
+@keyframes voiceGlowSweep {
+  0% {
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 35px rgba(20, 184, 166, 0.6), 0 0 60px rgba(6, 182, 212, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+  }
+}
+
+.animate-voice-aura-spin {
+  animation: voiceAuraSpin 14s linear infinite;
+}
+
+.animate-voice-glow-sweep {
+  animation: voiceGlowSweep 3s ease-in-out infinite;
+}
+
+.voice-card-interactive {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voice-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(20, 184, 166, 0.7);
+  box-shadow: 0 10px 25px -5px rgba(20, 184, 166, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee,
   .animate-gradient-text,
