@@ -676,6 +676,116 @@ class ApiClient {
         speechResp = sel.speech;
         subNative = sel.native;
         subRoman = sel.roman;
+      } else if (
+        qLower.includes("thalassemia") ||
+        qLower.includes("sickle") ||
+        qLower.includes("hbb") ||
+        qLower.includes("carrier")
+      ) {
+        tools.push("ACMG Hemoglobinopathy Screening", "HPLC Variant Hemoglobin Analysis");
+        subEng = "Beta-Thalassemia and Sickle Cell traits involve HBB gene variants inherited in an autosomal recessive pattern. Carriers have a 25% risk of having an affected child if both partners carry a variant; HPLC testing is advised.";
+        const thalMap: VoiceDialectMap = {
+          "hi-IN": { speech: "थैलेसीमिया और सिकल सेल एचबीबी जीन से जुड़े ऑटोसोमल रिसेसिव विकार हैं। यदि दोनों साथी वाहक हैं तो 25% जोखिम होता है। HPLC जांच कराने की सलाह दी जाती है।", native: "थैलेसीमिया और सिकल सेल एचबीबी जीन वाहक जांच: दोनों साथियों के वाहक होने पर 25% जोखिम। HPLC टेस्ट अनुशंसित।", roman: "Thalassemia aur sickle cell HBB carrier screening: 25% homozygous risk if both partners carry variant." },
+          "bn-IN": { speech: "থ্যালাসেমিয়া এবং সিকেল সেল HBB জিনের অটোসোমাল রিসেসিভ বংশগত ব্যাধি। যদি উভয় পিতা-মাতা বাহক হন তবে ২৫% ঝুঁকি থাকে। HPLC পরীক্ষার পরামর্শ দেওয়া হচ্ছে।", native: "থ্যালাসেমিয়া এবং সিকেল সেল HBB বাহক স্ক্রীনিং: উভয় সঙ্গী বাহক হলে ২৫% ঝুঁকি। HPLC পরীক্ষা জরুরি।", roman: "Thalassemia ebong sickle cell HBB carrier screening: 25% homozygous risk." },
+          "ta-IN": { speech: "தலசீமியா மற்றும் அரிவாள் செல் இரத்த சோகை HBB மரபணுவுடன் தொடர்புடையது. இருவரும் கடத்திகளாக இருந்தால் குழந்தைக்கு 25% ஆபத்து உள்ளது. HPLC பரிசோதனை அவசியம்.", native: "தலசீமியா மற்றும் அரிவாள் செல் HBB மரபணு கேரியர்: இரு பெற்றோரும் கேரியராக இருந்தால் 25% ஆபத்து. HPLC பரிசோதனை தேவை.", roman: "Thalassemia matrum sickle cell HBB carrier screening: 25% homozygous risk." },
+          "te-IN": { speech: "తలసేమియా మరియు సికిల్ సెల్ వ్యాధులు HBB జన్యువుతో సంబంధం కలిగి ఉంటాయి. ఇద్దరు భాగస్వాములు క్యారియర్లు అయితే 25% ప్రమాదం ఉంటుంది. HPLC పరీక్ష సిఫార్సు చేయబడింది.", native: "తలసేమియా మరియు సికిల్ సెల్ HBB క్యారియర్ స్క్రీనింగ్: ఇద్దరూ క్యారియర్లయితే 25% ప్రమాదం. HPLC టెస్ట్ అవసరం.", roman: "Thalassemia mariyu sickle cell HBB carrier screening: 25% homozygous risk." },
+          "kn-IN": { speech: "ಥಲಸ್ಸೆಮಿಯಾ ಮತ್ತು ಸಿಕಲ್ ಸೆಲ್ HBB ಜೀನ್ ಆಟೋಸೋಮಲ್ ರಿಸೆಸ್ಸಿವ್ ಕಾಯಿಲೆಯಾಗಿದೆ. ಇಬ್ಬರೂ ಕ್ಯಾರಿಯರ್ ಆಗಿದ್ದರೆ 25% ಅಪಾಯವಿರುತ್ತದೆ. HPLC ಪರೀಕ್ಷೆ ಅಗತ್ಯ.", native: "ಥಲಸ್ಸೆಮಿಯಾ ಮತ್ತು ಸಿಕಲ್ ಸೆಲ್ HBB ಕ್ಯಾರಿಯರ್ ಸ್ಕ್ರೀನಿಂಗ್: ಇಬ್ಬರೂ ಕ್ಯಾರಿಯರ್ ಆಗಿದ್ದರೆ 25% ಅಪಾಯ. HPLC ಪರೀಕ್ಷೆ ಶಿಫಾರಸು.", roman: "Thalassemia mattu sickle cell HBB carrier screening: 25% homozygous risk." },
+          "ml-IN": { speech: "തലാസീമിയയും സിക്കിൾ സെല്ലും HBB ജീൻ പാരമ്പര്യ വൈകല്യങ്ങളാണ്. രണ്ട് പേരും കാരിയർമാരാണെങ്കിൽ കുട്ടിക്ക് 25% അപകടസാധ്യതയുണ്ട്. HPLC പരിശോധന ശുപാർശ ചെയ്യുന്നു.", native: "തലാസീമിയ, സിക്കിൾ സെൽ HBB കാരിയർ സ്ക്രീനിംഗ്: രണ്ട് പേരും കാരിയർമാരാണെങ്കിൽ 25% അപകടസാധ്യത. HPLC ടെസ്റ്റ് വേണം.", roman: "Thalassemia, sickle cell HBB carrier screening: 25% risk." },
+          "mr-IN": { speech: "थॅलेसेमिया आणि सिकल सेल हे HBB जनुकाशी संबंधित ऑटोसोमल रिसेसिव्ह आजार आहेत. दोघेही वाहक असल्यास २५% धोका असतो. HPLC चाचणी करावी.", native: "थॅलेसेमिया आणि सिकल सेल HBB वाहक तपासणी: दोघे वाहक असल्यास २५% धोका. HPLC टेस्ट आवश्यक.", roman: "Thalassemia aani sickle cell HBB carrier screening: 25% homozygous risk." },
+          "gu-IN": { speech: "થેલેસેમિયા અને સિકલ સેલ HBB જનીન સાથે સંકળાયેલા ઓટોસોમલ રિસેસિવ રોગ છે. બંને વાહક હોય તો 25% જોખમ રહે છે. HPLC ટેસ્ટ કરાવવો જરૂરી છે.", native: "થેલેસેમિયા અને સિકલ સેલ HBB વાહક સ્ક્રીનીંગ: બંને વાહક હોય તો 25% જોખમ. HPLC ટેસ્ટ જરૂરી.", roman: "Thalassemia ane sickle cell HBB carrier screening: 25% risk." },
+          "pa-IN": { speech: "ਥੈਲੇਸੀਮੀਆ ਅਤੇ ਸਿਕਲ ਸੈੱਲ HBB ਜੀਨ ਨਾਲ ਜੁੜੇ ਆਟੋਸੋਮਲ ਰੀਸੈਸਿਵ ਰੋਗ ਹਨ। ਜੇਕਰ ਦੋਵੇਂ ਸਾਥੀ ਵਾਹਕ ਹੋਣ ਤਾਂ 25% ਜੋਖਮ ਹੁੰਦਾ ਹੈ। HPLC ਟੈਸਟ ਜ਼ਰੂਰੀ ਹੈ।", native: "ਥੈਲੇਸੀਮੀਆ ਅਤੇ ਸਿਕਲ ਸੈੱਲ HBB ਵਾਹਕ ਸਕ੍ਰੀਨਿੰਗ: ਦੋਵੇਂ ਵਾਹਕ ਹੋਣ 'ਤੇ 25% ਜੋਖਮ। HPLC ਟੈਸਟ ਸਿਫਾਰਸ਼ੀ।", roman: "Thalassemia ate sickle cell HBB carrier screening: 25% risk." },
+          "od-IN": { speech: "ଥାଲାସେମିଆ ଏବଂ ସିକଲ୍ ସେଲ୍ HBB ଜିନ୍ ସହିତ ଜଡିତ ଅଟୋସୋମାଲ୍ ରିସେସିଭ୍ ରୋଗ। ଯଦି ଉଭୟ ବାହକ ହୁଅନ୍ତି ତେବେ ୨୫% ବିପଦ ଥାଏ। HPLC ପରୀକ୍ଷା ଆବଶ୍ୟକ।", native: "ଥାଲାସେମିଆ ଏବଂ ସିକଲ୍ ସେଲ୍ HBB ବାହକ ସ୍କ୍ରିନିଂ: ଉଭୟ ବାହକ ହେଲେ ୨୫% ଆଶଙ୍କା। HPLC ପରୀକ୍ଷା ସୁପାରିଶ।", roman: "Thalassemia ebong sickle cell HBB carrier screening: 25% risk." },
+          "as-IN": { speech: "থেলাছেমিয়া আৰু চিকল চেল HBB জিনৰ সৈতে জড়িত অট'ছ'মেল ৰিচেছিভ বিকাৰ। দুয়োগৰাকী বাহক হ'লে ২৫% আশংকা থাকে। HPLC পৰীক্ষাৰ পৰামৰ্শ দিয়া হৈছে।", native: "থেলাছেমিয়া আৰু চিকল চেল HBB বাহক পৰীক্ষা: দুয়ো বাহক হ'লে ২৫% আশংকা। HPLC টেষ্ট প্ৰয়োজন।", roman: "Thalassemia aru sickle cell HBB carrier screening: 25% risk." },
+          "ur-IN": { speech: "تھیلیسیمیا اور سکیل سیل HBB جین سے وابستہ موروثی عوارض ہیں۔ اگر دونوں شریک حیات کیریئر ہوں تو 25% خطرہ ہوتا ہے۔ HPLC ٹیسٹ کروانے کا مشورہ دیا جاتا ہے۔", native: "تھیلیسیمیا اور سکیل سیل HBB کیریئر اسکریننگ: دونوں کیریئر ہونے پر 25% خطرہ۔ HPLC ٹیسٹ تجویز کردہ۔", roman: "Thalassemia aur sickle cell HBB carrier screening: 25% homozygous risk." },
+          "en-IN": { speech: "Beta-Thalassemia and Sickle Cell traits involve HBB gene variants inherited in an autosomal recessive pattern. Carriers have a 25% risk of having an affected child if both partners carry a variant; HPLC testing is advised.", native: "Beta-Thalassemia and Sickle Cell traits: Autosomal recessive 25% homozygous risk if both partners carry an HBB variant. HPLC HbA2 testing recommended.", roman: "HBB Hemoglobinopathy screening: Autosomal recessive carrier analysis." },
+        };
+        const sel = thalMap[lang] || thalMap["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
+      } else if (
+        qLower.includes("brca") ||
+        qLower.includes("cancer") ||
+        qLower.includes("tumor") ||
+        qLower.includes("कर्क रोग")
+      ) {
+        tools.push("NCCN Genetic/Familial High-Risk Guidelines", "ClinVar BRCA1/2 Pathogenicity Engine");
+        subEng = "BRCA1 and BRCA2 pathogenic variants confer high hereditary risk for breast and ovarian cancers inherited in an autosomal dominant pattern with 50% transmission to first-degree relatives.";
+        const brcaMap: VoiceDialectMap = {
+          "hi-IN": { speech: "BRCA1 और BRCA2 म्यूटेशन ऑटोसोमल डोमिनेंट पैटर्न में 50% संचरण जोखिम के साथ स्तन और डिम्बग्रंथि कैंसर का आनुवंशिक जोखिम बढ़ाते हैं। NCCN के अनुसार वार्षिक MRI की सलाह दी जाती है।", native: "BRCA1/2 आनुवंशिक कैंसर जोखिम: ऑटोसोमल डोमिनेंट 50% संचरण। NCCN के अनुसार वार्षिक MRI और जेनेटिक काउंसलिंग अनुशंसित।", roman: "BRCA1/2 aanuvanshik cancer jokhim: Autosomal dominant 50% transmission risk." },
+          "bn-IN": { speech: "BRCA1 এবং BRCA2 মিউটেশন অটোসোমাল ডমিনেন্ট বংশগতিতে ৫০% ঝুঁকি সহ স্তন ও ডিম্বাশয়ের ক্যান্সারের ঝুঁকি বাড়ায়। NCCN নির্দেশিকা অনুযায়ী বার্ষিক MRI প্রয়োজন।", native: "BRCA1/2 বংশগত ক্যান্সার ঝুঁকি: অটোসোমাল প্রকট ৫০% সঞ্চালন ঝুঁকি। NCCN অনুসারে বার্ষিক MRI ও কাউন্সেলিং জরুরি।", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "ta-IN": { speech: "BRCA1 மற்றும் BRCA2 மரபணு மாற்றங்கள் மார்பகம் மற்றும் கருப்பை புற்றுநோய் அபாயத்தை 50% மரபணு கடத்தல் மூலம் அதிகரிக்கின்றன. ஆண்டுதோறும் MRI ஸ்கேன் அவசியம்.", native: "BRCA1/2 பரம்பரை புற்றுநோய் அபாயம்: ஆட்டோசோமல் டாமினன்ட் 50% கடத்தல். NCCN வழிகாட்டல்படி ஆண்டுதோறும் MRI பரிந்துரை.", roman: "BRCA1/2 parambarai cancer abayam: Autosomal dominant 50% transmission." },
+          "te-IN": { speech: "BRCA1 మరియు BRCA2 మ్యుటేషన్లు 50% సంక్రమణ ప్రమాదంతో రొమ్ము మరియు అండాశయ క్యాన్సర్ ప్రమాదాన్ని పెంచుతాయి. వార్షిక MRI స్క్రీనింగ్ అవసరం.", native: "BRCA1/2 వంశపారంపర్య క్యాన్సర్ ప్రమాదం: ఆటోసోమల్ డామినెంట్ 50% రిస్క్. NCCN ప్రకారం వార్షిక MRI అవసరం.", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "kn-IN": { speech: "BRCA1 ಮತ್ತು BRCA2 ಮ್ಯುಟೇಶನ್‌ಗಳು 50% ಸಂವಹನ ಅಪಾಯದೊಂದಿಗೆ ಸ್ತನ ಮತ್ತು ಅಂಡಾಶಯದ ಕ್ಯಾನ್ಸರ್ ಅಪಾಯವನ್ನು ಹೆಚ್ಚಿಸುತ್ತವೆ. NCCN ಮಾರ್ಗಸೂಚಿಯಂತೆ ವಾರ್ಷಿಕ MRI ಶಿಫಾರಸು.", native: "BRCA1/2 ಅನುವಂಶಿಕ ಕ್ಯಾನ್ಸರ್ ಅಪಾಯ: ಆಟೋಸೋಮಲ್ ಪ್ರಬಲ 50% ಸಂವಹನ. NCCN ವಾರ್ಷಿಕ MRI ಅಗತ್ಯ.", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "ml-IN": { speech: "BRCA1, BRCA2 മ്യൂട്ടേഷനുകൾ 50% പാരമ്പര്യ സാധ്യതയോടെ സ്തനാർബുദ, അണ്ഡാശയ അർബുദ സാധ്യത വർദ്ധിപ്പിക്കുന്നു. വർഷം തോറുമുള്ള MRI പരിശോധന വേണം.", native: "BRCA1/2 പാരമ്പര്യ കാൻസർ സാധ്യത: ഓട്ടോസോമൽ ഡോമിനന്റ് 50% പാരമ്പര്യം. NCCN വാർഷിക MRI സ്ക്രീനിംഗ് വേണം.", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "mr-IN": { speech: "BRCA1 आणि BRCA2 उत्परिवर्तन ५०% संचरण धोक्यासह स्तन आणि अंडाशयाच्या कर्करोगाचा धोका वाढवतात. NCCN नुसार वार्षिक MRI तपासणी करावी.", native: "BRCA1/2 अनुवांशिक कर्करोग धोका: ऑटोसोमल डॉमिनंट ५०% संचरण. NCCN वार्षिक MRI चाचणी आवश्यक.", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "gu-IN": { speech: "BRCA1 અને BRCA2 મ્યુટેશન 50% ટ્રાન્સમિશન જોખમ સાથે સ્તન અને અંડાશયના કેન્સરનું જોખમ વધારે છે. NCCN મુજબ વાર્ષિક MRI જરૂરી છે.", native: "BRCA1/2 વારસાગત કેન્સર જોખમ: ઓટોસોમલ પ્રભાવશાળી 50% સંક્રમણ. NCCN વાર્ષિક MRI સલાહભરેલું.", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "pa-IN": { speech: "BRCA1 ਅਤੇ BRCA2 ਪਰਿਵਰਤਨ 50% ਸੰਚਾਰ ਜੋਖਮ ਨਾਲ ਛਾਤੀ ਅਤੇ ਅੰਡਾਸ਼ਯ ਦੇ ਕੈਂਸਰ ਦੇ ਜੋਖਮ ਨੂੰ ਵਧਾਉਂਦੇ ਹਨ। NCCN ਅਨੁਸਾਰ ਸਾਲਾਨਾ MRI ਜ਼ਰੂਰੀ ਹੈ।", native: "BRCA1/2 ਵਿਰਾਸਤੀ ਕੈਂਸਰ ਜੋਖਮ: ਆਟੋਸੋਮਲ ਡੋਮੀਨੈਂਟ 50% ਸੰਚਾਰ। NCCN ਸਾਲਾਨਾ MRI ਟੈਸਟ ਲਾਜ਼ਮੀ।", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "od-IN": { speech: "BRCA1 ଏବଂ BRCA2 ମ୍ୟୁଟେସନ୍ ୫୦% ସଞ୍ଚାଳନ ବିପଦ ସହିତ ସ୍ତନ ଏବଂ ଓଭାରି କର୍କଟ ରୋଗର ଆଶଙ୍କା ବଢ଼ାଇଥାଏ। NCCN ଅନୁସାରେ ବାର୍ଷିକ MRI ଜରୁରୀ।", native: "BRCA1/2 ବଂଶାନୁକ୍ରମିକ କର୍କଟ ଆଶଙ୍କା: ଅଟୋସୋମାଲ୍ ପ୍ରଭାବୀ ୫୦% ସଞ୍ଚାଳନ। NCCN ବାର୍ଷିକ MRI ଆବଶ୍ୟକ।", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "as-IN": { speech: "BRCA1 আৰু BRCA2 পৰিৱৰ্তনে ৫০% সংক্ৰমণ আশংকাৰ সৈতে স্তন আৰু ডিম্বাশয়ৰ কৰ্কট ৰোগৰ আশংকা বৃদ্ধি কৰে। NCCN অনুসৰি বাৰ্ষিক MRI প্ৰয়োজন।", native: "BRCA1/2 বংশগত কৰ্কট ৰোগৰ আশংকা: অট’ছ’মেল ডমিনেন্ট ৫০% আশংকা। NCCN বাৰ্ষিক MRI পৰামৰ্শ।", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "ur-IN": { speech: "BRCA1 اور BRCA2 میوٹیشنز 50% موروثی خطرے کے ساتھ چھاتی اور بیضہ دانی کے کینسر کے خطرے کو بڑھاتے ہیں۔ NCCN کے مطابق سالانہ MRI اسکریننگ کی سفارش کی جاتی ہے۔", native: "BRCA1/2 موروثی کینسر کا خطرہ: آٹوسومل غالب 50% منتقلی۔ NCCN سالانہ MRI اسکریننگ ضروری۔", roman: "BRCA1/2 hereditary cancer risk: Autosomal dominant 50% transmission." },
+          "en-IN": { speech: "BRCA1 and BRCA2 pathogenic variants confer high hereditary risk for breast and ovarian cancers inherited in an autosomal dominant pattern with 50% transmission to first-degree relatives.", native: "BRCA1 and BRCA2 hereditary cancer risk: Autosomal dominant 50% transmission to first-degree relatives. NCCN annual MRI surveillance recommended.", roman: "BRCA1/2 hereditary cancer evaluation: NCCN surveillance protocol." },
+        };
+        const sel = brcaMap[lang] || brcaMap["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
+      } else if (
+        qLower.includes("liver") ||
+        qLower.includes("fatty") ||
+        qLower.includes("alt") ||
+        qLower.includes("ast") ||
+        qLower.includes("यकृत")
+      ) {
+        tools.push("EASL 2024 Steatotic Liver Guidelines", "FIB-4 Non-Invasive Hepatic Fibrosis Engine");
+        subEng = "Fatty liver (MASLD) with elevated ALT/AST transaminases reflects hepatic lipid accumulation. Lifestyle modification, metabolic risk optimization, and FIB-4 non-invasive scoring are recommended per EASL 2024.";
+        const liverMap: VoiceDialectMap = {
+          "hi-IN": { speech: "बढ़े हुए ALT और AST के साथ फैटी लिवर (MASLD) लिवर में वसा संचय दर्शाता है। EASL 2024 के अनुसार जीवनशैली में सुधार और FIB-4 स्कोरिंग की सलाह दी जाती है।", native: "फैटी लिवर (MASLD) और ALT/AST ट्रांसएमिनेस: लिवर में वसा संचय। जीवनशैली में बदलाव और FIB-4 फाइब्रोसिस स्कोरिंग अनुशंसित।", roman: "Fatty liver (MASLD) aur ALT/AST transaminases: Liver me vasa sanchay." },
+          "bn-IN": { speech: "উচ্চ ALT এবং AST সহ ফ্যাটি লিভার (MASLD) যকৃতে চর্বি জমার ইঙ্গিত দেয়। EASL ২০২৪ অনুসারে জীবনযাত্রার পরিবর্তন এবং FIB-4 স্কোরিং বাঞ্ছনীয়।", native: "ফ্যাটি লিভার (MASLD) ও ALT/AST পরীক্ষা: যকৃতে চর্বি সঞ্চয়। জীবনযাত্রার পরিবর্তন ও FIB-4 স্কোরিং পরামর্শযোগ্য।", roman: "Fatty liver (MASLD) ebong ALT/AST transaminases: Hepatic lipid accumulation." },
+          "ta-IN": { speech: "அதிகரித்த ALT/AST உடன் கொழுப்பு கல்லீரல் (MASLD) கல்லீரலில் கொழுப்பு படிவதைக் குறிக்கிறது. EASL 2024 படி வாழ்க்கை முறை மாற்றம் மற்றும் FIB-4 மதிப்பீடு அவசியம்.", native: "கொழுப்பு கல்லீரல் (MASLD) மற்றும் ALT/AST என்சைம்கள்: கல்லீரல் கொழுப்பு சேகரிப்பு. FIB-4 மதிப்பீடு பரிந்துரை.", roman: "Fatty liver (MASLD) matrum ALT/AST enzymes: Hepatic lipid accumulation." },
+          "te-IN": { speech: "పెరిగిన ALT/AST తో ఫ్యాటీ లివర్ (MASLD) కాలేయంలో కొవ్వు చేరడాన్ని సూచిస్తుంది. EASL 2024 ప్రకారం జీవనశైలి మార్పులు మరియు FIB-4 స్కోరింగ్ అవసరం.", native: "ఫ్యాటీ లివర్ (MASLD) మరియు ALT/AST ఎంజైములు: కాలేయంలో కొవ్వు చేరిక. FIB-4 స్కోరింగ్ సిఫార్సు.", roman: "Fatty liver (MASLD) mariyu ALT/AST enzymes: Hepatic lipid accumulation." },
+          "kn-IN": { speech: "ಹೆಚ್ಚಿದ ALT/AST ನೊಂದಿಗೆ ಕೊಬ್ಬಿನ ಪಿತ್ತಜನಕಾಂಗ (MASLD) ಪಿತ್ತಜನಕಾಂಗದಲ್ಲಿ ಕೊಬ್ಬು ಸಂಗ್ರಹವನ್ನು ಸೂಚಿಸುತ್ತದೆ. EASL 2024 ರಂತೆ ಜೀವನಶೈಲಿ ಬದಲಾವಣೆ ಮತ್ತು FIB-4 ಸ್ಕೋರಿಂಗ್ ಅಗತ್ಯ.", native: "ಕೊಬ್ಬಿನ ಪಿತ್ತಜನಕಾಂಗ (MASLD) ಮತ್ತು ALT/AST: ಪಿತ್ತಜನಕಾಂಗದಲ್ಲಿ ಕೊಬ್ಬು ಸಂಗ್ರಹ. FIB-4 ಸ್ಕೋರಿಂಗ್ ಶಿಫಾರಸು.", roman: "Fatty liver (MASLD) mattu ALT/AST: Hepatic lipid accumulation." },
+          "ml-IN": { speech: "ഉയർന്ന ALT/AST ഉള്ള ഫാറ്റി ലിവർ (MASLD) കരളിൻ കൊഴുപ്പ് അടിഞ്ഞുകൂടുന്നതിനെ സൂചിപ്പിക്കുന്നു. EASL 2024 പ്രകാരം ജീവിതശൈലി മാറ്റങ്ങളും FIB-4 സ്കോറിംഗും വേണം.", native: "ഫാറ്റി ലിവർ (MASLD), ALT/AST എൻസൈമുകൾ: കരളിൽ കൊഴുപ്പ് അടിഞ്ഞുകൂടൽ. FIB-4 സ്കോറിംഗ് ശുപാർശ.", roman: "Fatty liver (MASLD) and ALT/AST enzymes: Hepatic lipid accumulation." },
+          "mr-IN": { speech: "वाढलेल्या ALT/AST सह फॅटी लिव्हर (MASLD) यकृतात चरबी जमा झाल्याचे दर्शवते. EASL 2024 नुसार जीवनशैलीत बदल आणि FIB-4 स्कोअरिंग करावे.", native: "फॅटी लिव्हर (MASLD) आणि ALT/AST: यकृतात चरबी जमा होणे. जीवनशैलीत बदल व FIB-4 स्कोअरिंग आवश्यक.", roman: "Fatty liver (MASLD) aani ALT/AST: Hepatic lipid accumulation." },
+          "gu-IN": { speech: "વધેલા ALT/AST સાથે ફેટી લિવર (MASLD) લિવરમાં ચરબી જમા થવાનું દર્શાવે છે. EASL 2024 મુજબ જીવનશૈલીમાં ફેરફાર અને FIB-4 સ્કોરિંગ જરૂરી છે.", native: "ફેટી લિવર (MASLD) અને ALT/AST: લિવરમાં ચરબીનો સંગ્રહ. જીવનશૈલીમાં બદલાવ અને FIB-4 સ્કોરિંગ જરૂરી.", roman: "Fatty liver (MASLD) ane ALT/AST: Hepatic lipid accumulation." },
+          "pa-IN": { speech: "ਵਧੇ ਹੋਏ ALT/AST ਨਾਲ ਫੈਟੀ ਲਿਵਰ (MASLD) ਜਿਗਰ ਵਿੱਚ ਚਰਬੀ ਦੇ ਜਮ੍ਹਾਂ ਹੋਣ ਨੂੰ ਦਰਸਾਉਂਦਾ ਹੈ। EASL 2024 ਅਨੁਸਾਰ ਜੀਵਨ ਸ਼ੈਲੀ ਵਿੱਚ ਤਬਦੀਲੀ ਅਤੇ FIB-4 ਸਕੋਰਿੰਗ ਜ਼ਰੂਰੀ ਹੈ।", native: "ਫੈਟੀ ਲਿਵਰ (MASLD) ਅਤੇ ALT/AST: ਜਿਗਰ ਵਿੱਚ ਚਰਬੀ ਜਮ੍ਹਾਂ ਹੋਣਾ। ਜੀਵਨ ਸ਼ੈਲੀ ਵਿੱਚ ਸੁਧਾਰ ਅਤੇ FIB-4 ਸਕੋਰਿੰਗ ਸਿਫਾਰਸ਼ੀ।", roman: "Fatty liver (MASLD) ate ALT/AST: Hepatic lipid accumulation." },
+          "od-IN": { speech: "ବଢ଼ିଥିବା ALT/AST ସହିତ ଫ୍ୟାଟି ଲିଭର (MASLD) ଯକୃତରେ ଚର୍ବି ଜମା ହେବାକୁ ସୂଚାଏ। EASL ୨୦୨୪ ଅନୁସାରେ ଜୀବନଶୈଳୀ ପରିବର୍ତ୍ତନ ଏବଂ FIB-4 ସ୍କୋରିଂ ଆବଶ୍ୟକ।", native: "ଫ୍ୟାଟି ଲିଭର (MASLD) ଏବଂ ALT/AST: ଯକୃତରେ ଚର୍ବି ସଞ୍ଚୟ। ଜୀବନଶୈଳୀ ପରିବର୍ତ୍ତନ ଓ FIB-4 ସ୍କୋରିଂ ସୁପାରିଶ।", roman: "Fatty liver (MASLD) ebong ALT/AST: Hepatic lipid accumulation." },
+          "as-IN": { speech: "বৃদ্ধি পোৱা ALT/AST ৰ সৈতে ফেটী লিভাৰ (MASLD) যকৃতত চৰ্বি জমা হোৱাৰ ইংগিত দিয়ে। EASL ২০২৪ অনুসৰি জীৱনশৈলীৰ পৰিৱৰ্তন আৰু FIB-4 স্ক'ৰিং প্ৰয়োজন।", native: "ফেটী লিভাৰ (MASLD) আৰু ALT/AST: যকৃতত চৰ্বি জমা হোৱা। জীৱনশৈলীৰ পৰিৱৰ্তন আৰু FIB-4 স্ক'ৰিং বাঞ্ছনীয়।", roman: "Fatty liver (MASLD) aru ALT/AST: Hepatic lipid accumulation." },
+          "ur-IN": { speech: "بڑھے ہوئے ALT اور AST کے ساتھ فیٹی لیور (MASLD) جگر میں چربی جمع ہونے کی علامت ہے۔ EASL 2024 کے مطابق طرز زندگی میں تبدیلی اور FIB-4 اسکورنگ کی سفارش کی جاتی ہے۔", native: "فیٹی لیور (MASLD) اور ALT/AST: جگر میں چربی جمع ہونا۔ طرز زندگی میں تبدیلی اور FIB-4 اسکورنگ ضروری۔", roman: "Fatty liver (MASLD) aur ALT/AST: Hepatic lipid accumulation." },
+          "en-IN": { speech: "Fatty liver (MASLD) with elevated ALT/AST transaminases reflects hepatic lipid accumulation. Lifestyle modification, metabolic risk optimization, and FIB-4 non-invasive scoring are recommended per EASL 2024.", native: "Fatty liver (MASLD) with elevated ALT/AST transaminases: Hepatic lipid accumulation. Lifestyle modification and FIB-4 scoring recommended.", roman: "Hepatic metabolic assessment: EASL 2024 steatotic liver guidelines." },
+        };
+        const sel = liverMap[lang] || liverMap["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
+      } else if (
+        qLower.includes("b12") ||
+        qLower.includes("ferritin") ||
+        qLower.includes("anemia") ||
+        qLower.includes("iron") ||
+        qLower.includes("एनीमिया")
+      ) {
+        tools.push("Hematology Anemia Index Engine", "Serum Ferritin & B12 Evaluation");
+        subEng = "Evaluation for Anemia: Low Ferritin indicates depleted iron storage (microcytic), while low Vitamin B12 causes macrocytic megaloblastic changes and neurological tingling; targeted supplementation is advised.";
+        const b12Map: VoiceDialectMap = {
+          "hi-IN": { speech: "एनीमिया जांच: कम फेरिटिन आयरन की कमी दर्शाता है, जबकि कम विटामिन बी12 न्यूरोलॉजिकल झनझनाहट और मैक्रोसाइटिक एनीमिया का कारण बनता है। लक्षित सप्लीमेंट की सलाह दी जाती है।", native: "एनीमिया और विटामिन बी12 / फेरिटिन विश्लेषण: कम फेरिटिन आयरन भंडार की कमी दर्शाता है; विटामिन बी12 तंत्रिका स्वास्थ्य के लिए महत्वपूर्ण है।", roman: "Anemia aur vitamin B12 / ferritin vishleshan: Iron deficiency aur neurological health." },
+          "bn-IN": { speech: "অ্যানিমিয়া মূল্যায়ন: কম ফেরিটিন আয়রনের ঘাটতি নির্দেশ করে এবং কম ভিটামিন B12 স্নায়বিক দুর্বলতা ও রক্তস্বল্পতার কারণ হয়। সাপ্লিমেন্ট গ্রহণের পরামর্শ দেওয়া হচ্ছে।", native: "অ্যানিমিয়া ও ভিটামিন B12 / ফেরিটিন বিশ্লেষণ: কম ফেরিটিন আয়রনের অভাবের লক্ষণ; ভিটামিন B12 স্নায়ুর জন্য অত্যন্ত জরুরি।", roman: "Anemia ebong vitamin B12 / ferritin bishleshon." },
+          "ta-IN": { speech: "இரத்த சோகை ஆய்வு: குறைந்த ஃபெரிட்டின் இரும்புச்சத்து குறைபாட்டைக் குறிக்கிறது, குறைந்த வைட்டமின் பி12 நரம்பு பலவீனத்தை ஏற்படுத்துகிறது. ஊட்டச்சத்து மாத்திரைகள் பரிந்துரைக்கப்படுகிறது.", native: "இரத்த சோகை மற்றும் வைட்டமின் B12 / ஃபெரிட்டின் பகுப்பாய்வு: இரும்புச்சத்து குறைபாடு மற்றும் நரம்பு மண்டல ஆரோக்கியம்.", roman: "Anemia matrum vitamin B12 / ferritin analysis." },
+          "te-IN": { speech: "రక్తహీనత పరీక్ష: తక్కువ ఫెర్రిటిన్ ఇనుము లోపాన్ని సూచిస్తుంది, మరియు తక్కువ విటమిన్ B12 నరాల బలహీనతను కలిగిస్తుంది. అనుబంధ చికిత్స అవసరం.", native: "రక్తహీనత మరియు విటమిన్ B12 / ఫెర్రిటిన్ విశ్లేషణ: ఇనుము లోపం మరియు నాడీ వ్యవస్థ ఆరోగ్యం.", roman: "Anemia mariyu vitamin B12 / ferritin vishleshana." },
+          "kn-IN": { speech: "ರಕ್ತಹೀನತೆ ಪರೀಕ್ಷೆ: ಕಡಿಮೆ ಫೆರಿಟಿನ್ ಕಬ್ಬಿಣದ ಕೊರತೆಯನ್ನು ಸೂಚಿಸುತ್ತದೆ, ಮತ್ತು ಕಡಿಮೆ ವಿಟಮಿನ್ B12 ನರವೈಜ್ಞಾನಿಕ ದೌರ್ಬಲ್ಯವನ್ನು ಉಂಟುಮಾಡುತ್ತದೆ. ಪೂರಕ ಔಷಧಿ ಅಗತ್ಯ.", native: "ರಕ್ತಹೀನತೆ ಮತ್ತು ವಿಟಮಿನ್ B12 / ಫೆರಿಟಿನ್ ವಿಶ್ಲೇಷಣೆ: ಕಬ್ಬಿಣದ ಕೊರತೆ ಮತ್ತು ನರಗಳ ಆರೋಗ್ಯ.", roman: "Anemia mattu vitamin B12 / ferritin vishleshane." },
+          "ml-IN": { speech: "വിളർച്ച പരിശോധന: കുറഞ്ഞ ഫെറിറ്റിൻ ഇരുമ്പിന്റെ കുറവിനെ സൂചിപ്പിക്കുന്നു, കുറഞ്ഞ വിറ്റാമിൻ B12 നാഡീവ്യൂഹ പ്രശ്നങ്ങൾക്ക് കാരണമാകുന്നു. സപ്ലിമെന്റുകൾ ആവശ്യമാണ്.", native: "വിളർച്ചയും വിറ്റാമിൻ B12 / ഫെറിറ്റിൻ വിശകലനവും: ഇരുമ്പിന്റെ കുറവും നാഡീ ആരോഗ്യവും.", roman: "Anemia and vitamin B12 / ferritin analysis." },
+          "mr-IN": { speech: "ॲनिमिया तपासणी: कमी फेरिटिन लोहाची कमतरता दर्शवते आणि कमी व्हिटॅमिन बी12 मज्जातंतूंच्या समस्या निर्माण करते. पूरक औषधे घ्यावीत.", native: "ॲनिमिया आणि व्हिटॅमिन बी12 / फेरिटिन विश्लेषण: लोहाची कमतरता आणि मज्जातंतू आरोग्य.", roman: "Anemia aani vitamin B12 / ferritin vishleshan." },
+          "gu-IN": { speech: "એનિમિયા તપાસ: ઓછું ફેરીટિન આયર્નની ઉણપ દર્શાવે છે અને ઓછું વિટામિન B12 નર્વસ સિસ્ટમની સમસ્યાઓ સર્જે છે. પૂરક દવાઓ જરૂરી છે.", native: "એનિમિયા અને વિટામિન B12 / ફેરીટિન વિશ્લેષણ: આયર્નની ઉણપ અને ચેતા સ્વાસ્થ્ય.", roman: "Anemia ane vitamin B12 / ferritin vishleshan." },
+          "pa-IN": { speech: "ਅਨੀਮੀਆ ਮੁਲਾਂਕਣ: ਘੱਟ ਫੈਰੀਟਿਨ ਆਇਰਨ ਦੀ ਕਮੀ ਨੂੰ ਦਰਸਾਉਂਦਾ ਹੈ ਅਤੇ ਘੱਟ ਵਿਟਾਮਿਨ ਬੀ12 ਨਸਾਂ ਦੀ ਕਮਜ਼ੋਰੀ ਦਾ ਕਾਰਨ ਬਣਦਾ ਹੈ। ਪੂਰਕ ਦਵਾਈਆਂ ਦੀ ਸਲਾਹ ਹੈ।", native: "ਅਨੀਮੀਆ ਅਤੇ ਵਿਟਾਮਿਨ ਬੀ12 / ਫੈਰੀਟਿਨ ਵਿਸ਼ਲੇਸ਼ਣ: ਆਇਰਨ ਦੀ ਘਾਟ ਅਤੇ ਨਸਾਂ ਦੀ ਸਿਹਤ।", roman: "Anemia ate vitamin B12 / ferritin vishleshan." },
+          "od-IN": { speech: "ରକ୍ତହୀନତା ପରୀକ୍ଷା: କମ୍ ଫେରିଟିନ୍ ଆଇରନ୍ ଅଭାବକୁ ସୂଚାଏ ଏବଂ କମ୍ ଭିଟାମିନ୍ B12 ସ୍ନାୟୁଗତ ଦୁର୍ବଳତା ସୃଷ୍ଟି କରେ। ସପ୍ଲିମେଣ୍ଟ ଆବଶ୍ୟକ।", native: "ରକ୍ତହୀନତା ଏବଂ ଭିଟାମିନ୍ B12 / ଫେରିଟିନ୍ ବିଶ୍ଳେଷଣ: ଆଇରନ୍ ଅଭାବ ଓ ସ୍ନାୟୁ ସ୍ୱାସ୍ଥ୍ୟ।", roman: "Anemia ebong vitamin B12 / ferritin bishleshana." },
+          "as-IN": { speech: "ৰক্তহীনতা মূল্যায়ন: কম ফেৰিটিনে আইৰনৰ অভাৱ সূচায় আৰু কম ভিটামিন B12 এ স্নায়বিক সমস্যাৰ সৃষ্টি কৰে। পৰিপূৰক গ্ৰহণৰ পৰামৰ্শ দিয়া হৈছে।", native: "ৰক্তহীনতা আৰু ভিটামিন B12 / ফেৰিটিন বিশ্লেষণ: আইৰনৰ অভাৱ আৰু স্নায়ু স্বাস্থ্য।", roman: "Anemia aru vitamin B12 / ferritin bishleshon." },
+          "ur-IN": { speech: "خون کی کمی کا جائزہ: کم فیریٹین آئرن کی کمی کو ظاہر کرتا ہے، اور کم وٹامن بی 12 اعصابی کمزوری کا باعث بنتا ہے۔ سپلیمنٹس کی سفارش کی جاتی ہے۔", native: "خون کی کمی اور وٹامن بی 12 / فیریٹین تجزیہ: آئرن کی کمی اور اعصابی صحت۔", roman: "Anemia aur vitamin B12 / ferritin tajziya." },
+          "en-IN": { speech: "Evaluation for Anemia: Low Ferritin indicates depleted iron storage, while low Vitamin B12 causes macrocytic megaloblastic changes and neurological tingling; targeted supplementation is advised.", native: "Anemia panel: Low Ferritin indicates iron storage depletion; low Vitamin B12 triggers macrocytic changes and paresthesias. Targeted clinical supplementation advised.", roman: "Hematological anemia index: Ferritin iron stores and B12 neuropathy evaluation." },
+        };
+        const sel = b12Map[lang] || b12Map["hi-IN"];
+        speechResp = sel.speech;
+        subNative = sel.native;
+        subRoman = sel.roman;
       } else {
         const generalMap: VoiceDialectMap = {
           "hi-IN": { speech: "मैंने आपका स्वास्थ्य प्रश्न समझ लिया है। साक्ष्य-आधारित क्लिनिकल दिशानिर्देशों के अनुसार मुख्य निष्कर्ष तैयार हैं।", native: `"${q}" के लिए साक्ष्य-आधारित विश्लेषण पूरा हो गया है।`, roman: `"${q}" ke liye clinical vishleshan poora ho gaya hai.` },

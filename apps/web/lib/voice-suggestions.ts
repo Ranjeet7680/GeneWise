@@ -816,6 +816,346 @@ export const CLINICAL_VOICE_SUGGESTIONS: ClinicalSuggestionItem[] = [
       ],
     },
   },
+  {
+    id: "sug-thalassemia",
+    category: "genetics",
+    categoryLabel: "Carrier Genetics",
+    title: "Beta-Thalassemia & Sickle Cell Carrier",
+    badge: "Carrier Screening • HBB Gene",
+    iconName: "dna",
+    translations: {
+      "hi-IN": {
+        native: "थैलेसीमिया और सिकल सेल एचबीबी जीन वाहक जांच समझाइए",
+        romanized: "Thalassemia aur sickle cell HBB carrier screening samjhayein",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "bn-IN": {
+        native: "থ্যালাসেমিয়া এবং সিকেল সেল HBB বাহক স্ক্রীনিং ব্যাখ্যা করুন",
+        romanized: "Thalassemia ebong sickle cell HBB carrier screening byakhya korun",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "ta-IN": {
+        native: "தலசீமியா மற்றும் அரிவாள் செல் HBB கேரியர் பரிசோதனையை விளக்குங்கள்",
+        romanized: "Thalassemia matrum sickle cell HBB carrier parisodhanaiyai vilakkungal",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "te-IN": {
+        native: "తలసేమియా మరియు సికిల్ సెల్ HBB క్యారియర్ స్క్రీనింగ్ వివరించండి",
+        romanized: "Thalassemia mariyu sickle cell HBB carrier screening vivarinchandi",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "kn-IN": {
+        native: "ಥಲಸ್ಸೆಮಿಯಾ ಮತ್ತು ಸಿಕಲ್ ಸೆಲ್ HBB ಕ್ಯಾರಿಯರ್ ಸ್ಕ್ರೀನಿಂಗ್ ವಿವರಿಸಿ",
+        romanized: "Thalassemia mattu sickle cell HBB carrier screening vivarisi",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "ml-IN": {
+        native: "തലാസീമിയ, സിക്കിൾ സെൽ HBB കാരിയർ സ്ക്രീനിംഗ് വിശദീകരിക്കുക",
+        romanized: "Thalassemia, sickle cell HBB carrier screening vishadheekarikkuka",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "mr-IN": {
+        native: "थॅलेसेमिया आणि सिकल सेल HBB वाहक तपासणी स्पष्ट करा",
+        romanized: "Thalassemia aani sickle cell HBB carrier screening spashta kara",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "gu-IN": {
+        native: "થેલેસેમિયા અને સિકલ સેલ HBB વાહક સ્ક્રીનીંગ સમજાવો",
+        romanized: "Thalassemia ane sickle cell HBB carrier screening samjaavo",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "pa-IN": {
+        native: "ਥੈਲੇਸੀਮੀਆ ਅਤੇ ਸਿਕਲ ਸੈੱਲ HBB ਵਾਹਕ ਸਕ੍ਰੀਨਿੰਗ ਸਮਝਾਓ",
+        romanized: "Thalassemia ate sickle cell HBB carrier screening samjhao",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "od-IN": {
+        native: "ଥାଲାସେମିଆ ଏବଂ ସିକଲ୍ ସେଲ୍ HBB ବାହକ ସ୍କ୍ରିନିଂ ବୁଝାନ୍ତୁ",
+        romanized: "Thalassemia ebong sickle cell HBB carrier screening bujhantu",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "as-IN": {
+        native: "থেলাছেমিয়া আৰু চিকল চেল HBB বাহক পৰীক্ষা বুজাই দিয়ক",
+        romanized: "Thalassemia aru sickle cell HBB carrier screening bujai diyok",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "ur-IN": {
+        native: "تھیلیسیمیا اور سکیل سیل HBB کیریئر اسکریننگ کی وضاحت کریں",
+        romanized: "Thalassemia aur sickle cell HBB carrier screening ki wazahat karein",
+        english: "Explain Beta-Thalassemia and Sickle Cell HBB carrier screening.",
+      },
+      "en-IN": {
+        native: "Explain Beta-Thalassemia and Sickle Cell trait carrier risks for HBB variants.",
+        romanized: "Autosomal recessive 25% homozygous transmission analysis.",
+        english: "Explain Beta-Thalassemia and Sickle Cell trait carrier risks for HBB variants.",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "HPLC हीमोग्लोबिन टेस्ट", query: "क्या शादी से पहले HPLC थैलेसीमिया टेस्ट जरूरी है?" },
+        { title: "सिकल सेल लक्षण", query: "सिकल सेल वाहक में क्या लक्षण दिखाई देते हैं?" },
+      ],
+      "en-IN": [
+        { title: "Pre-Marital HPLC Screen", query: "Why is HPLC hemoglobin variant analysis essential before marriage?" },
+        { title: "Homozygous Transmission", query: "What are the odds of thalassemia major if both parents are carriers?" },
+      ],
+    },
+  },
+  {
+    id: "sug-brca",
+    category: "genetics",
+    categoryLabel: "Oncogenetics",
+    title: "BRCA1 & BRCA2 Hereditary Cancer Risk",
+    badge: "Hereditary Cancer • NCCN Guidelines",
+    iconName: "dna",
+    translations: {
+      "hi-IN": {
+        native: "BRCA1 और BRCA2 आनुवंशिक कैंसर जोखिम और जांच के नियम समझाइए",
+        romanized: "BRCA1 aur BRCA2 anuvanshik cancer jokhim aur screening niyam samjhayein",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening protocols.",
+      },
+      "bn-IN": {
+        native: "BRCA1 এবং BRCA2 বংশগত ক্যান্সারের ঝুঁকি এবং স্ক্রীনিং প্রোটোকল ব্যাখ্যা করুন",
+        romanized: "BRCA1 ebong BRCA2 bongshogoto cancer er jhuki byakhya korun",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening.",
+      },
+      "ta-IN": {
+        native: "BRCA1 மற்றும் BRCA2 பரம்பரை புற்றுநோய் ஆபத்து மற்றும் பரிசோதனை நெறிமுறைகளை விளக்குங்கள்",
+        romanized: "BRCA1 matrum BRCA2 parambarai puttrunoi aabathu matrum parisodhanai vilakkungal",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and surveillance.",
+      },
+      "te-IN": {
+        native: "BRCA1 మరియు BRCA2 వంశపారంపర్య క్యాన్సర్ ప్రమాదం మరియు స్క్రీనింగ్ మార్గదర్శకాలను వివరించండి",
+        romanized: "BRCA1 mariyu BRCA2 vamshaparamparya cancer pramadam vivarinchandi",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and protocols.",
+      },
+      "kn-IN": {
+        native: "BRCA1 ಮತ್ತು BRCA2 ಅನುವಂಶಿಕ ಕ್ಯಾನ್ಸರ್ ಅಪಾಯ ಮತ್ತು ತಪಾಸಣೆ ಮಾರ್ಗಸೂಚಿಗಳನ್ನು ವಿವರಿಸಿ",
+        romanized: "BRCA1 mattu BRCA2 anuvanshika cancer apaya mattu thapasane vivarisi",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk guidelines.",
+      },
+      "ml-IN": {
+        native: "BRCA1, BRCA2 പാരമ്പര്യ അർബുദ സാധ്യതയും സ്ക്രീനിംഗ് രീതികളും വിശദീകരിക്കുക",
+        romanized: "BRCA1, BRCA2 paaramparya arbudha saadhyathayum screening reethikalum vishadheekarikkuka",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening.",
+      },
+      "mr-IN": {
+        native: "BRCA1 आणि BRCA2 अनुवांशिक कर्करोग जोखीम आणि तपासणी नियम स्पष्ट करा",
+        romanized: "BRCA1 aani BRCA2 anuvanshik karkrog jokhim aani tapasni niyam spashta kara",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening protocols.",
+      },
+      "gu-IN": {
+        native: "BRCA1 અને BRCA2 આનુવંશિક કેન્સર જોખમ અને સ્ક્રીનીંગ માર્ગદર્શિકા સમજાવો",
+        romanized: "BRCA1 ane BRCA2 aanuvanshik cancer jokham ane screening margadarshika samjaavo",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening guidelines.",
+      },
+      "pa-IN": {
+        native: "BRCA1 ਅਤੇ BRCA2 ਜੱਦੀ ਕੈਂਸਰ ਜੋਖਮ ਅਤੇ ਸਕ੍ਰੀਨਿੰਗ ਨਿਯਮ ਸਮਝਾਓ",
+        romanized: "BRCA1 ate BRCA2 jaddi cancer jokham ate screening niyam samjhao",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening protocols.",
+      },
+      "od-IN": {
+        native: "BRCA1 ଏବଂ BRCA2 ବଂଶାନୁକ୍ରମିକ କର୍କଟ ରୋଗ ଆଶଙ୍କା ଏବଂ ସ୍କ୍ରିନିଂ ନିୟମାବଳୀ ବୁଝାନ୍ତୁ",
+        romanized: "BRCA1 ebong BRCA2 banshanukramika karkata roga aashanka bujhantu",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening rules.",
+      },
+      "as-IN": {
+        native: "BRCA1 আৰু BRCA2 বংশগত কৰ্কট ৰোগৰ আশংকা আৰু পৰীক্ষাৰ নিয়মসমূহ বুজাই দিয়ক",
+        romanized: "BRCA1 aru BRCA2 bongxogoto korkot rogor aaxonka bujai diyok",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening protocols.",
+      },
+      "ur-IN": {
+        native: "BRCA1 اور BRCA2 موروثی کینسر کے خطرے اور اسکریننگ کے اصول بتائیں",
+        romanized: "BRCA1 aur BRCA2 moroosi cancer ke khatre aur screening ke asool batayein",
+        english: "Explain BRCA1 and BRCA2 hereditary cancer risk and screening guidelines.",
+      },
+      "en-IN": {
+        native: "What are the surveillance and preventative guidelines for pathogenic BRCA1 and BRCA2 mutations?",
+        romanized: "NCCN oncogenetic surveillance and 50% autosomal dominant risk stratification.",
+        english: "What are the surveillance and preventative guidelines for pathogenic BRCA1 and BRCA2 mutations?",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "NCCN मैमोग्राफी दिशानिर्देश", query: "BRCA म्यूटेशन में किस उम्र से MRI या मैमोग्राफी शुरू करनी चाहिए?" },
+        { title: "परिवार में आनुवंशिक जोखिम", query: "क्या BRCA पॉजिटिव होने पर बच्चों में 50% विरासत का खतरा होता है?" },
+      ],
+      "en-IN": [
+        { title: "Annual MRI Surveillance", query: "At what age should annual breast MRI surveillance begin for BRCA carriers?" },
+        { title: "50% Autosomal Inheritance", query: "What are the inheritance risks for first-degree relatives in BRCA1 variants?" },
+      ],
+    },
+  },
+  {
+    id: "sug-fatty-liver",
+    category: "labs",
+    categoryLabel: "Hepatology",
+    title: "Fatty Liver MASLD & Elevated ALT/AST",
+    badge: "Liver Health • MASLD & FIB-4",
+    iconName: "flask",
+    translations: {
+      "hi-IN": {
+        native: "फैटी लिवर (MASLD) और बढ़े हुए ALT/AST एंजाइम का क्या मतलब है?",
+        romanized: "Fatty liver (MASLD) aur badhe huye ALT/AST enzyme ka kya matlab hai?",
+        english: "What does fatty liver (MASLD) and high ALT/AST enzymes indicate?",
+      },
+      "bn-IN": {
+        native: "ফ্যাটি লিভার (MASLD) এবং বর্ধিত ALT/AST এনজাইমের তাৎপর্য কী?",
+        romanized: "Fatty liver (MASLD) ebong bordhito ALT/AST enzyme er tatporjo ki?",
+        english: "What is the significance of fatty liver and elevated ALT/AST enzymes?",
+      },
+      "ta-IN": {
+        native: "கொழுப்பு கல்லீரல் (MASLD) மற்றும் உயர்ந்த ALT/AST என்சைம்கள் எதைக் குறிக்கின்றன?",
+        romanized: "Kozhuppu kalleeral (MASLD) matrum uyarndha ALT/AST enzymes edhai kurikkinrana?",
+        english: "What does fatty liver with elevated ALT/AST indicate?",
+      },
+      "te-IN": {
+        native: "ఫ్యాటీ లివర్ (MASLD) మరియు పెరిగిన ALT/AST ఎంజైములు దేనిని సూచిస్తాయి?",
+        romanized: "Fatty liver (MASLD) mariyu perigina ALT/AST enzymes denini soochistayi?",
+        english: "What does fatty liver and high ALT/AST transaminases signify?",
+      },
+      "kn-IN": {
+        native: "ಕೊಬ್ಬಿನ ಪಿತ್ತಜನಕಾಂಗ (MASLD) ಮತ್ತು ಹೆಚ್ಚಿದ ALT/AST ಮಟ್ಟಗಳು ಏನನ್ನು ಸೂಚಿಸುತ್ತವೆ?",
+        romanized: "Kobbina pittajanakanga (MASLD) mattu hechida ALT/AST mattagalu enannu soochisuttave?",
+        english: "Explain fatty liver and elevated ALT/AST levels.",
+      },
+      "ml-IN": {
+        native: "ഫാറ്റി ലിവർ (MASLD), ഉയർന്ന ALT/AST അളവുകൾ എന്താണ് സൂചിപ്പിക്കുന്നത്?",
+        romanized: "Fatty liver (MASLD), uyarna ALT/AST alavukal enthaanu soochippikkunnathu?",
+        english: "What does fatty liver with elevated ALT/AST indicate?",
+      },
+      "mr-IN": {
+        native: "फॅटी लिव्हर (MASLD) आणि वाढलेले ALT/AST पातळी काय दर्शवते?",
+        romanized: "Fatty liver (MASLD) aani vaadhlele ALT/AST paatali kaay darshavate?",
+        english: "Explain fatty liver (MASLD) and high ALT/AST enzymes.",
+      },
+      "gu-IN": {
+        native: "ફેટી લિવર (MASLD) અને વધેલા ALT/AST સ્તર શું દર્શાવે છે?",
+        romanized: "Fatty liver (MASLD) ane vadhela ALT/AST star shu darshave chhe?",
+        english: "What does fatty liver and high ALT/AST transaminases indicate?",
+      },
+      "pa-IN": {
+        native: "ਫੈਟੀ ਲਿਵਰ (MASLD) ਅਤੇ ਵਧੇ ਹੋਏ ALT/AST ਪੱਧਰ ਕੀ ਦਰਸਾਉਂਦੇ ਹਨ?",
+        romanized: "Fatty liver (MASLD) ate vadhe hoye ALT/AST padhar ki darsaunde han?",
+        english: "Explain fatty liver and elevated ALT/AST transaminases.",
+      },
+      "od-IN": {
+        native: "ଫ୍ୟାଟି ଲିଭର (MASLD) ଏବଂ ବୃଦ୍ଧି ପାଇଥିବା ALT/AST ସ୍ତର କଣ ସୂଚାଏ?",
+        romanized: "Fatty liver (MASLD) ebong briddhi paithiba ALT/AST stara kana suchaye?",
+        english: "What does fatty liver and elevated ALT/AST indicate?",
+      },
+      "as-IN": {
+        native: "ফেটী লিভাৰ (MASLD) আৰু বঢ়া ALT/AST স্তৰে কি বুজায়?",
+        romanized: "Fatty liver (MASLD) aru borha ALT/AST store ki bujay?",
+        english: "Explain fatty liver and elevated ALT/AST levels.",
+      },
+      "ur-IN": {
+        native: "فیٹی لیور (MASLD) اور بڑھے ہوئے ALT/AST کی کیا اہمیت ہے؟",
+        romanized: "Fatty liver (MASLD) aur badhe huye ALT/AST ki kya ahmiyat hai?",
+        english: "Explain fatty liver and elevated ALT/AST transaminases.",
+      },
+      "en-IN": {
+        native: "What does ultrasound fatty liver (MASLD) with elevated ALT/AST transaminases indicate?",
+        romanized: "Hepatic steatosis and metabolic dysfunction assessment under EASL 2024.",
+        english: "What does ultrasound fatty liver (MASLD) with elevated ALT/AST transaminases indicate?",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "FIB-4 फाइब्रोसिस स्कोर", query: "लिवर फाइब्रोसिस जांच के लिए FIB-4 स्कोर कैसे निकालते हैं?" },
+        { title: "लिवर सुरक्षित आहार", query: "फैटी लिवर ठीक करने के लिए आहार और व्यायाम के नियम क्या हैं?" },
+      ],
+      "en-IN": [
+        { title: "FIB-4 Non-Invasive Score", query: "What is the clinical role of FIB-4 scoring in MASLD staging?" },
+        { title: "Hepatic Steatosis Reversal", query: "Can metabolic steatohepatitis be reversed with lifestyle optimization?" },
+      ],
+    },
+  },
+  {
+    id: "sug-b12-anemia",
+    category: "labs",
+    categoryLabel: "Hematology",
+    title: "Vitamin B12 & Ferritin Deficiency",
+    badge: "Hematology • Ferritin & B12 Panel",
+    iconName: "flask",
+    translations: {
+      "hi-IN": {
+        native: "एनीमिया में कम फेरिटिन और विटामिन B12 की कमी के लक्षण क्या हैं?",
+        romanized: "Anemia me kam ferritin aur vitamin B12 ki kami ke lakshan kya hain?",
+        english: "What are the clinical signs of low ferritin and vitamin B12 deficiency in anemia?",
+      },
+      "bn-IN": {
+        native: "রক্তস্বল্পতায় কম ফেরিটিন এবং ভিটামিন B12 এর ঘাটতির লক্ষণ কী?",
+        romanized: "Roktoswolpotay kom ferritin ebong vitamin B12 er ghattir lokkhon ki?",
+        english: "What are the signs of low ferritin and vitamin B12 deficiency in anemia?",
+      },
+      "ta-IN": {
+        native: "இரத்த சோகையில் குறைந்த ஃபெரிட்டின் மற்றும் வைட்டமின் பி12 குறைபாட்டின் அறிகுறிகள் யாவை?",
+        romanized: "Iratha sogayil kuraindha ferritin matrum vitamin B12 kuraipaattin arikurigal yaavai?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency in anemia?",
+      },
+      "te-IN": {
+        native: "రక్తహీనతలో తక్కువ ఫెర్రిటిన్ మరియు విటమిన్ B12 లోపం యొక్క లక్షణాలు ఏమిటి?",
+        romanized: "Raktahinathalo thakkuva ferritin mariyu vitamin B12 lopam yokka lakshanaalu emiti?",
+        english: "Explain low ferritin and vitamin B12 deficiency in anemia.",
+      },
+      "kn-IN": {
+        native: "ರಕ್ತಹೀನತೆಯಲ್ಲಿ ಕಡಿಮೆ ಫೆರಿಟಿನ್ ಮತ್ತು ವಿಟಮಿನ್ B12 ಕೊರತೆಯ ಲಕ್ಷಣಗಳು ಯಾವುವು?",
+        romanized: "Raktahinathe yalli kadime ferritin mattu vitamin B12 koratheya lakshanagalu yaavuvu?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency?",
+      },
+      "ml-IN": {
+        native: "വിളർച്ചയിൽ കുറഞ്ഞ ഫെറിറ്റിൻ, വിറ്റാമിൻ ബി12 കുറവിന്റെ ലക്ഷണങ്ങൾ എന്തൊക്കെയാണ്?",
+        romanized: "Vilarchayil kuranja ferritin, vitamin B12 kuravinre lakshanangal enthokkeyaanu?",
+        english: "Explain low ferritin and vitamin B12 deficiency in anemia.",
+      },
+      "mr-IN": {
+        native: "ॲनिमियामध्ये कमी फेरिटिन आणि व्हिटॅमिन बी12 च्या कमतरतेची लक्षणे कोणती आहेत?",
+        romanized: "Anemiamadhye kami ferritin aani vitamin B12 chya kamtartachi lakshane konti aahet?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency in anemia?",
+      },
+      "gu-IN": {
+        native: "એનિમિયામાં ઓછા ફેરીટિન અને વિટામિન B12 ની ઉણપના લક્ષણો શું છે?",
+        romanized: "Anemiyama ochha ferritin ane vitamin B12 ni unupna lakshano shu chhe?",
+        english: "Explain low ferritin and vitamin B12 deficiency in anemia.",
+      },
+      "pa-IN": {
+        native: "ਅਨੀਮੀਆ ਵਿੱਚ ਘੱਟ ਫੈਰੀਟਿਨ ਅਤੇ ਵਿਟਾਮਿਨ ਬੀ12 ਦੀ ਕਮੀ ਦੇ ਲੱਛਣ ਕੀ ਹਨ?",
+        romanized: "Anemia vich ghatt ferritin ate vitamin B12 di kami de lakshan ki han?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency?",
+      },
+      "od-IN": {
+        native: "ରକ୍ତହୀନତାରେ କମ୍ ଫେରିଟିନ୍ ଏବଂ ଭିଟାମିନ୍ B12 ଅଭାବର ଲକ୍ଷଣ କଣ?",
+        romanized: "Raktahinatare kam ferritin ebong vitamin B12 abhabara lakshana kana?",
+        english: "Explain low ferritin and vitamin B12 deficiency in anemia.",
+      },
+      "as-IN": {
+        native: "ৰক্তহীনতাত কম ফেৰিটিন আৰু ভিটামিন B12 ৰ অভাৱৰ লক্ষণ কি কি?",
+        romanized: "Roktohinotat kom ferritin aru vitamin B12 r obhavor lokkhon ki ki?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency?",
+      },
+      "ur-IN": {
+        native: "خون کی کمی میں کم فیریٹین اور وٹامن بی 12 کی کمی کی علامات کیا ہیں؟",
+        romanized: "Khoon ki kami mein kam ferritin aur vitamin B12 ki kami ki alamat kya hain?",
+        english: "What are symptoms of low ferritin and vitamin B12 deficiency in anemia?",
+      },
+      "en-IN": {
+        native: "What are the clinical signs of low serum ferritin and vitamin B12 deficiency in anemia?",
+        romanized: "Evaluation of microcytic iron deficiency versus macrocytic megaloblastic anemia.",
+        english: "What are the clinical signs of low serum ferritin and vitamin B12 deficiency in anemia?",
+      },
+    },
+    followUps: {
+      "hi-IN": [
+        { title: "आयरन अवशोषण आहार", query: "शरीर में आयरन का अवशोषण बढ़ाने के लिए क्या खाना चाहिए?" },
+        { title: "बी12 न्यूरोलॉजिकल प्रभाव", query: "विटामिन बी12 की कमी से हाथों-पैरों में झनझनाहट क्यों होती है?" },
+      ],
+      "en-IN": [
+        { title: "Iron Bioavailability", query: "Which foods and co-factors enhance non-heme iron absorption?" },
+        { title: "B12 Neurological Impact", query: "Why does vitamin B12 deficiency cause peripheral neuropathy and paresthesias?" },
+      ],
+    },
+  },
 ];
 
 /**
@@ -825,7 +1165,11 @@ export function getLocalizedSuggestionQuery(
   suggestion: ClinicalSuggestionItem,
   langCode: string
 ): { native: string; romanized?: string; english: string } {
-  const trans = suggestion.translations[langCode] || suggestion.translations["hi-IN"] || suggestion.translations["en-IN"];
+  const trans =
+    suggestion.translations[langCode] ||
+    suggestion.translations["hi-IN"] ||
+    suggestion.translations["en-IN"] ||
+    Object.values(suggestion.translations)[0];
   return trans;
 }
 
@@ -845,6 +1189,10 @@ export function getContextualFollowUps(
       item.id === "sug-lstm-hba1c" && (qLower.includes("lstm") || qLower.includes("hba1c") || qLower.includes("velocity")) ||
       item.id === "sug-cbc-lipids" && (qLower.includes("cbc") || qLower.includes("lipid") || qLower.includes("hemoglobin") || qLower.includes("blood report")) ||
       item.id === "sug-marfan" && (qLower.includes("marfan") || qLower.includes("fbn1") || qLower.includes("genetic") || qLower.includes("dominant")) ||
+      item.id === "sug-thalassemia" && (qLower.includes("thalassemia") || qLower.includes("sickle") || qLower.includes("hbb") || qLower.includes("carrier") || qLower.includes("थैलेसीमिया")) ||
+      item.id === "sug-brca" && (qLower.includes("brca") || qLower.includes("cancer") || qLower.includes("कैंसर") || qLower.includes("புற்றுநோய்")) ||
+      item.id === "sug-fatty-liver" && (qLower.includes("fatty") || qLower.includes("liver") || qLower.includes("masld") || qLower.includes("alt") || qLower.includes("लिवर")) ||
+      item.id === "sug-b12-anemia" && (qLower.includes("b12") || qLower.includes("ferritin") || qLower.includes("anemia") || qLower.includes("एनीमिया")) ||
       item.id === "sug-thyroid" && (qLower.includes("thyroid") || qLower.includes("tsh") || qLower.includes("थायराइड")) ||
       item.id === "sug-emergency" && (qLower.includes("chest") || qLower.includes("pain") || qLower.includes("dard") || qLower.includes("வலி"));
 
