@@ -61,7 +61,6 @@
 
 ## Table of Contents
 
-- [🎬 Official Platform Video Walkthrough (4K60 Master)](#-official-platform-video-walkthrough-4k60-master)
 - [MVP Platform Live Showcase (Production Screenshots)](#mvp-platform-live-showcase-production-screenshots)
 - [Platform Knowledge Base & GitHub Wiki (23 Technical Chapters)](#platform-knowledge-base--github-wiki)
 - [Clinical Data Visualizations & Process Pipeline Atlas](#clinical-data-visualizations--process-pipeline-atlas)
@@ -80,36 +79,6 @@
 - [13. Full-Stack Production Deployment (Vercel & Render)](#13-full-stack-production-deployment-vercel--render)
 - [14. Security Architecture v2.0 & Regulatory Compliance](#14-security-architecture-v20--regulatory-compliance)
 - [15. Statutory Clinical & Legal Disclaimer](#15-statutory-clinical--legal-disclaimer)
-
----
-
-## 🎬 Official Platform Video Walkthrough (4K60 Master)
-
-Watch the complete, end-to-end production walkthrough of **GeneWise (MediPredict AI)** showcasing our Zero-Knowledge Privacy architecture, Clinical Command Center telemetry, Interactive 3D Cryo-EM Protein Structure Viewer, and real-time Multilingual Voice Assistant across 13 Indian languages:
-
-<p align="center">
-  <video src="assets/videos/GeneWise_Master_Walkthrough_1080p.mp4" poster="assets/videos/genewise-video-poster.jpg" controls="controls" width="100%" preload="metadata">
-    Your browser does not support the video tag. <a href="assets/videos/GeneWise_Master_Walkthrough_1080p.mp4">Download GeneWise Walkthrough MP4 (1080p, 44 MB)</a>.
-  </video>
-</p>
-
-<p align="center">
-  <a href="assets/videos/GeneWise_Master_Walkthrough_1080p.mp4">
-    <img src="assets/videos/genewise-video-poster.jpg" alt="GeneWise Master Video Walkthrough" width="100%" />
-  </a>
-</p>
-
-> **Master File Availability**: The uncompressed **4K60 Master** (`GeneWise_AllClips_2m50s_Master_4K60.mp4`, 3840×2160 @ 60fps, 10.3 Mbps AVC/AAC-LC) is located on the clinical workstation. The repository provides an ultra-crisp, web-optimized 1080p stream for instant playback on GitHub web and mobile clients.
-
-### ⏱️ Walkthrough Acts & Chapter Index
-
-| Chapter Timestamp | Production Act | Clinical Domain & Engineering Highlights |
-|:---:|:---|:---|
-| **`00:00 - 00:30`** | **Act I: Zero-Knowledge Privacy & Architecture** | Zero-knowledge client-side encryption, 1,428 Mendelian conditions catalog, 2.4M+ ClinVar variants, 0 bytes raw DNA exfiltrated, DPDP Act 2023 & HIPAA Section 164.312 compliance. |
-| **`00:30 - 01:05`** | **Act II: Clinical Command Center & Telemetry** | WebAuthn FIDO2 authentication, ICU Ward 4B Transducer Node #409, Lead II continuous ECG streaming, real-time SpO2 photoplethysmography (< 42ms broadcast latency). |
-| **`01:05 - 01:45`** | **Act III: Genetic Explorer & 3D Protein Structure** | Interactive WebGL/Three.js Cryo-EM protein structures (`CFTR 7q31.2`, `TP53`, `BRCA1`), 3-generation pedigree risk engine, Mendelian penetrance modeling (AD/AR/X-Linked). |
-| **`01:45 - 02:25`** | **Act IV: Multilingual Voice AI (13 Indian Languages)** | End-to-end voice assistance across 13 official Indian languages (Hindi, Bengali, Tamil, Telugu, Kannada, Malayalam, Marathi, Gujarati, Punjabi, Odia, Assamese, Urdu, English), Audio Tuning drawer, Bi-LSTM 90-day clinical biomarker trajectory forecaster (AUC 0.958). |
-| **`02:25 - 02:50`** | **Act V: Zero-Trust Security, Compliance & Governance** | Tamper-evident HMAC-SHA256 audit ledger, Ed25519 cryptographic certification signatures, export governance, and clinician electronic sign-off workflow. |
 
 ---
 
