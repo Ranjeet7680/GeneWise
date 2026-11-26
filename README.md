@@ -61,8 +61,8 @@
 
 ## Table of Contents
 
-- [MVP Platform Live Showcase (Production Screenshots)](#mvp-platform-live-showcase-production-screenshots)
-- [Platform Knowledge Base & GitHub Wiki (23 Technical Chapters)](#platform-knowledge-base--github-wiki)
+- [Wireframes / Mock Diagrams of the Proposed Solution (Optional)](#wireframes--mock-diagrams-of-the-proposed-solution-optional)
+- [Platform Knowledge Base & GitHub Wiki (25 Technical Chapters)](#platform-knowledge-base--github-wiki)
 - [Clinical Data Visualizations & Process Pipeline Atlas](#clinical-data-visualizations--process-pipeline-atlas)
 - [1. Enterprise System Architecture](#1-enterprise-system-architecture)
 - [2. Multi-Agent Clinical Intelligence System](#2-multi-agent-clinical-intelligence-system)
@@ -82,9 +82,11 @@
 
 ---
 
-## MVP Platform Live Showcase (Production Screenshots)
+## Wireframes / Mock Diagrams of the Proposed Solution (Optional)
 
-The GeneWise clinical web platform delivers a unified, reactive UI designed with our custom **Clinical Calm** design system. Below are high-resolution screenshots captured directly from our verified production release:
+The GeneWise clinical web platform delivers a unified, reactive UI designed with our custom **Clinical Calm** design system. Below are high-resolution production mock diagrams, screen wireframes, and clinical workflow captures:
+
+> 📘 **Architectural Blueprints in Wiki**: Full ASCII blueprints (Desktop 1440px Clinician HUD, 3-Gen Pedigree Studio, 13-Language Voice Assistant, and Mobile 390px Clinical Dock) are detailed in **[Chapter 25: Wireframes & Mock Diagrams of the Proposed Solution](https://github.com/Ranjeet7680/GeneWise/wiki/25-Wireframes-Mock-Diagrams-Proposed-Solution)**.
 
 ### 1. Clinical Entry & Interactive Pedigree Intelligence
 
